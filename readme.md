@@ -26,17 +26,17 @@ AceMail is an open-source email automation and cold outreach platform designed t
 
 * **Task Queue:** Celery 5.2.7, Redis
 
-* **Database: PostgreSQL
+* **Database:** PostgreSQL
 
 
 ## Installation & Setup
-### Prerequisites
+### Prerequisites:
 
-**Python 3.8+**
+***Python 3.8+***
 
-**Node.js & npm (for Tailwind CSS)**
+***Node.js & npm (for Tailwind CSS)***
 
-**Redis (running locally)**
+***Redis (running locally)***
 
 ### Clone the Repository
 ```bash
