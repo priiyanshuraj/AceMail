@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital@1&display=swap');
+
+@layer components{
+
+    .expand_caret {
+        transform: scale(1.6);
+        margin-left: 8px;
+        margin-top: -4px;
+    }
+
+    button[aria-expanded='false'] > .expand_caret {
+        transform: scale(1.6) rotate(-90deg);
+    }
+}
