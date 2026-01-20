@@ -37,7 +37,7 @@ AceMail is an open-source email automation and cold outreach platform designed t
 ***Node.js & npm (for Tailwind CSS)***
 
 ***Redis (running locally)***
-
+Follow these steps to run this own your local machine.
 ### Clone the Repository
 ```bash
 git clone https://github.com/priiyanshuraj/acemail.git
@@ -104,7 +104,7 @@ celery -A email_automation worker -l info
 #### Access the app at: http://127.0.0.1:8000
 
 ## Contributing
-
+Contributions are welcome. Please contribute if you want to.
 **1. Fork the repository**
 
 **2. Create your feature branch**
