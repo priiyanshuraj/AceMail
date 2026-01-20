@@ -112,17 +112,17 @@ celery -A email_automation worker -l info
 git checkout -b feature/NewFeature**
 ```
 
-** 3.Commit your changes**
+**3.Commit your changes**
 ```bash
 git commit -m "Add NewFeature"
 ```
 
-** 4.Push to the branch**
+**4.Push to the branch**
 ```bash
 git push origin feature/NewFeature
 ```
 
-** 5.Open a Pull Request**
+**5.Open a Pull Request**
 
 ## License
 
