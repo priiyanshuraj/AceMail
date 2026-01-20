@@ -38,13 +38,13 @@ AceMail is an open-source email automation and cold outreach platform designed t
 
 ***Redis (running locally)***
 Follow these steps to run this own your local machine.
-### Clone the Repository
+### 1.Clone the Repository
 ```bash
 git clone https://github.com/priiyanshuraj/acemail.git
 cd acemail
 ```
 
-### Create & Activate Virtual Environment
+### 2.Create & Activate Virtual Environment
 ```bash
 python -m venv venv
 
@@ -54,15 +54,15 @@ venv\Scripts\activate
 # macOS / Linux
 source venv/bin/activate
 ```
-### Install Dependencies
+### 3.Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
-### Setup Tailwind CSS
+### 4.Setup Tailwind CSS
 ```bash
 python manage.py tailwind install
 ```
-### Environment Configuration
+### 5.Environment Configuration
 Create a .env file in the project root:
 ```bash
 DEBUG=1
@@ -78,11 +78,11 @@ EMAIL_HOST_PASSWORD=
 POSTGRES_URL=
 ```
 
-### Run Migrations
+### 6.Run Migrations
 ```bash
 python manage.py migrate
 ```
-### Start the Application
+### 7.Start the Application
 
 Run each command in a separate terminal:
 
@@ -101,10 +101,11 @@ python manage.py tailwind start
 celery -A email_automation worker -l info
 ```
 
-#### Access the app at: http://127.0.0.1:8000
+#### Finally: Access the app at: [http://127.0.0.1:8000]
 
 ## Contributing
-Contributions are welcome. Please contribute if you want to.
+Contributions are welcome. Please contribute if you want to
+
 **1. Fork the repository**
 
 **2. Create your feature branch**
