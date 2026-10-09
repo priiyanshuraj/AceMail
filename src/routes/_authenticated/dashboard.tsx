@@ -100,9 +100,9 @@ function Dashboard() {
             src={fieldAsset.url}
             alt=""
             aria-hidden
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-45"
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card via-card/70 to-card/30" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card/95 via-card/55 to-card/15" />
           <CardContent className="relative flex h-full flex-col justify-center gap-4 p-6">
             <span className="text-xs uppercase tracking-[0.4em] text-jade">The road so far</span>
             <blockquote className="font-serif text-xl italic leading-snug">
