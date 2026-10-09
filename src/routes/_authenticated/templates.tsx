@@ -45,7 +45,9 @@ function TemplatesPage() {
   const queryClient = useQueryClient();
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
+  const [previewContactId, setPreviewContactId] = useState<string>("sample");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
+  const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
   const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
