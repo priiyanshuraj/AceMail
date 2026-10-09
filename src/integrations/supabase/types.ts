@@ -215,17 +215,25 @@ export type Database = {
           delay_seconds: number
           from_email: string
           from_name: string
+          hourly_limit: number
           id: string
           imap_host: string | null
           imap_port: number | null
           is_default: boolean
+          last_synced_at: string | null
           name: string
+          provider: string
           smtp_host: string
           smtp_password: string
           smtp_port: number
           smtp_username: string
+          status: string
           updated_at: string
           user_id: string
+          warmup_enabled: boolean
+          warmup_increment: number
+          warmup_start_volume: number
+          warmup_started_at: string | null
         }
         Insert: {
           created_at?: string
@@ -233,17 +241,25 @@ export type Database = {
           delay_seconds?: number
           from_email: string
           from_name?: string
+          hourly_limit?: number
           id?: string
           imap_host?: string | null
           imap_port?: number | null
           is_default?: boolean
+          last_synced_at?: string | null
           name: string
-          smtp_host: string
-          smtp_password: string
+          provider?: string
+          smtp_host?: string
+          smtp_password?: string
           smtp_port?: number
-          smtp_username: string
+          smtp_username?: string
+          status?: string
           updated_at?: string
           user_id: string
+          warmup_enabled?: boolean
+          warmup_increment?: number
+          warmup_start_volume?: number
+          warmup_started_at?: string | null
         }
         Update: {
           created_at?: string
@@ -251,17 +267,25 @@ export type Database = {
           delay_seconds?: number
           from_email?: string
           from_name?: string
+          hourly_limit?: number
           id?: string
           imap_host?: string | null
           imap_port?: number | null
           is_default?: boolean
+          last_synced_at?: string | null
           name?: string
+          provider?: string
           smtp_host?: string
           smtp_password?: string
           smtp_port?: number
           smtp_username?: string
+          status?: string
           updated_at?: string
           user_id?: string
+          warmup_enabled?: boolean
+          warmup_increment?: number
+          warmup_start_volume?: number
+          warmup_started_at?: string | null
         }
         Relationships: []
       }
@@ -271,8 +295,11 @@ export type Database = {
           contact_id: string
           created_at: string
           error: string | null
+          gmail_message_id: string | null
+          gmail_thread_id: string | null
           id: string
           opened_at: string | null
+          replied_at: string | null
           scheduled_at: string
           sent_at: string | null
           status: string
@@ -284,8 +311,11 @@ export type Database = {
           contact_id: string
           created_at?: string
           error?: string | null
+          gmail_message_id?: string | null
+          gmail_thread_id?: string | null
           id?: string
           opened_at?: string | null
+          replied_at?: string | null
           scheduled_at?: string
           sent_at?: string | null
           status?: string
@@ -297,8 +327,11 @@ export type Database = {
           contact_id?: string
           created_at?: string
           error?: string | null
+          gmail_message_id?: string | null
+          gmail_thread_id?: string | null
           id?: string
           opened_at?: string | null
+          replied_at?: string | null
           scheduled_at?: string
           sent_at?: string | null
           status?: string
@@ -361,6 +394,115 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      inbox_messages: {
+        Row: {
+          campaign_id: string | null
+          config_id: string | null
+          contact_id: string | null
+          from_email: string
+          from_name: string
+          gmail_message_id: string
+          gmail_thread_id: string | null
+          id: string
+          is_read: boolean
+          log_id: string | null
+          received_at: string
+          snippet: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          config_id?: string | null
+          contact_id?: string | null
+          from_email?: string
+          from_name?: string
+          gmail_message_id: string
+          gmail_thread_id?: string | null
+          id?: string
+          is_read?: boolean
+          log_id?: string | null
+          received_at?: string
+          snippet?: string
+          subject?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          config_id?: string | null
+          contact_id?: string | null
+          from_email?: string
+          from_name?: string
+          gmail_message_id?: string
+          gmail_thread_id?: string | null
+          id?: string
+          is_read?: boolean
+          log_id?: string | null
+          received_at?: string
+          snippet?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbox_messages_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbox_messages_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "email_configurations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbox_messages_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inbox_messages_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "email_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mailbox_credentials: {
+        Row: {
+          config_id: string
+          connection_key_ciphertext: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config_id: string
+          connection_key_ciphertext: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config_id?: string
+          connection_key_ciphertext?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mailbox_credentials_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: true
+            referencedRelation: "email_configurations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

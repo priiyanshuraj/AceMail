@@ -15,6 +15,13 @@
       "when": 1791570276122,
       "tag": "0001_enable_pg_cron_pg_net",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791571758457,
+      "tag": "0002_gmail_mailboxes",
+      "breakpoints": true
     }
   ]
 }

@@ -137,7 +137,7 @@ function NewCampaign() {
               )}
             </div>
             <div className="space-y-1">
-              <Label>Send from (SMTP configuration)</Label>
+              <Label>Send from mailbox</Label>
               <Select value={configId} onValueChange={setConfigId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a configuration" />
@@ -151,7 +151,7 @@ function NewCampaign() {
                 </SelectContent>
               </Select>
               {data.configs.length === 0 && (
-                <p className="text-xs text-destructive">Add an SMTP configuration first (Settings page).</p>
+                <p className="text-xs text-destructive">Connect a Gmail mailbox first (Mailboxes page).</p>
               )}
             </div>
           </CardContent>
