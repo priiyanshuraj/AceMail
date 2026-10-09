@@ -36,6 +36,13 @@
       "when": 1791575852770,
       "tag": "0004_signatures",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791576543623,
+      "tag": "0005_campaign_timezone",
+      "breakpoints": true
     }
   ]
 }

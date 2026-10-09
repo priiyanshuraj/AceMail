@@ -90,6 +90,7 @@ export type Database = {
           send_window_start: string | null
           started_at: string | null
           status: string
+          timezone: string
           user_id: string
         }
         Insert: {
@@ -104,6 +105,7 @@ export type Database = {
           send_window_start?: string | null
           started_at?: string | null
           status?: string
+          timezone?: string
           user_id: string
         }
         Update: {
@@ -118,6 +120,7 @@ export type Database = {
           send_window_start?: string | null
           started_at?: string | null
           status?: string
+          timezone?: string
           user_id?: string
         }
         Relationships: [
