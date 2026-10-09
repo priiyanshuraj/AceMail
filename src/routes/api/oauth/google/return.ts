@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/oauth/google/return")({
         const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         const safeJson = JSON.stringify(result).replace(/<\//g, "<\\/");
         const html = `<!DOCTYPE html><html><head><title>Finishing connection…</title></head><body style="font-family:sans-serif;padding:2rem">
-<p>${result.success ? "Mailbox connected, closing…" : "Failed: " + esc((result as { error?: string }).error ?? "Unknown error")}</p>
+<p>${result.success ? "Google connected, closing…" : "Failed: " + esc((result as { error?: string }).error ?? "Unknown error")}</p>
 <script>
 const result = ${safeJson};
 const message = { type: result.success ? "appUserConnectorOAuthComplete" : "appUserConnectorOAuthFailed", connectorId: result.connectorId, code: result.code ?? null };
