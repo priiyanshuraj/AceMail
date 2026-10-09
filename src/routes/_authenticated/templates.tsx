@@ -1,19 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys } from "@/lib/acemail.functions";
+import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Pencil, Mail } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Trash2, Pencil, Mail, UserRound } from "lucide-react";
 import { toast } from "sonner";
 
 const templatesQuery = queryOptions({
   queryKey: ["templates"],
   queryFn: () => listTemplates(),
+});
+
+const previewContactsQuery = queryOptions({
+  queryKey: ["preview-contacts"],
+  queryFn: () => listPreviewContacts(),
 });
 
 export const Route = createFileRoute("/_authenticated/templates")({
@@ -39,7 +45,9 @@ function TemplatesPage() {
   const queryClient = useQueryClient();
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
+  const [previewContactId, setPreviewContactId] = useState<string>("sample");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
+  const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
   const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
@@ -62,13 +70,19 @@ function TemplatesPage() {
     toast.success("Template saved");
   };
 
+  const selectedContact = (previewContacts ?? []).find((c) => c.id === previewContactId) ?? null;
+
   const preview = (text: string) =>
     text
-      .replaceAll("{{first_name}}", "Jane")
-      .replaceAll("{{last_name}}", "Doe")
-      .replaceAll("{{company}}", "Acme Inc")
-      .replaceAll("{{email}}", "jane@acme.com")
-      .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => `[${k}]`);
+      .replaceAll("{{first_name}}", selectedContact?.first_name || "Jane")
+      .replaceAll("{{last_name}}", selectedContact?.last_name || "Doe")
+      .replaceAll("{{company}}", selectedContact?.company || "Acme Inc")
+      .replaceAll("{{email}}", selectedContact?.email || "jane@acme.com")
+      .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => {
+        const cf = selectedContact?.custom_fields as Record<string, unknown> | null | undefined;
+        const val = cf?.[k];
+        return val !== undefined && val !== null && val !== "" ? String(val) : `[${k}]`;
+      });
 
   return (
     <div className="space-y-6">
@@ -135,8 +149,25 @@ function TemplatesPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Preview</CardTitle>
+              <div className="flex items-center gap-2">
+                <UserRound className="h-4 w-4 text-muted-foreground" />
+                <Select value={previewContactId} onValueChange={setPreviewContactId}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Sample contact" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sample">Sample contact</SelectItem>
+                    {(previewContacts ?? []).map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.first_name || c.email}
+                        {c.company ? ` · ${c.company}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="rounded-lg border bg-muted/50 p-4">
