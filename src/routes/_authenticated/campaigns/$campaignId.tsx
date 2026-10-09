@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Play, Pause, Square } from "lucide-react";
+import { ArrowLeft, Play, Pause, Square, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 const campaignQuery = (id: string) =>
@@ -73,10 +73,17 @@ function CampaignDetail() {
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             To {list?.name ?? "—"} · From {config?.from_email ?? "—"} · {campaign.send_window_start?.slice(0, 5)}–
-            {campaign.send_window_end?.slice(0, 5)}
+            {campaign.send_window_end?.slice(0, 5)} ({campaign.timezone})
           </p>
         </div>
         <div className="flex gap-2">
+          {campaign.status !== "completed" && campaign.status !== "discontinued" && (
+            <Button variant="outline" asChild>
+              <Link to="/campaigns/edit/$campaignId" params={{ campaignId }}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit
+              </Link>
+            </Button>
+          )}
           {campaign.status !== "running" && campaign.status !== "completed" && campaign.status !== "discontinued" && (
             <Button onClick={() => changeStatus("running")}>
               <Play className="mr-2 h-4 w-4" /> Start
