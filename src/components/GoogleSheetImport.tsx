@@ -193,14 +193,6 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
         {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}
         Browse your Drive
       </Button>
-      {listError && (
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-muted-foreground">Couldn't list your sheets — reconnect Google or paste a link.</p>
-          <Button size="sm" variant="ghost" onClick={connect} disabled={busy}>
-            <RefreshCw className="mr-1 h-3 w-3" /> Reconnect
-          </Button>
-        </div>
-      )}
       <div className="flex gap-2">
         <Input
           value={link}
@@ -260,9 +252,32 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
             </Button>
           </div>
           <div className="max-h-80 overflow-y-auto rounded-md border">
-            {listLoading && files.length === 0 && (
+            {needsDrive && (
+              <div className="space-y-3 p-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Allow AceMail to see your Drive file names so you can pick a sheet here.
+                </p>
+                <Button size="sm" onClick={connectDrive} disabled={busy}>
+                  {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}
+                  Connect Google Drive
+                </Button>
+              </div>
+            )}
+            {!needsDrive && listLoading && files.length === 0 && (
               <div className="flex items-center justify-center p-8 text-sm text-muted-foreground">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading your sheets…
+              </div>
+            )}
+            {!needsDrive && !listLoading && files.length === 0 && !listError && (
+              <p className="p-8 text-center text-sm text-muted-foreground">No spreadsheets found.</p>
+            )}
+            {!needsDrive && listError && (
+              <div className="space-y-2 p-8 text-center">
+                <p className="text-sm text-muted-foreground">Couldn't list your sheets.</p>
+                <p className="break-words text-xs text-muted-foreground">{listError.slice(0, 200)}</p>
+                <Button size="sm" variant="outline" onClick={connectDrive} disabled={busy}>
+                  <RefreshCw className="mr-1 h-3 w-3" /> Reconnect Google Drive
+                </Button>
               </div>
             )}
             {!listLoading && files.length === 0 && !listError && (
