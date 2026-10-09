@@ -72,6 +72,15 @@ function ContactsPage() {
     setContacts(await listContacts({ data: { listId: id } }));
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCsvText(String(reader.result ?? ""));
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
   const handleImport = async () => {
     if (!selectedList) return;
     const lines = csvText.split("\n").map((l) => l.trim()).filter(Boolean);
@@ -188,9 +197,18 @@ function ContactsPage() {
                     <DialogHeader>
                       <DialogTitle>Import contacts</DialogTitle>
                       <DialogDescription>
-                        Paste one contact per line: email, first name, last name, company
+                        Upload a CSV file or paste contacts — one per line: email, first name, last name, company
                       </DialogDescription>
                     </DialogHeader>
+                    <div className="space-y-2">
+                      <Label htmlFor="csv-file">CSV file</Label>
+                      <Input
+                        id="csv-file"
+                        type="file"
+                        accept=".csv,text/csv,text/plain"
+                        onChange={handleFileUpload}
+                      />
+                    </div>
                     <Textarea
                       rows={8}
                       value={csvText}
