@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { getDashboardStats } from "@/lib/acemail.functions";
+import { getDashboardStats, listCampaigns } from "@/lib/acemail.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Megaphone, Users, Send, MailOpen, AlertCircle, TrendingUp, Inbox, AtSign, Mail, ArrowRight } from "lucide-react";
 import fieldAsset from "@/assets/kiarostami-field.jpg.asset.json";
@@ -9,6 +10,11 @@ import fieldAsset from "@/assets/kiarostami-field.jpg.asset.json";
 const statsQuery = queryOptions({
   queryKey: ["dashboard-stats"],
   queryFn: () => getDashboardStats(),
+});
+
+const campaignsQuery = queryOptions({
+  queryKey: ["dashboard-campaigns"],
+  queryFn: () => listCampaigns(),
 });
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
