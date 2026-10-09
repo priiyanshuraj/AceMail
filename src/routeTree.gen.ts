@@ -14,8 +14,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticated/contacts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as AuthenticatedCampaignsIndexRouteImport } from './routes/_authenticated/campaigns/index'
+import { Route as AuthenticatedCampaignsCampaignIdRouteImport } from './routes/_authenticated/campaigns/$campaignId'
 import { Route as AuthenticatedCampaignsNewRouteImport } from './routes/_authenticated/campaigns/new'
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
 import { Route as ApiPublicTrackLogIdPngRouteImport } from './routes/api/public/track/$logId.png'
@@ -44,6 +46,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -53,6 +60,12 @@ const AuthenticatedCampaignsIndexRoute =
   AuthenticatedCampaignsIndexRouteImport.update({
     id: '/campaigns/',
     path: '/campaigns/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCampaignsCampaignIdRoute =
+  AuthenticatedCampaignsCampaignIdRouteImport.update({
+    id: '/campaigns/$campaignId',
+    path: '/campaigns/$campaignId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCampaignsNewRoute =
@@ -78,7 +91,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/contacts': typeof AuthenticatedContactsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
+  '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
@@ -89,7 +104,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/contacts': typeof AuthenticatedContactsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
+  '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/campaigns': typeof AuthenticatedCampaignsIndexRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
@@ -102,7 +119,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/contacts': typeof AuthenticatedContactsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
+  '/_authenticated/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/_authenticated/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/_authenticated/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
@@ -115,7 +134,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contacts'
     | '/dashboard'
+    | '/settings'
     | '/templates'
+    | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/campaigns/'
     | '/api/public/hooks/process-queue'
@@ -126,7 +147,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contacts'
     | '/dashboard'
+    | '/settings'
     | '/templates'
+    | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/campaigns'
     | '/api/public/hooks/process-queue'
@@ -138,7 +161,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/contacts'
     | '/_authenticated/dashboard'
+    | '/_authenticated/settings'
     | '/_authenticated/templates'
+    | '/_authenticated/campaigns/$campaignId'
     | '/_authenticated/campaigns/new'
     | '/_authenticated/campaigns/'
     | '/api/public/hooks/process-queue'
@@ -190,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/templates': {
       id: '/_authenticated/templates'
       path: '/templates'
@@ -202,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/campaigns'
       fullPath: '/campaigns/'
       preLoaderRoute: typeof AuthenticatedCampaignsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/campaigns/$campaignId': {
+      id: '/_authenticated/campaigns/$campaignId'
+      path: '/campaigns/$campaignId'
+      fullPath: '/campaigns/$campaignId'
+      preLoaderRoute: typeof AuthenticatedCampaignsCampaignIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/campaigns/new': {
@@ -231,7 +270,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedContactsRoute: typeof AuthenticatedContactsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
+  AuthenticatedCampaignsCampaignIdRoute: typeof AuthenticatedCampaignsCampaignIdRoute
   AuthenticatedCampaignsNewRoute: typeof AuthenticatedCampaignsNewRoute
   AuthenticatedCampaignsIndexRoute: typeof AuthenticatedCampaignsIndexRoute
 }
@@ -239,7 +280,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContactsRoute: AuthenticatedContactsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
+  AuthenticatedCampaignsCampaignIdRoute: AuthenticatedCampaignsCampaignIdRoute,
   AuthenticatedCampaignsNewRoute: AuthenticatedCampaignsNewRoute,
   AuthenticatedCampaignsIndexRoute: AuthenticatedCampaignsIndexRoute,
 }
