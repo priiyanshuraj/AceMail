@@ -401,12 +401,12 @@ export const setCampaignStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const updates: Record<string, unknown> = { status: data.status };
+    const updates: { status: string; started_at?: string; completed_at?: string } = { status: data.status };
     if (data.status === "running") {
       const { data: campaign } = await supabase.from("campaigns").select("*, contact_lists(id)").eq("id", data.id).single();
       if (!campaign) throw new Error("Campaign not found");
       if (!campaign.config_id) throw new Error("Attach an email configuration before starting");
-      updates.started_at = new Date().toISOString();
+      updates["started_at"] = new Date().toISOString();
       // Enqueue step 1 for all subscribed, non-blacklisted contacts
       const { data: contacts } = await supabase
         .from("contacts")
