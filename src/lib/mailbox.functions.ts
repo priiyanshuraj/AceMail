@@ -20,25 +20,37 @@ export const startGmailConnect = createServerFn({ method: "POST" })
     const returnUrl = new URL("/api/oauth/google/return", sandboxHost ? `https://${sandboxHost}` : url.origin).toString();
 
     let existingKey: string | null = null;
+    let appUserId = `${context.userId}:${crypto.randomUUID()}`;
     if (data.configId) {
       const { data: own } = await context.supabase.from("email_configurations").select("id").eq("id", data.configId).maybeSingle();
-      if (own) existingKey = await getMailboxKey(data.configId);
+      if (own) {
+        existingKey = await getMailboxKey(data.configId);
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data: cred } = await supabaseAdmin
+          .from("mailbox_credentials")
+          .select("app_user_id")
+          .eq("config_id", data.configId)
+          .maybeSingle();
+        if (existingKey && cred?.app_user_id) appUserId = cred.app_user_id;
+        else if (existingKey) appUserId = context.userId;
+        else existingKey = null;
+      }
     }
     const { authorizationUrl } = await authorizeAppUserOAuth({
       gatewayBaseUrl: GATEWAY_BASE_URL,
       connectorId: GMAIL_CONNECTOR,
-      appUserId: context.userId,
+      appUserId,
       clientAPIKey: clientKey,
       returnUrl,
       connectionAPIKey: existingKey ?? undefined,
       credentialsConfiguration: { scopes: GMAIL_SCOPES },
     });
-    return { authorizationUrl };
+    return { authorizationUrl, appUserId };
   });
 
 export const completeGmailConnection = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ code: z.string().min(1) }).parse(d))
+  .inputValidator((d) => z.object({ code: z.string().min(1), appUserId: z.string().optional() }).parse(d))
   .handler(async ({ data, context }) => {
     const { exchangeAppUserOAuthCode } = await import("@/integrations/lovable/appUserConnector");
     const { GATEWAY_BASE_URL, GMAIL_CONNECTOR, gmailCall, saveMailboxKey } = await import("@/server/gmail.server");
@@ -80,7 +92,8 @@ export const completeGmailConnection = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       configId = row.id;
     }
-    await saveMailboxKey(configId, userId, connectionAPIKey);
+    const appUserId = data.appUserId?.startsWith(`${userId}`) ? data.appUserId : userId;
+    await saveMailboxKey(configId, userId, connectionAPIKey, appUserId);
     return { ok: true, email, reconnected: !!existing };
   });
 
