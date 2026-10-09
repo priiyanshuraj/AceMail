@@ -99,13 +99,11 @@ function CampaignDetail() {
           </p>
         </div>
         <div className="flex gap-2">
-          {campaign.status !== "completed" && campaign.status !== "discontinued" && (
-            <Button variant="outline" asChild>
-              <Link to="/campaigns/edit/$campaignId" params={{ campaignId }}>
-                <Pencil className="mr-2 h-4 w-4" /> Edit
-              </Link>
-            </Button>
-          )}
+          <Button variant="outline" asChild>
+            <Link to="/campaigns/edit/$campaignId" params={{ campaignId }}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </Link>
+          </Button>
           {campaign.status !== "running" && campaign.status !== "completed" && campaign.status !== "discontinued" && (
             <Button onClick={() => changeStatus("running")}>
               <Play className="mr-2 h-4 w-4" /> Start
