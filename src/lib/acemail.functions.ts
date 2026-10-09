@@ -94,7 +94,7 @@ const contactRow = z.object({
   first_name: z.string().optional(),
   last_name: z.string().optional(),
   company: z.string().optional(),
-  custom_fields: z.record(z.string().max(64), z.string().max(20000)).optional(),
+  custom_fields: z.record(z.string().max(64), z.string()).optional(),
 });
 
 export const importContacts = createServerFn({ method: "POST" })
