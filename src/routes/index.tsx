@@ -85,12 +85,13 @@ function Landing() {
       </header>
 
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 text-center">
+        <p className="mb-6 text-xs uppercase tracking-[0.5em] text-jade">In the mood for outreach</p>
         <h1 className="mx-auto max-w-3xl text-5xl font-bold leading-tight md:text-6xl">
-          Cold email campaigns that <span className="text-primary">run themselves</span>
+          Cold email campaigns that <span className="neon-text">run themselves</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
           AceMail schedules, personalizes, and tracks your outreach — multi-step sequences,
-          your own SMTP, and analytics that show exactly what's working.
+          your own Gmail, and analytics that show exactly what's working.
         </p>
         <div className="mt-8 flex justify-center gap-3">
           <Button size="lg" asChild>
