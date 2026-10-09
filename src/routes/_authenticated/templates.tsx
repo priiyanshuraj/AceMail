@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts, getSignature } from "@/lib/acemail.functions";
+import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts, getSignature, sendTemplateTest } from "@/lib/acemail.functions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Mail, UserRound } from "lucide-react";
+import { Plus, Trash2, Pencil, Mail, UserRound, Send } from "lucide-react";
 import { toast } from "sonner";
 
 const templatesQuery = queryOptions({
@@ -47,6 +47,7 @@ function TemplatesPage() {
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
   const [previewContactId, setPreviewContactId] = useState<string>("sample");
+  const [sendingTest, setSendingTest] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const lastFieldRef = useRef<"subject" | "body">("body");
@@ -221,7 +222,7 @@ function TemplatesPage() {
                 </Select>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <div className="rounded-lg border bg-muted/50 p-4">
                 <p className="mb-2 border-b pb-2 text-sm font-semibold">
                   {preview(editing.subject ?? "") || "(no subject)"}
@@ -231,6 +232,34 @@ function TemplatesPage() {
                   <div className="mt-4 whitespace-pre-wrap border-t pt-3 text-sm text-muted-foreground">{preview(signature)}</div>
                 )}
               </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={sendingTest}
+                onClick={async () => {
+                  setSendingTest(true);
+                  try {
+                    const res = await sendTemplateTest({
+                      data: {
+                        subject: editing.subject ?? "",
+                        body: editing.body ?? "",
+                        attach_signature: !!editing.attach_signature,
+                      },
+                    });
+                    toast.success(`Test email sent to ${res.to}`);
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Couldn't send the test email");
+                  } finally {
+                    setSendingTest(false);
+                  }
+                }}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {sendingTest ? "Sending…" : "Send test to myself"}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Sends from your default mailbox to your own address, with sample values for the variables.
+              </p>
             </CardContent>
           </Card>
         </div>
