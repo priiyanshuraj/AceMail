@@ -620,3 +620,34 @@ export const deleteCampaign = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const setLogStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({ id: z.string().uuid(), status: z.enum(["queued", "paused"]) }).parse(d)
+  )
+  .handler(async ({ data, context }) => {
+    // Only queued <-> paused transitions; sent/failed logs are final.
+    const from = data.status === "paused" ? "queued" : "paused";
+    const { error } = await context.supabase
+      .from("email_logs")
+      .update({ status: data.status })
+      .eq("id", data.id)
+      .eq("status", from);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteLog = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    // Only unsent logs can be removed.
+    const { error } = await context.supabase
+      .from("email_logs")
+      .delete()
+      .eq("id", data.id)
+      .in("status", ["queued", "paused"]);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
