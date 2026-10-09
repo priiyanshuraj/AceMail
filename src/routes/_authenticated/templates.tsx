@@ -143,8 +143,10 @@ function TemplatesPage() {
               <div className="space-y-1">
                 <Label>Subject</Label>
                 <Input
+                  ref={subjectRef}
                   value={editing.subject ?? ""}
                   onChange={(e) => setEditing({ ...editing, subject: e.target.value })}
+                  onFocus={() => (lastFieldRef.current = "subject")}
                   placeholder="Quick question, {{first_name}}"
                 />
               </div>
