@@ -423,7 +423,7 @@ export const setCampaignStatus = createServerFn({ method: "POST" })
       const step1 = steps?.[0];
       if (step1 && contacts) {
         const rows = contacts
-          .filter((c) => !blocked.has(c.email.split("@")[1]?.toLowerCase()))
+          .filter((c) => !blocked.has(c.email.split("@")[1]?.toLowerCase() ?? ""))
           .map((c) => ({
             user_id: userId,
             campaign_id: data.id,
@@ -439,7 +439,7 @@ export const setCampaignStatus = createServerFn({ method: "POST" })
         }
       }
     }
-    if (data.status === "completed") updates.completed_at = new Date().toISOString();
+    if (data.status === "completed") updates["completed_at"] = new Date().toISOString();
     const { error } = await supabase.from("campaigns").update(updates).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };

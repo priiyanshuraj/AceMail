@@ -80,7 +80,7 @@ function ContactsPage() {
         const [email, first_name, last_name, company] = line.split(/[,\t]/).map((s) => s?.trim() ?? "");
         return { email, first_name, last_name, company };
       })
-      .filter((r) => r.email.includes("@"));
+      .filter((r) => r.email?.includes("@"));
     if (parsed.length === 0) {
       toast.error("No valid emails found. Format: email, first name, last name, company");
       return;
