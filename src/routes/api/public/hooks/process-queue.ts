@@ -57,7 +57,7 @@ async function processQueue() {
   const { data: due, error } = await supabaseAdmin
     .from("email_logs")
     .select(
-      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body))"
+      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body, attach_signature))"
     )
     .eq("status", "queued")
     .eq("campaigns.status", "running")
@@ -166,7 +166,7 @@ async function processQueue() {
       const step = log.campaign_steps as unknown as {
         step_order: number;
         delay_days: number;
-        email_templates: { subject: string; body: string } | null;
+        email_templates: { subject: string; body: string; attach_signature: boolean } | null;
       } | null;
       const template = step?.email_templates;
 
