@@ -36,7 +36,8 @@ function slug(s: string) {
 function parseCsv(text: string): string[][] {
   const out: string[][] = [];
   if (!text.trim()) return out;
-  const delim = (text.split("\n")[0] ?? "").includes("\t") && !text.split("\n")[0].includes(",") ? "\t" : ",";
+  const first = text.split("\n")[0] ?? "";
+  const delim = first.includes("\t") && !first.includes(",") ? "\t" : ",";
   let row: string[] = [];
   let cur = "";
   let q = false;
