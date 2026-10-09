@@ -1,0 +1,1 @@
+ALTER TABLE public.mailbox_credentials ADD COLUMN IF NOT EXISTS app_user_id text;

@@ -477,18 +477,21 @@ export type Database = {
       }
       mailbox_credentials: {
         Row: {
+          app_user_id: string | null
           config_id: string
           connection_key_ciphertext: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          app_user_id?: string | null
           config_id: string
           connection_key_ciphertext: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          app_user_id?: string | null
           config_id?: string
           connection_key_ciphertext?: string
           updated_at?: string
