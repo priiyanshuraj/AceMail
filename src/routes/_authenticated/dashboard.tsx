@@ -34,6 +34,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { data: stats } = useSuspenseQuery(statsQuery);
+  const { data: campaigns } = useSuspenseQuery(campaignsQuery);
+  const recent = campaigns.slice(0, 3);
 
   const cards = [
     { label: "Active campaigns", value: stats.activeCampaigns, sub: `${stats.totalCampaigns} total`, icon: Megaphone, to: "/campaigns" },
