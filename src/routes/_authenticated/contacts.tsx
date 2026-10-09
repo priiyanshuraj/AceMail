@@ -339,6 +339,7 @@ function ContactsPage() {
                           <button className="underline" onClick={() => { setCsvText(""); setMapping([]); }}>
                             Clear
                           </button>
+                          </button>
                         </div>
                         {headers.map((h, i) => (
                           <div key={i} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
