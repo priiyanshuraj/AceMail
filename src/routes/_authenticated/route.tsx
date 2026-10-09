@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, AtSign } from "lucide-react";
 import logoUrl from "@/assets/acemail-logo.png";
+import hillsAsset from "@/assets/kiarostami-hills.jpg.asset.json";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -89,14 +90,20 @@ function AuthenticatedLayout() {
             </Button>
           </SidebarFooter>
         </Sidebar>
-        <main className="flex-1 overflow-auto">
-          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-6 py-3 backdrop-blur-md">
+        <main className="relative flex-1 overflow-auto">
+          <img
+            src={hillsAsset.url}
+            alt=""
+            aria-hidden
+            className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-[0.07]"
+          />
+          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-6 py-4 backdrop-blur-md">
             <SidebarTrigger />
-            <p className="font-serif text-sm italic tracking-wide text-muted-foreground">
+            <p className="font-serif text-lg italic tracking-wide text-muted-foreground">
               Every message, <span className="neon-text not-italic font-semibold">a road through the hills</span> — send, track, repeat.
             </p>
           </div>
-          <div className="p-6">
+          <div className="relative p-6">
             <Outlet />
           </div>
         </main>
