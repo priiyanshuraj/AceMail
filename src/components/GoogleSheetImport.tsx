@@ -79,7 +79,7 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
 
   const connect = async () => {
     const popup = window.open("", "acemail-sheets", "width=600,height=720");
-    if (!popup) return toast.error("Popup blocked. Allow popups and try again.");
+    if (!popup) { toast.error("Popup blocked. Allow popups and try again."); return; }
     setBusy(true);
     try {
       const res = await startSheetsConnect();
@@ -118,7 +118,7 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
     setBusy(true);
     try {
       const r = await getSheetRows({ data: { spreadsheetId: sheetId, tab } });
-      if (r.rows.length < 2) return toast.error("That tab needs a header row and at least one contact");
+      if (r.rows.length < 2) { toast.error("That tab needs a header row and at least one contact"); return; }
       onRows(r.rows);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't read that tab");
@@ -166,7 +166,7 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
           disabled={busy}
           onClick={() => {
             const id = extractId(link);
-            if (!id) return toast.error("That doesn't look like a Google Sheets link");
+            if (!id) { toast.error("That doesn't look like a Google Sheets link"); return; }
             void pickSheet(id);
           }}
         >
