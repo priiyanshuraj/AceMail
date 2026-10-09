@@ -143,6 +143,7 @@ function ContactsPage() {
 
   const loadCsv = async (text: string) => {
     setCsvText(text);
+    setExcluded(new Set());
     const keys = await listCustomFieldKeys().catch(() => [] as string[]);
     const hdrs = parseCsv(text)[0] ?? [];
     const mapped = autoMap(hdrs, keys);
