@@ -29,6 +29,13 @@
       "when": 1791574422701,
       "tag": "0003_mailbox_app_user_id",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791575852770,
+      "tag": "0004_signatures",
+      "breakpoints": true
     }
   ]
 }
