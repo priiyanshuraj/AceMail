@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { listTemplates, saveTemplate, deleteTemplate } from "@/lib/acemail.functions";
+import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +39,8 @@ function TemplatesPage() {
   const queryClient = useQueryClient();
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
+  const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
+  const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
 
@@ -65,7 +67,8 @@ function TemplatesPage() {
       .replaceAll("{{first_name}}", "Jane")
       .replaceAll("{{last_name}}", "Doe")
       .replaceAll("{{company}}", "Acme Inc")
-      .replaceAll("{{email}}", "jane@acme.com");
+      .replaceAll("{{email}}", "jane@acme.com")
+      .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => `[${k}]`);
 
   return (
     <div className="space-y-6">
@@ -112,7 +115,7 @@ function TemplatesPage() {
                 />
               </div>
               <div className="flex flex-wrap gap-1">
-                {VARIABLES.map((v) => (
+                {allVars.map((v) => (
                   <Badge
                     key={v}
                     variant="secondary"

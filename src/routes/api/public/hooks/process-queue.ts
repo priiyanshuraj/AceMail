@@ -57,7 +57,7 @@ async function processQueue() {
   const { data: due, error } = await supabaseAdmin
     .from("email_logs")
     .select(
-      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed), campaign_steps(step_order, delay_days, email_templates(subject, body))"
+      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body))"
     )
     .eq("status", "queued")
     .eq("campaigns.status", "running")
@@ -161,6 +161,7 @@ async function processQueue() {
         last_name: string;
         company: string;
         unsubscribed: boolean;
+        custom_fields: Record<string, string> | null;
       } | null;
       const step = log.campaign_steps as unknown as {
         step_order: number;
@@ -178,12 +179,14 @@ async function processQueue() {
         continue;
       }
 
+      const custom = (contact.custom_fields ?? {}) as Record<string, string>;
       const render = (text: string) =>
         text
           .replaceAll("{{first_name}}", contact.first_name || "there")
           .replaceAll("{{last_name}}", contact.last_name || "")
           .replaceAll("{{company}}", contact.company || "")
-          .replaceAll("{{email}}", contact.email);
+          .replaceAll("{{email}}", contact.email)
+          .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => String(custom[k] ?? ""));
 
       const pixel = appUrl
         ? `<img src="${appUrl}/api/public/track/${log.id}.png" width="1" height="1" alt="" />`

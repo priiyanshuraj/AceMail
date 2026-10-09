@@ -94,6 +94,7 @@ const contactRow = z.object({
   first_name: z.string().optional(),
   last_name: z.string().optional(),
   company: z.string().optional(),
+  custom_fields: z.record(z.string().max(64), z.string().max(2000)).optional(),
 });
 
 export const importContacts = createServerFn({ method: "POST" })
@@ -110,12 +111,30 @@ export const importContacts = createServerFn({ method: "POST" })
       first_name: c.first_name ?? "",
       last_name: c.last_name ?? "",
       company: c.company ?? "",
+      custom_fields: c.custom_fields ?? {},
     }));
     const { error } = await supabase
       .from("contacts")
-      .upsert(rows, { onConflict: "list_id,email", ignoreDuplicates: true });
+      .upsert(rows, { onConflict: "list_id,email", ignoreDuplicates: false });
     if (error) throw new Error(error.message);
     return { imported: rows.length };
+  });
+
+/** All custom field names used across the user's contacts (for mapping + template variables). */
+export const listCustomFieldKeys = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("contacts")
+      .select("custom_fields")
+      .neq("custom_fields", "{}")
+      .limit(2000);
+    if (error) throw new Error(error.message);
+    const keys = new Set<string>();
+    for (const r of data ?? []) {
+      for (const k of Object.keys((r.custom_fields as Record<string, unknown>) ?? {})) keys.add(k);
+    }
+    return [...keys].sort();
   });
 
 export const deleteContact = createServerFn({ method: "POST" })

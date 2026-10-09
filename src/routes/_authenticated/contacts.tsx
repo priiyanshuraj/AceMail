@@ -8,6 +8,7 @@ import {
   listContacts,
   importContacts,
   deleteContact,
+  listCustomFieldKeys,
 } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +23,43 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Upload, Trash2, Users } from "lucide-react";
+import { Plus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+
+function slug(s: string) {
+  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 64);
+}
+
+/** Minimal quote-aware CSV parser (comma or tab). */
+function parseCsv(text: string): string[][] {
+  const out: string[][] = [];
+  if (!text.trim()) return out;
+  const first = text.split("\n")[0] ?? "";
+  const delim = first.includes("\t") && !first.includes(",") ? "\t" : ",";
+  let row: string[] = [];
+  let cur = "";
+  let q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"' && text[i + 1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') q = false;
+      else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === delim) { row.push(cur); cur = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(cur); cur = "";
+      if (row.some((c) => c.trim())) out.push(row);
+      row = [];
+    } else cur += ch;
+  }
+  row.push(cur);
+  if (row.some((c) => c.trim())) out.push(row);
+  return out;
+}
 
 const listsQuery = queryOptions({
   queryKey: ["contact-lists"],
@@ -72,31 +107,93 @@ function ContactsPage() {
     setContacts(await listContacts({ data: { listId: id } }));
   };
 
+  const [customKeys, setCustomKeys] = useState<string[]>([]);
+  const [mapping, setMapping] = useState<string[]>([]);
+  const [newFieldCol, setNewFieldCol] = useState<number | null>(null);
+  const [newFieldName, setNewFieldName] = useState("");
+
+  const rows = parseCsv(csvText);
+  const headers = rows[0] ?? [];
+  const dataRows = rows.slice(1);
+
+  const autoMap = (hdrs: string[], keys: string[]) =>
+    hdrs.map((h) => {
+      const n = slug(h);
+      if (/^e?_?mail(_address)?$/.test(n)) return "email";
+      if (["first_name", "firstname", "first"].includes(n)) return "first_name";
+      if (["last_name", "lastname", "last", "surname"].includes(n)) return "last_name";
+      if (["company", "company_name", "organization", "organisation"].includes(n)) return "company";
+      if (keys.includes(n)) return `custom:${n}`;
+      return n ? `custom:${n}` : "skip";
+    });
+
+  const loadCsv = async (text: string) => {
+    setCsvText(text);
+    const keys = await listCustomFieldKeys().catch(() => [] as string[]);
+    const hdrs = parseCsv(text)[0] ?? [];
+    const mapped = autoMap(hdrs, keys);
+    setCustomKeys([...new Set([...keys, ...mapped.filter((m) => m.startsWith("custom:")).map((m) => m.slice(7))])].sort());
+    setMapping(mapped);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => setCsvText(String(reader.result ?? ""));
+    reader.onload = () => void loadCsv(String(reader.result ?? ""));
     reader.readAsText(file);
     e.target.value = "";
   };
 
-  const handleImport = async () => {
-    if (!selectedList) return;
-    const lines = csvText.split("\n").map((l) => l.trim()).filter(Boolean);
-    const parsed = lines
-      .map((line) => {
-        const [email, first_name, last_name, company] = line.split(/[,\t]/).map((s) => s?.trim() ?? "");
-        return { email, first_name, last_name, company };
-      })
-      .filter((r) => r.email?.includes("@"));
-    if (parsed.length === 0) {
-      toast.error("No valid emails found. Format: email, first name, last name, company");
+  const setMap = (i: number, v: string) => {
+    if (v === "__new") {
+      setNewFieldCol(i);
+      setNewFieldName(slug(headers[i] ?? ""));
       return;
     }
-    const result = await importContacts({ data: { listId: selectedList, contacts: parsed } });
-    toast.success(`Imported ${result.imported} contacts`);
+    setMapping((m) => m.map((x, j) => (j === i ? v : x)));
+  };
+
+  const confirmNewField = () => {
+    const key = slug(newFieldName);
+    if (!key || newFieldCol === null) return;
+    setCustomKeys((k) => [...new Set([...k, key])].sort());
+    setMapping((m) => m.map((x, j) => (j === newFieldCol ? `custom:${key}` : x)));
+    setNewFieldCol(null);
+  };
+
+  const handleImport = async () => {
+    if (!selectedList) return;
+    const emailCol = mapping.indexOf("email");
+    if (emailCol < 0) {
+      toast.error("Map one column to Email");
+      return;
+    }
+    const parsed = dataRows
+      .map((r) => {
+        const c: { email: string; first_name?: string; last_name?: string; company?: string; custom_fields: Record<string, string> } = { email: "", custom_fields: {} };
+        mapping.forEach((m, i) => {
+          const val = (r[i] ?? "").trim();
+          if (m === "skip" || !val) return;
+          if (m.startsWith("custom:")) c.custom_fields[m.slice(7)] = val;
+          else (c as unknown as Record<string, string>)[m] = val;
+        });
+        return c;
+      })
+      .filter((r) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email));
+    if (parsed.length === 0) {
+      toast.error("No valid emails found");
+      return;
+    }
+    try {
+      const result = await importContacts({ data: { listId: selectedList, contacts: parsed } });
+      toast.success(`Imported ${result.imported} contacts`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Import failed");
+      return;
+    }
     setCsvText("");
+    setMapping([]);
     setImportDialogOpen(false);
     setContacts(await listContacts({ data: { listId: selectedList } }));
     refresh();
@@ -193,30 +290,73 @@ function ContactsPage() {
                       <Upload className="mr-2 h-4 w-4" /> Import CSV
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-2xl">
                     <DialogHeader>
                       <DialogTitle>Import contacts</DialogTitle>
                       <DialogDescription>
-                        Upload a CSV file or paste contacts — one per line: email, first name, last name, company
+                        Upload a CSV with a header row. Map each column to a field — any extra column can become a custom field you use in templates as {"{{field_name}}"}.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2">
                       <Label htmlFor="csv-file">CSV file</Label>
-                      <Input
-                        id="csv-file"
-                        type="file"
-                        accept=".csv,text/csv,text/plain"
-                        onChange={handleFileUpload}
-                      />
+                      <Input id="csv-file" type="file" accept=".csv,text/csv,text/plain" onChange={handleFileUpload} />
                     </div>
-                    <Textarea
-                      rows={8}
-                      value={csvText}
-                      onChange={(e) => setCsvText(e.target.value)}
-                      placeholder={"jane@acme.com, Jane, Doe, Acme Inc\njohn@corp.io, John, Smith, Corp"}
-                    />
-                    <Button onClick={handleImport} className="w-full">
-                      Import
+                    {headers.length === 0 ? (
+                      <Textarea
+                        rows={6}
+                        value={csvText}
+                        onChange={(e) => void loadCsv(e.target.value)}
+                        placeholder={"…or paste CSV here\nemail,first_name,company,city\njane@acme.com,Jane,Acme Inc,Berlin"}
+                      />
+                    ) : (
+                      <div className="max-h-[45vh] space-y-2 overflow-y-auto rounded-md border p-3">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{dataRows.length} rows · {headers.length} columns</span>
+                          <button className="underline" onClick={() => { setCsvText(""); setMapping([]); }}>
+                            Clear
+                          </button>
+                        </div>
+                        {headers.map((h, i) => (
+                          <div key={i} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">{h || `Column ${i + 1}`}</p>
+                              <p className="truncate text-xs text-muted-foreground">{dataRows[0]?.[i] || "—"}</p>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                            {newFieldCol === i ? (
+                              <div className="flex gap-1">
+                                <Input
+                                  autoFocus
+                                  value={newFieldName}
+                                  onChange={(e) => setNewFieldName(e.target.value)}
+                                  onKeyDown={(e) => e.key === "Enter" && confirmNewField()}
+                                  placeholder="field_name"
+                                  className="h-9"
+                                />
+                                <Button size="sm" onClick={confirmNewField}>Add</Button>
+                              </div>
+                            ) : (
+                              <Select value={mapping[i] ?? "skip"} onValueChange={(v) => setMap(i, v)}>
+                                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="email">Email</SelectItem>
+                                  <SelectItem value="first_name">First name</SelectItem>
+                                  <SelectItem value="last_name">Last name</SelectItem>
+                                  <SelectItem value="company">Company</SelectItem>
+                                  {customKeys.map((k) => (
+                                    <SelectItem key={k} value={`custom:${k}`}>{`{{${k}}}`}</SelectItem>
+                                  ))}
+                                  <SelectItem value="__new">+ Create custom field…</SelectItem>
+                                  <SelectItem value="skip">Don't import</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <Button onClick={handleImport} className="w-full" disabled={headers.length === 0}>
+                      Import {dataRows.length > 0 ? `${dataRows.length} contacts` : ""}
                     </Button>
                   </DialogContent>
                 </Dialog>
