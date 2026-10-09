@@ -77,7 +77,7 @@ function AuthenticatedLayout() {
           </SidebarContent>
           <SidebarFooter className="border-t border-sidebar-border p-3">
             <p className="px-2 pb-1 font-serif text-xs italic leading-snug text-amber">
-              Design inspired by my favourite filmmaker, Wong Kar-wai.
+              Design inspired by my favourite filmmaker, Abbas Kiarostami.
             </p>
             <Button
               variant="ghost"
@@ -93,7 +93,7 @@ function AuthenticatedLayout() {
           <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-6 py-3 backdrop-blur-md">
             <SidebarTrigger />
             <p className="font-serif text-sm italic tracking-wide text-muted-foreground">
-              Every message, a <span className="neon-text not-italic font-semibold">midnight rendezvous</span> — send, track, repeat.
+              Every message, <span className="neon-text not-italic font-semibold">a road through the hills</span> — send, track, repeat.
             </p>
           </div>
           <div className="p-6">
