@@ -168,6 +168,7 @@ function MailboxCard({
 }) {
   const [form, setForm] = useState({
     from_name: box.from_name,
+    from_email: box.from_email,
     daily_limit: box.daily_limit,
     hourly_limit: box.hourly_limit,
     delay_seconds: box.delay_seconds,
@@ -251,6 +252,13 @@ function MailboxCard({
           <div className="space-y-1 md:col-span-2">
             <Label>Sender name</Label>
             <Input value={form.from_name} placeholder="Jane at Acme" onChange={(e) => setForm({ ...form, from_name: e.target.value })} />
+          </div>
+          <div className="space-y-1 md:col-span-2">
+            <Label>Sending address</Label>
+            <Input value={form.from_email} placeholder="you@yourdomain.com" onChange={(e) => setForm({ ...form, from_email: e.target.value })} />
+            <p className="text-xs text-muted-foreground">
+              Must be added as a "Send mail as" address in this Gmail account's settings, or Google will send from the Gmail address instead.
+            </p>
           </div>
           {num("daily_limit", "Emails per day")}
           {num("hourly_limit", "Emails per hour")}

@@ -148,6 +148,7 @@ export const updateMailbox = createServerFn({ method: "POST" })
       .object({
         id: z.string().uuid(),
         from_name: z.string().max(100),
+        from_email: z.string().email().max(200),
         daily_limit: z.number().int().min(1).max(2000),
         hourly_limit: z.number().int().min(1).max(500),
         delay_seconds: z.number().int().min(10).max(3600),
