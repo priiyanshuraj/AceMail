@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, AtSign } from "lucide-react";
+import logoUrl from "@/assets/acemail-logo.png";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -52,9 +53,7 @@ function AuthenticatedLayout() {
         <Sidebar>
           <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
-                <Mail className="h-4 w-4 text-sidebar-primary-foreground" />
-              </div>
+              <img src={logoUrl} alt="AceMail logo" className="h-8 w-8 rounded-lg" width={32} height={32} />
               <span className="text-lg font-semibold text-sidebar-foreground">AceMail</span>
             </div>
           </SidebarHeader>
