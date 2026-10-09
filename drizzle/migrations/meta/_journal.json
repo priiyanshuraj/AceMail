@@ -50,6 +50,13 @@
       "when": 1791578654917,
       "tag": "0006_app_user_connections",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791583829166,
+      "tag": "0007_create_access_requests",
+      "breakpoints": true
     }
   ]
 }
