@@ -28,6 +28,21 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     };
   });
 
+export const listOpenedEmails = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data, error } = await supabase
+      .from("email_logs")
+      .select("id, opened_at, sent_at, contacts(email, first_name, last_name, company), campaigns(name)")
+      .eq("user_id", userId)
+      .eq("status", "opened")
+      .order("opened_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
 // ---------- Contacts ----------
 
 export const listContactLists = createServerFn({ method: "GET" })
