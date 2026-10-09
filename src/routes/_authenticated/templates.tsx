@@ -47,6 +47,7 @@ function TemplatesPage() {
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
   const [previewContactId, setPreviewContactId] = useState<string>("sample");
+  const [sendingTest, setSendingTest] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const lastFieldRef = useRef<"subject" | "body">("body");
@@ -221,7 +222,7 @@ function TemplatesPage() {
                 </Select>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <div className="rounded-lg border bg-muted/50 p-4">
                 <p className="mb-2 border-b pb-2 text-sm font-semibold">
                   {preview(editing.subject ?? "") || "(no subject)"}
@@ -231,6 +232,34 @@ function TemplatesPage() {
                   <div className="mt-4 whitespace-pre-wrap border-t pt-3 text-sm text-muted-foreground">{preview(signature)}</div>
                 )}
               </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={sendingTest}
+                onClick={async () => {
+                  setSendingTest(true);
+                  try {
+                    const res = await sendTemplateTest({
+                      data: {
+                        subject: editing.subject ?? "",
+                        body: editing.body ?? "",
+                        attach_signature: !!editing.attach_signature,
+                      },
+                    });
+                    toast.success(`Test email sent to ${res.to}`);
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "Couldn't send the test email");
+                  } finally {
+                    setSendingTest(false);
+                  }
+                }}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {sendingTest ? "Sending…" : "Send test to myself"}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Sends from your default mailbox to your own address, with sample values for the variables.
+              </p>
             </CardContent>
           </Card>
         </div>
