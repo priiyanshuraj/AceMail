@@ -4,6 +4,7 @@ import { getDashboardStats } from "@/lib/acemail.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Megaphone, Users, Send, MailOpen, AlertCircle, TrendingUp, Inbox, AtSign, Mail, ArrowRight } from "lucide-react";
+import fieldAsset from "@/assets/kiarostami-field.jpg.asset.json";
 
 const statsQuery = queryOptions({
   queryKey: ["dashboard-stats"],
@@ -95,7 +96,14 @@ function Dashboard() {
           </CardContent>
         </Card>
         <Card className="relative overflow-hidden">
-          <CardContent className="flex h-full flex-col justify-center gap-4 p-6">
+          <img
+            src={fieldAsset.url}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-45"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card/95 via-card/55 to-card/15" />
+          <CardContent className="relative flex h-full flex-col justify-center gap-4 p-6">
             <span className="text-xs uppercase tracking-[0.4em] text-jade">The road so far</span>
             <blockquote className="font-serif text-xl italic leading-snug">
               "The road is long, and the wind is in the olive trees."
