@@ -3,50 +3,64 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const connectorSchema = z.enum(["google_sheets", "google_drive"]);
+
 export const getSheetsStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { getSheetsConnection } = await import("@/server/sheets.server");
-    const conn = await getSheetsConnection(context.userId);
-    return { connected: !!conn };
+    const { getConnection } = await import("@/server/sheets.server");
+    const [sheets, drive] = await Promise.all([
+      getConnection(context.userId, "google_sheets"),
+      getConnection(context.userId, "google_drive"),
+    ]);
+    return { connected: !!sheets, driveConnected: !!drive };
   });
 
 export const startSheetsConnect = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d) => z.object({ connector: connectorSchema.default("google_sheets") }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
     const { authorizeAppUserOAuth } = await import("@/integrations/lovable/appUserConnector");
-    const { GATEWAY_BASE_URL, SHEETS_CONNECTOR, SHEETS_SCOPES, getSheetsConnection } = await import("@/server/sheets.server");
-    const clientKey = process.env["GOOGLE_SHEETS_APP_USER_CONNECTOR_CLIENT_API_KEY"];
-    if (!clientKey) throw new Error("Google Sheets connection is not configured yet");
+    const { GATEWAY_BASE_URL, scopesFor, getConnection } = await import("@/server/sheets.server");
+    const clientKey =
+      data.connector === "google_drive"
+        ? process.env["GOOGLE_DRIVE_APP_USER_CONNECTOR_CLIENT_API_KEY"]
+        : process.env["GOOGLE_SHEETS_APP_USER_CONNECTOR_CLIENT_API_KEY"];
+    if (!clientKey) throw new Error("Google connection is not configured yet");
     const request = getRequest();
     if (!request) throw new Error("OAuth must start from an app request.");
     const url = new URL(request.url);
     const sandboxHost = url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : null;
     const returnUrl = new URL("/api/oauth/google/return", sandboxHost ? `https://${sandboxHost}` : url.origin).toString();
-    const existing = await getSheetsConnection(context.userId);
-    const appUserId = existing?.appUserId ?? `${context.userId}:sheets:${crypto.randomUUID()}`;
+    const existing = await getConnection(context.userId, data.connector);
+    const tag = data.connector === "google_drive" ? "drive" : "sheets";
+    const appUserId = existing?.appUserId ?? `${context.userId}:${tag}:${crypto.randomUUID()}`;
     const { authorizationUrl } = await authorizeAppUserOAuth({
       gatewayBaseUrl: GATEWAY_BASE_URL,
-      connectorId: SHEETS_CONNECTOR,
+      connectorId: data.connector,
       appUserId,
       clientAPIKey: clientKey,
       returnUrl,
       connectionAPIKey: existing?.key,
-      credentialsConfiguration: { scopes: SHEETS_SCOPES },
+      credentialsConfiguration: { scopes: scopesFor(data.connector) },
     });
     return { authorizationUrl, appUserId };
   });
 
 export const completeSheetsConnect = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ code: z.string().min(1), appUserId: z.string().min(1) }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({ code: z.string().min(1), appUserId: z.string().min(1), connector: connectorSchema.default("google_sheets") })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
-    if (!data.appUserId.startsWith(context.userId)) throw new Error("Invalid connection request");
+    if (!data.appUserId.startsWith(`${context.userId}:`)) throw new Error("Invalid connection request");
     const { exchangeAppUserOAuthCode } = await import("@/integrations/lovable/appUserConnector");
-    const { GATEWAY_BASE_URL, SHEETS_CONNECTOR, saveSheetsKey } = await import("@/server/sheets.server");
+    const { GATEWAY_BASE_URL, saveKey } = await import("@/server/sheets.server");
     const { connectionAPIKey, connectorId } = await exchangeAppUserOAuthCode(GATEWAY_BASE_URL, data.code);
-    if (connectorId !== SHEETS_CONNECTOR) throw new Error("Unexpected connector");
-    await saveSheetsKey(context.userId, connectionAPIKey, data.appUserId);
+    if (connectorId !== data.connector) throw new Error("Unexpected connector");
+    await saveKey(context.userId, data.connector, connectionAPIKey, data.appUserId);
     return { ok: true };
   });
 
@@ -61,20 +75,22 @@ export const listMySpreadsheets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ search: z.string().max(200).optional() }).parse(d ?? {}))
   .handler(async ({ data, context }) => {
-    const { sheetsCall, SheetsReconnectError } = await import("@/server/sheets.server");
-    const key = await requireKey(context.userId);
+    const { googleCall, getConnection, SheetsReconnectError } = await import("@/server/sheets.server");
+    const drive = await getConnection(context.userId, "google_drive");
+    if (!drive) return { files: [], needsDrive: true, error: null as string | null };
     let q = "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
     const search = data.search?.trim();
-    if (search) q += ` and name contains '${search.replace(/'/g, "\\'")}'`;
+    if (search) q += ` and name contains '${search.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
     try {
-      const r = await sheetsCall<{ files?: { id: string; name: string; modifiedTime?: string }[] }>(
-        key,
+      const r = await googleCall<{ files?: { id: string; name: string; modifiedTime?: string }[] }>(
+        "google_drive",
+        drive.key,
         `/drive/v3/files?q=${encodeURIComponent(q)}&orderBy=modifiedTime%20desc&pageSize=100&fields=files(id,name,modifiedTime)`,
       );
-      return { files: r.files ?? [], reconnect: false, error: null as string | null };
+      return { files: r.files ?? [], needsDrive: false, error: null as string | null };
     } catch (e) {
-      if (e instanceof SheetsReconnectError) return { files: [], reconnect: true, error: null };
-      return { files: [], reconnect: false, error: e instanceof Error ? e.message : "Failed" };
+      if (e instanceof SheetsReconnectError) return { files: [], needsDrive: true, error: null };
+      return { files: [], needsDrive: false, error: e instanceof Error ? e.message : "Failed" };
     }
   });
 
