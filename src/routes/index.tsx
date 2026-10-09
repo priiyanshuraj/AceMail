@@ -137,6 +137,33 @@ function Landing() {
               <a href="#features">See features</a>
             </Button>
           </div>
+
+          <div className="mx-auto mt-12 max-w-md rounded-xl border bg-card/80 p-6 backdrop-blur">
+            <p className="text-xs uppercase tracking-[0.3em] text-jade">Early access</p>
+            <h2 className="mt-2 text-xl font-semibold">AceMail is in testing</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Leave your email and we'll invite you as soon as a seat opens up.
+            </p>
+            {requested ? (
+              <p className="mt-4 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-accent-foreground">
+                You're on the list — we'll be in touch soon.
+              </p>
+            ) : (
+              <form onSubmit={handleRequestAccess} className="mt-4 flex gap-2">
+                <Input
+                  type="email"
+                  required
+                  value={accessEmail}
+                  onChange={(e) => setAccessEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={requesting}>
+                  {requesting ? "Sending…" : "Request access"}
+                </Button>
+              </form>
+            )}
+          </div>
         </div>
       </section>
 
