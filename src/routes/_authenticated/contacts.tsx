@@ -25,7 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
+import { Plus, Minus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { GoogleSheetImport } from "@/components/GoogleSheetImport";
 
@@ -110,8 +110,21 @@ function ContactsPage() {
 
   const [customKeys, setCustomKeys] = useState<string[]>([]);
   const [mapping, setMapping] = useState<string[]>([]);
+  const [excluded, setExcluded] = useState<Set<number>>(new Set());
   const [newFieldCol, setNewFieldCol] = useState<number | null>(null);
   const [newFieldName, setNewFieldName] = useState("");
+
+  const excludeCol = (i: number) => {
+    setMapping((m) => m.map((x, j) => (j === i ? "skip" : x)));
+    setExcluded((s) => new Set(s).add(i));
+  };
+  const includeCol = (i: number) => {
+    setExcluded((s) => {
+      const n = new Set(s);
+      n.delete(i);
+      return n;
+    });
+  };
 
   const rows = parseCsv(csvText);
   const headers = rows[0] ?? [];
