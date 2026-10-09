@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Mail, Megaphone, Users, BarChart3, Clock, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 import logoUrl from "@/assets/acemail-logo.png";
 import roadAsset from "@/assets/kiarostami-road.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
