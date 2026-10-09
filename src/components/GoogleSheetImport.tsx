@@ -15,7 +15,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FileSpreadsheet, Loader2, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 
-function waitForOAuth(popup: Window) {
+type Connector = "google_sheets" | "google_drive";
+
+function waitForOAuth(popup: Window, connector: Connector) {
   return new Promise<string | null>((resolve, reject) => {
     const cleanup = () => {
       window.removeEventListener("message", onMessage);
@@ -26,7 +28,7 @@ function waitForOAuth(popup: Window) {
       if (
         event.origin !== window.location.origin ||
         event.source !== popup ||
-        event.data?.connectorId !== "google_sheets" ||
+        event.data?.connectorId !== connector ||
         (type !== "appUserConnectorOAuthComplete" && type !== "appUserConnectorOAuthFailed")
       )
         return;
@@ -56,6 +58,7 @@ type DriveFile = { id: string; name: string; modifiedTime?: string };
 
 export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => void }) {
   const [connected, setConnected] = useState<boolean | null>(null);
+  const [needsDrive, setNeedsDrive] = useState(false);
   const [busy, setBusy] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [files, setFiles] = useState<DriveFile[]>([]);
@@ -72,12 +75,11 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
     setListLoading(true);
     try {
       const r = await listMySpreadsheets({ data: { search: q } });
-      if (r.reconnect) {
-        setConnected(false);
-        return;
-      }
+      setNeedsDrive(r.needsDrive);
       setFiles(r.files);
       setListError(r.error);
+    } catch (e) {
+      setListError(e instanceof Error ? e.message : "Failed");
     } finally {
       setListLoading(false);
     }
@@ -85,28 +87,51 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
 
   useEffect(() => {
     getSheetsStatus()
-      .then((s) => setConnected(s.connected))
+      .then((s) => {
+        setConnected(s.connected);
+        setNeedsDrive(!s.driveConnected);
+      })
       .catch(() => setConnected(false));
   }, []);
 
-  const connect = async () => {
-    const popup = window.open("", "acemail-sheets", "width=600,height=720");
-    if (!popup) { toast.error("Popup blocked. Allow popups and try again."); return; }
-    setBusy(true);
+  const runOAuth = async (connector: Connector) => {
+    const popup = window.open("", `acemail-${connector}`, "width=600,height=720");
+    if (!popup) throw new Error("Popup blocked. Allow popups and try again.");
     try {
-      const res = await startSheetsConnect();
-      const done = waitForOAuth(popup);
+      const res = await startSheetsConnect({ data: { connector } });
+      const done = waitForOAuth(popup, connector);
       popup.location.href = res.authorizationUrl;
       const code = await done;
       if (!code) throw new Error("Google did not grant ongoing access. Please try again.");
-      await completeSheetsConnect({ data: { code, appUserId: res.appUserId } });
-      setConnected(true);
-      setListError(null);
-      toast.success("Google Sheets connected");
-      setPickerOpen(true);
-      await loadFiles();
+      await completeSheetsConnect({ data: { code, appUserId: res.appUserId, connector } });
     } catch (e) {
       popup.close();
+      throw e;
+    }
+  };
+
+  const connect = async () => {
+    setBusy(true);
+    try {
+      await runOAuth("google_sheets");
+      setConnected(true);
+      toast.success("Google Sheets connected");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Connection failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const connectDrive = async () => {
+    setBusy(true);
+    try {
+      await runOAuth("google_drive");
+      setNeedsDrive(false);
+      setListError(null);
+      toast.success("Google Drive connected");
+      await loadFiles();
+    } catch (e) {
       toast.error(e instanceof Error ? e.message : "Connection failed");
     } finally {
       setBusy(false);
@@ -116,7 +141,7 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
   const openPicker = async () => {
     setPickerOpen(true);
     setSearch("");
-    await loadFiles();
+    if (!needsDrive) await loadFiles();
   };
 
   const pickSheet = async (id: string, name?: string) => {
