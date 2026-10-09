@@ -130,7 +130,7 @@ function Landing() {
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
         <p>AceMail — open-source email automation, rebuilt for the modern web.</p>
-        <p className="mt-2 font-serif italic text-amber">Design inspired by my favourite filmmaker, Abbas Kiarostami.</p>
+        <p className="mt-2 font-serif italic text-amber">"Life goes on." — Abbas Kiarostami</p>
         <p className="mt-2 flex justify-center gap-4">
           <Link to="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
