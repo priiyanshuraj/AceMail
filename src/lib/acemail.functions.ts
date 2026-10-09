@@ -238,6 +238,54 @@ export const saveSignature = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const sendTemplateTest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        subject: z.string().max(500),
+        body: z.string().max(20000),
+        attach_signature: z.boolean().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: box } = await supabase
+      .from("email_configurations")
+      .select("id, provider, from_email, from_name")
+      .eq("user_id", userId)
+      .eq("provider", "gmail")
+      .order("is_default", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!box) throw new Error("Connect a Gmail mailbox first (Mailboxes page)");
+    const { getMailboxKey, gmailSend } = await import("@/server/gmail.server");
+    const key = await getMailboxKey(box.id);
+    if (!key) throw new Error("Mailbox needs to be reconnected");
+    let signature = "";
+    if (data.attach_signature) {
+      const { data: sig } = await supabase.from("user_signatures").select("signature").eq("user_id", userId).maybeSingle();
+      signature = sig?.signature ?? "";
+    }
+    const render = (t: string) =>
+      t
+        .replaceAll("{{first_name}}", "Jane")
+        .replaceAll("{{last_name}}", "Doe")
+        .replaceAll("{{company}}", "Acme Inc")
+        .replaceAll("{{email}}", "jane@acme.com")
+        .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => `[${k}]`);
+    const body = render(data.body) + (signature ? `\n\n${render(signature)}` : "");
+    await gmailSend(key, {
+      from: box.from_email,
+      fromName: box.from_name,
+      to: box.from_email,
+      subject: `[Test] ${render(data.subject)}`,
+      html: body.replace(/\n/g, "<br />"),
+    });
+    return { ok: true, to: box.from_email };
+  });
+
 export const deleteTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
