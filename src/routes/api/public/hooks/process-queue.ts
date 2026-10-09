@@ -110,7 +110,6 @@ async function processQueue() {
       auth: { user: config.smtp_username, pass: config.smtp_password },
     });
 
-    const baseUrl = process.env["VITE_SUPABASE_URL"] ? "" : ""; // tracking pixel uses absolute app URL
     const appUrl = process.env["APP_URL"] ?? "";
 
     for (const log of logs.slice(0, remaining)) {

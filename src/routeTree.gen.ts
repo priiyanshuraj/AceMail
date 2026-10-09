@@ -12,7 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticated/contacts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
+import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
+import { Route as ApiPublicTrackLogIdPngRouteImport } from './routes/api/public/track/$logId.png'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,42 +32,99 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedContactsRoute = AuthenticatedContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicHooksProcessQueueRoute =
+  ApiPublicHooksProcessQueueRouteImport.update({
+    id: '/api/public/hooks/process-queue',
+    path: '/api/public/hooks/process-queue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicTrackLogIdPngRoute = ApiPublicTrackLogIdPngRouteImport.update({
+  id: '/api/public/track/$logId/png',
+  path: '/api/public/track/$logId/png',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/contacts': typeof AuthenticatedContactsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/templates': typeof AuthenticatedTemplatesRoute
+  '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/contacts': typeof AuthenticatedContactsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/templates': typeof AuthenticatedTemplatesRoute
+  '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/contacts': typeof AuthenticatedContactsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
+  '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/contacts'
+    | '/dashboard'
+    | '/templates'
+    | '/api/public/hooks/process-queue'
+    | '/api/public/track/$logId/png'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard'
+  to:
+    | '/'
+    | '/auth'
+    | '/contacts'
+    | '/dashboard'
+    | '/templates'
+    | '/api/public/hooks/process-queue'
+    | '/api/public/track/$logId/png'
   id:
-    '__root__' | '/' | '/_authenticated' | '/auth' | '/_authenticated/dashboard'
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/contacts'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/templates'
+    | '/api/public/hooks/process-queue'
+    | '/api/public/track/$logId/png'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
+  ApiPublicTrackLogIdPngRoute: typeof ApiPublicTrackLogIdPngRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -89,6 +150,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/contacts': {
+      id: '/_authenticated/contacts'
+      path: '/contacts'
+      fullPath: '/contacts'
+      preLoaderRoute: typeof AuthenticatedContactsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -96,15 +164,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/templates': {
+      id: '/_authenticated/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/hooks/process-queue': {
+      id: '/api/public/hooks/process-queue'
+      path: '/api/public/hooks/process-queue'
+      fullPath: '/api/public/hooks/process-queue'
+      preLoaderRoute: typeof ApiPublicHooksProcessQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/track/$logId/png': {
+      id: '/api/public/track/$logId/png'
+      path: '/api/public/track/$logId/png'
+      fullPath: '/api/public/track/$logId/png'
+      preLoaderRoute: typeof ApiPublicTrackLogIdPngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedContactsRoute: typeof AuthenticatedContactsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedContactsRoute: AuthenticatedContactsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -114,6 +207,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
+  ApiPublicTrackLogIdPngRoute: ApiPublicTrackLogIdPngRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
