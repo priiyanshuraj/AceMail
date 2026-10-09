@@ -339,6 +339,7 @@ function ContactsPage() {
                               <Select value={mapping[i] ?? "skip"} onValueChange={(v) => setMap(i, v)}>
                                 <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                                 <SelectContent>
+                                  <SelectItem value="skip">Don't import</SelectItem>
                                   <SelectItem value="email">Email</SelectItem>
                                   <SelectItem value="first_name">First name</SelectItem>
                                   <SelectItem value="last_name">Last name</SelectItem>
@@ -347,7 +348,6 @@ function ContactsPage() {
                                     <SelectItem key={k} value={`custom:${k}`}>{`{{${k}}}`}</SelectItem>
                                   ))}
                                   <SelectItem value="__new">+ Create custom field…</SelectItem>
-                                  <SelectItem value="skip">Don't import</SelectItem>
                                 </SelectContent>
                               </Select>
                             )}
