@@ -70,10 +70,10 @@ function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <img src={logoUrl} alt="AceMail logo" className="h-9 w-9 rounded-lg" width={36} height={36} />
           <span className="text-xl font-semibold">AceMail</span>
-        </div>
+        </Link>
         <div className="flex gap-2">
           <Button variant="ghost" asChild>
             <Link to="/auth">Sign in</Link>
