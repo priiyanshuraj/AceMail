@@ -25,7 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
+import { Plus, Minus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { GoogleSheetImport } from "@/components/GoogleSheetImport";
 
@@ -110,8 +110,21 @@ function ContactsPage() {
 
   const [customKeys, setCustomKeys] = useState<string[]>([]);
   const [mapping, setMapping] = useState<string[]>([]);
+  const [excluded, setExcluded] = useState<Set<number>>(new Set());
   const [newFieldCol, setNewFieldCol] = useState<number | null>(null);
   const [newFieldName, setNewFieldName] = useState("");
+
+  const excludeCol = (i: number) => {
+    setMapping((m) => m.map((x, j) => (j === i ? "skip" : x)));
+    setExcluded((s) => new Set(s).add(i));
+  };
+  const includeCol = (i: number) => {
+    setExcluded((s) => {
+      const n = new Set(s);
+      n.delete(i);
+      return n;
+    });
+  };
 
   const rows = parseCsv(csvText);
   const headers = rows[0] ?? [];
@@ -130,6 +143,7 @@ function ContactsPage() {
 
   const loadCsv = async (text: string) => {
     setCsvText(text);
+    setExcluded(new Set());
     const keys = await listCustomFieldKeys().catch(() => [] as string[]);
     const hdrs = parseCsv(text)[0] ?? [];
     const mapped = autoMap(hdrs, keys);
@@ -322,18 +336,25 @@ function ContactsPage() {
                       <div className="max-h-[45vh] space-y-2 overflow-y-auto rounded-md border p-3">
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span>{dataRows.length} rows · {headers.length} columns</span>
-                          <button className="underline" onClick={() => { setCsvText(""); setMapping([]); }}>
+                          <button className="underline" onClick={() => { setCsvText(""); setMapping([]); setExcluded(new Set()); }}>
                             Clear
                           </button>
                         </div>
                         {headers.map((h, i) => (
-                          <div key={i} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                          <div key={i} className={`grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2 ${excluded.has(i) ? "opacity-50" : ""}`}>
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium">{h || `Column ${i + 1}`}</p>
                               <p className="truncate text-xs text-muted-foreground">{dataRows[0]?.[i] || "—"}</p>
                             </div>
                             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                            {newFieldCol === i ? (
+                            {excluded.has(i) ? (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs text-muted-foreground">Not included</span>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Include column ${h || i + 1}`} onClick={() => includeCol(i)}>
+                                  <Plus className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ) : newFieldCol === i ? (
                               <div className="flex gap-1">
                                 <Input
                                   autoFocus
@@ -361,6 +382,12 @@ function ContactsPage() {
                                 </SelectContent>
                               </Select>
                             )}
+                            {!excluded.has(i) && newFieldCol !== i && (
+                              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Exclude column ${h || i + 1}`} onClick={() => excludeCol(i)}>
+                                <Minus className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            )}
+                            {(excluded.has(i) || newFieldCol === i) && <span className="w-7" />}
                           </div>
                         ))}
                       </div>
