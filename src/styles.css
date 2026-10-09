@@ -67,9 +67,9 @@
   --primary: oklch(0.52 0.11 50);
   --primary-foreground: oklch(0.97 0.015 95);
   --secondary: oklch(0.9 0.03 110);
-  --secondary-foreground: oklch(0.4 0.05 120);
+  --secondary-foreground: oklch(0.36 0.05 120);
   --muted: oklch(0.92 0.02 95);
-  --muted-foreground: oklch(0.52 0.03 80);
+  --muted-foreground: oklch(0.44 0.035 78);
   --accent: oklch(0.88 0.045 115);
   --accent-foreground: oklch(0.38 0.06 125);
   --destructive: oklch(0.55 0.18 30);
@@ -101,7 +101,7 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { color-scheme: light; }
+  html { color-scheme: light; font-size: 18px; }
   body {
     color: var(--color-foreground);
     font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
