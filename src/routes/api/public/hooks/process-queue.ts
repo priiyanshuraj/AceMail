@@ -57,7 +57,7 @@ async function processQueue() {
   const { data: due, error } = await supabaseAdmin
     .from("email_logs")
     .select(
-      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body, attach_signature))"
+      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, timezone, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body, attach_signature))" send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body, attach_signature))"
     )
     .eq("status", "queued")
     .eq("campaigns.status", "running")
@@ -84,6 +84,7 @@ async function processQueue() {
     if (!first) continue;
     const campaign = first.campaigns as unknown as {
       status: string;
+      timezone: string | null;
       send_window_start: string | null;
       send_window_end: string | null;
       send_days: number[];
@@ -110,12 +111,13 @@ async function processQueue() {
     const config = campaign.email_configurations;
     if (!config) continue;
 
-    // Send window / day checks
-    if (!campaign.send_days.includes(dayOfWeek)) continue;
+    // Send window / day checks in the campaign's own time zone
+    const local = localParts(now, campaign.timezone || "UTC") ?? { day: dayOfWeek, minutes: minutesNow };
+    if (!campaign.send_days.includes(local.day)) continue;
     if (campaign.send_window_start && campaign.send_window_end) {
       const [sh = 0, sm = 0] = campaign.send_window_start.split(":").map(Number);
       const [eh = 23, em = 59] = campaign.send_window_end.split(":").map(Number);
-      if (minutesNow < sh * 60 + sm || minutesNow > eh * 60 + em) continue;
+      if (local.minutes < sh * 60 + sm || local.minutes > eh * 60 + em) continue;
     }
 
     if (config.status === "reconnect") continue;
