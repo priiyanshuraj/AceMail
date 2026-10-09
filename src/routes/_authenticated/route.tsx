@@ -76,6 +76,9 @@ function AuthenticatedLayout() {
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="border-t border-sidebar-border p-3">
+            <p className="px-2 pb-1 font-serif text-xs italic leading-snug text-amber">
+              Design inspired by my favourite filmmaker, Wong Kar-wai.
+            </p>
             <Button
               variant="ghost"
               className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"

@@ -3,7 +3,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getDashboardStats } from "@/lib/acemail.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Megaphone, Users, Send, MailOpen, AlertCircle, TrendingUp } from "lucide-react";
+import { Megaphone, Users, Send, MailOpen, AlertCircle, TrendingUp, Inbox, AtSign, Mail, ArrowRight } from "lucide-react";
 
 const statsQuery = queryOptions({
   queryKey: ["dashboard-stats"],
@@ -63,6 +63,50 @@ function Dashboard() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-xl">Quick actions</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-2">
+            {([
+              { to: "/campaigns", label: "Launch a campaign", desc: "Build a multi-step sequence", icon: Megaphone },
+              { to: "/contacts", label: "Import contacts", desc: "CSV upload or Google Sheets", icon: Users },
+              { to: "/templates", label: "Write a template", desc: "Personalize with variables", icon: Mail },
+              { to: "/inbox", label: "Check replies", desc: "Your unified inbox", icon: Inbox },
+              { to: "/mailboxes", label: "Manage mailboxes", desc: "Limits, warmup, health", icon: AtSign },
+              { to: "/opens", label: "See who opened", desc: "Every tracked open", icon: MailOpen },
+            ] as const).map((a) => (
+              <Link
+                key={a.to + a.label}
+                to={a.to}
+                className="group flex items-center gap-3 rounded-md border bg-muted/40 p-3 transition-colors hover:border-primary/60 hover:bg-primary/10"
+              >
+                <a.icon className="h-5 w-5 text-amber" />
+                <div className="flex-1">
+                  <div className="text-sm font-semibold">{a.label}</div>
+                  <div className="text-xs text-muted-foreground">{a.desc}</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+        <Card className="relative overflow-hidden">
+          <CardContent className="flex h-full flex-col justify-center gap-4 p-6">
+            <span className="text-xs uppercase tracking-[0.4em] text-jade">Tonight's reel</span>
+            <blockquote className="font-serif text-xl italic leading-snug">
+              "If memories could be canned, would they also have expiry dates?"
+            </blockquote>
+            <p className="text-xs text-muted-foreground">— Chungking Express. Follow up before yours expire.</p>
+            <p className="text-sm">
+              Open rate: <span className="neon-text font-semibold">{stats.openRate}%</span> ·{" "}
+              {stats.sent} sent · {stats.failed} failed
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {stats.totalCampaigns === 0 && (
