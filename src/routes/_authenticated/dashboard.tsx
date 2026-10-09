@@ -69,12 +69,12 @@ function Dashboard() {
             <AlertCircle className="h-8 w-8 text-muted-foreground" />
             <h3 className="text-lg font-semibold">No campaigns yet</h3>
             <p className="max-w-md text-sm text-muted-foreground">
-              Get started in three steps: add an SMTP configuration in Settings, import a contact
+              Get started in three steps: connect your Gmail on the Mailboxes page, import a contact
               list, then create your first campaign.
             </p>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
-                <Link to="/settings">Add SMTP config</Link>
+                <Link to="/mailboxes">Connect Gmail</Link>
               </Button>
               <Button asChild>
                 <Link to="/campaigns">Create campaign</Link>

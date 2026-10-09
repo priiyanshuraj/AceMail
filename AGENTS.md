@@ -15,3 +15,5 @@
 - App server logic lives in `src/lib/acemail.functions.ts` behind `requireSupabaseAuth`; all tables are owner-scoped via RLS on `user_id`. Why: single place for data access, per-user isolation.
 - Email sending runs in the scheduled `/api/public/hooks/process-queue` route over the `email_logs` queue (replaces Celery). Why: no background workers on the edge runtime.
 - Open tracking uses the public `/api/public/track/$logId.png` pixel, which only flips a row to "opened". Why: email clients load it unauthenticated.
+- Sending mailboxes are Gmail accounts each user connects via the google_mail App User Connector; encrypted connection keys live in server-only `mailbox_credentials`, Gmail helpers in `src/server/gmail.server.ts`. Why: one-click mailbox connect without SMTP passwords.
+- Reply detection runs in the queue route before sending, writes matched replies to `inbox_messages` and cancels queued follow-ups for that contact. Why: auto-stop on reply and unified inbox.
