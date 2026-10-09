@@ -29,12 +29,12 @@ function Dashboard() {
   const { data: stats } = useSuspenseQuery(statsQuery);
 
   const cards = [
-    { label: "Active campaigns", value: stats.activeCampaigns, sub: `${stats.totalCampaigns} total`, icon: Megaphone },
-    { label: "Contacts", value: stats.totalContacts, sub: "across all lists", icon: Users },
-    { label: "Emails sent", value: stats.sent, sub: `${stats.failed} failed`, icon: Send },
-    { label: "Opens", value: stats.opened, sub: "tracked opens", icon: MailOpen },
-    { label: "Open rate", value: `${stats.openRate}%`, sub: "of sent emails", icon: TrendingUp },
-  ];
+    { label: "Active campaigns", value: stats.activeCampaigns, sub: `${stats.totalCampaigns} total`, icon: Megaphone, to: "/campaigns" },
+    { label: "Contacts", value: stats.totalContacts, sub: "across all lists", icon: Users, to: "/contacts" },
+    { label: "Emails sent", value: stats.sent, sub: `${stats.failed} failed`, icon: Send, to: "/campaigns" },
+    { label: "Opens", value: stats.opened, sub: "tracked opens", icon: MailOpen, to: "/opens" },
+    { label: "Open rate", value: `${stats.openRate}%`, sub: "of sent emails", icon: TrendingUp, to: "/opens" },
+  ] as const;
 
   return (
     <div className="space-y-6">
@@ -50,16 +50,18 @@ function Dashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (
-          <Card key={c.label}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{c.label}</CardTitle>
-              <c.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{c.value}</div>
-              <p className="text-xs text-muted-foreground">{c.sub}</p>
-            </CardContent>
-          </Card>
+          <Link key={c.label} to={c.to} className="block transition-transform hover:-translate-y-0.5">
+            <Card className="h-full transition-shadow hover:shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{c.label}</CardTitle>
+                <c.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{c.value}</div>
+                <p className="text-xs text-muted-foreground">{c.sub}</p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
