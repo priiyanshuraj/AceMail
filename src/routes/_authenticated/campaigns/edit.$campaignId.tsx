@@ -44,8 +44,8 @@ function EditCampaign() {
         list_id: c.list_id,
         config_id: c.config_id ?? "",
         send_days: c.send_days,
-        send_window_start: c.send_window_start ?? undefined,
-        send_window_end: c.send_window_end ?? undefined,
+        send_window_start: c.send_window_start ?? "",
+        send_window_end: c.send_window_end ?? "",
         timezone: c.timezone,
         steps: detail.steps.map((s) => ({
           id: s.id,
