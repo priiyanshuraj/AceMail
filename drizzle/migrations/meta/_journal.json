@@ -43,6 +43,13 @@
       "when": 1791576543623,
       "tag": "0005_campaign_timezone",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791578654917,
+      "tag": "0006_app_user_connections",
+      "breakpoints": true
     }
   ]
 }
