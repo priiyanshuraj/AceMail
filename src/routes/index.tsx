@@ -3,6 +3,10 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Mail, Megaphone, Users, BarChart3, Clock, ShieldCheck } from "lucide-react";
 import logoUrl from "@/assets/acemail-logo.png";
+import roadAsset from "@/assets/kiarostami-road.jpg.asset.json";
+import fieldAsset from "@/assets/kiarostami-field.jpg.asset.json";
+import poppiesAsset from "@/assets/kiarostami-poppies.jpg.asset.json";
+import hillsAsset from "@/assets/kiarostami-hills.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
@@ -84,22 +88,53 @@ function Landing() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 text-center">
-        <p className="mb-6 text-xs uppercase tracking-[0.5em] text-jade">Where the road winds</p>
-        <h1 className="mx-auto max-w-3xl text-5xl font-bold leading-tight md:text-6xl">
-          Cold email campaigns that <span className="neon-text">run themselves</span>
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-          AceMail schedules, personalizes, and tracks your outreach — multi-step sequences,
-          your own Gmail, and analytics that show exactly what's working.
-        </p>
-        <div className="mt-8 flex justify-center gap-3">
-          <Button size="lg" asChild>
-            <Link to="/auth">Start sending free</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <a href="#features">See features</a>
-          </Button>
+      <section className="relative overflow-hidden">
+        <img
+          src={roadAsset.url}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.18]"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
+        <div className="relative mx-auto max-w-6xl px-6 pb-20 pt-16 text-center">
+          <p className="mb-6 text-xs uppercase tracking-[0.5em] text-jade">Where the road winds</p>
+          <h1 className="mx-auto max-w-3xl text-5xl font-bold leading-tight md:text-6xl">
+            Cold email campaigns that <span className="neon-text">run themselves</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+            AceMail schedules, personalizes, and tracks your outreach — multi-step sequences,
+            your own Gmail, and analytics that show exactly what's working.
+          </p>
+          <div className="mt-8 flex justify-center gap-3">
+            <Button size="lg" asChild>
+              <Link to="/auth">Start sending free</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <a href="#features">See features</a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pb-20">
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            { src: fieldAsset.url, caption: "The wind will carry us", alt: "Golden sunrise over misty hills" },
+            { src: poppiesAsset.url, caption: "Where is the friend's house?", alt: "Red poppies against a bright sky" },
+            { src: hillsAsset.url, caption: "And life goes on", alt: "Mountains above a sea of clouds at dusk" },
+          ].map((img) => (
+            <figure key={img.caption} className="group overflow-hidden rounded-xl border shadow-sm">
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <figcaption className="bg-card px-4 py-3 font-serif text-sm italic text-muted-foreground">
+                {img.caption}
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </section>
 
