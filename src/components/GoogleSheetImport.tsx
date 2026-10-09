@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileSpreadsheet, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FileSpreadsheet, Loader2, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 
 function waitForOAuth(popup: Window) {
@@ -51,29 +52,40 @@ function extractId(input: string) {
   return /^[A-Za-z0-9_-]{20,}$/.test(input.trim()) ? input.trim() : null;
 }
 
+type DriveFile = { id: string; name: string; modifiedTime?: string };
+
 export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => void }) {
   const [connected, setConnected] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
-  const [files, setFiles] = useState<{ id: string; name: string }[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [files, setFiles] = useState<DriveFile[]>([]);
   const [listError, setListError] = useState<string | null>(null);
+  const [listLoading, setListLoading] = useState(false);
+  const [search, setSearch] = useState("");
   const [link, setLink] = useState("");
   const [sheetId, setSheetId] = useState<string | null>(null);
+  const [sheetName, setSheetName] = useState("");
   const [tabs, setTabs] = useState<string[]>([]);
   const [tab, setTab] = useState("");
 
-  const loadFiles = async () => {
-    const r = await listMySpreadsheets();
-    if (r.reconnect) return setConnected(false);
-    setFiles(r.files);
-    setListError(r.error);
+  const loadFiles = async (q?: string) => {
+    setListLoading(true);
+    try {
+      const r = await listMySpreadsheets({ data: { search: q } });
+      if (r.reconnect) {
+        setConnected(false);
+        return;
+      }
+      setFiles(r.files);
+      setListError(r.error);
+    } finally {
+      setListLoading(false);
+    }
   };
 
   useEffect(() => {
     getSheetsStatus()
-      .then((s) => {
-        setConnected(s.connected);
-        if (s.connected) void loadFiles();
-      })
+      .then((s) => setConnected(s.connected))
       .catch(() => setConnected(false));
   }, []);
 
@@ -89,7 +101,9 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
       if (!code) throw new Error("Google did not grant ongoing access. Please try again.");
       await completeSheetsConnect({ data: { code, appUserId: res.appUserId } });
       setConnected(true);
+      setListError(null);
       toast.success("Google Sheets connected");
+      setPickerOpen(true);
       await loadFiles();
     } catch (e) {
       popup.close();
@@ -99,13 +113,21 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
     }
   };
 
-  const pickSheet = async (id: string) => {
+  const openPicker = async () => {
+    setPickerOpen(true);
+    setSearch("");
+    await loadFiles();
+  };
+
+  const pickSheet = async (id: string, name?: string) => {
     setBusy(true);
     try {
       const r = await getSpreadsheetTabs({ data: { spreadsheetId: id } });
       setSheetId(id);
+      setSheetName(name ?? r.title ?? "");
       setTabs(r.tabs);
       setTab(r.tabs[0] ?? "");
+      setPickerOpen(false);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't open that sheet");
     } finally {
@@ -142,17 +164,18 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
       <Label className="flex items-center gap-2">
         <FileSpreadsheet className="h-4 w-4" /> Google Sheet
       </Label>
-      {files.length > 0 && (
-        <Select value={sheetId ?? ""} onValueChange={(v) => void pickSheet(v)}>
-          <SelectTrigger className="h-9"><SelectValue placeholder="Pick a sheet from your Drive" /></SelectTrigger>
-          <SelectContent>
-            {files.map((f) => (
-              <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <Button variant="outline" className="w-full" onClick={openPicker} disabled={busy}>
+        {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}
+        Browse your Drive
+      </Button>
+      {listError && (
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">Couldn't list your sheets — reconnect Google or paste a link.</p>
+          <Button size="sm" variant="ghost" onClick={connect} disabled={busy}>
+            <RefreshCw className="mr-1 h-3 w-3" /> Reconnect
+          </Button>
+        </div>
       )}
-      {listError && <p className="text-xs text-muted-foreground">Couldn't list your sheets — paste a link instead.</p>}
       <div className="flex gap-2">
         <Input
           value={link}
@@ -188,6 +211,68 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
           </Button>
         </div>
       )}
+      {sheetId && sheetName && (
+        <p className="text-xs text-muted-foreground">Selected: {sheetName}</p>
+      )}
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Pick a sheet from your Drive</DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search your sheets…"
+              className="h-9"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void loadFiles(search);
+              }}
+            />
+            <Button size="sm" variant="secondary" onClick={() => void loadFiles(search)} disabled={listLoading}>
+              {listLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            </Button>
+          </div>
+          <div className="max-h-80 overflow-y-auto rounded-md border">
+            {listLoading && files.length === 0 && (
+              <div className="flex items-center justify-center p-8 text-sm text-muted-foreground">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading your sheets…
+              </div>
+            )}
+            {!listLoading && files.length === 0 && !listError && (
+              <p className="p-8 text-center text-sm text-muted-foreground">No spreadsheets found.</p>
+            )}
+            {listError && (
+              <div className="space-y-2 p-8 text-center">
+                <p className="text-sm text-muted-foreground">Couldn't list your sheets.</p>
+                <Button size="sm" variant="outline" onClick={connect} disabled={busy}>
+                  <RefreshCw className="mr-1 h-3 w-3" /> Reconnect Google
+                </Button>
+              </div>
+            )}
+            {files.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className="flex w-full items-center gap-3 border-b px-3 py-2.5 text-left last:border-b-0 hover:bg-accent"
+                onClick={() => void pickSheet(f.id, f.name)}
+                disabled={busy}
+              >
+                <FileSpreadsheet className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{f.name}</span>
+                  {f.modifiedTime && (
+                    <span className="block text-xs text-muted-foreground">
+                      Edited {new Date(f.modifiedTime).toLocaleDateString()}
+                    </span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
