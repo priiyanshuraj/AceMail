@@ -125,6 +125,42 @@ function Dashboard() {
         </Card>
       </div>
 
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl">Recent campaigns</CardTitle>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/campaigns">
+              All campaigns <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {recent.length === 0 ? (
+            <p className="py-4 text-sm text-muted-foreground">
+              No campaigns yet — the road is waiting. Launch your first one and watch it carry your message down the hills.
+            </p>
+          ) : (
+            <ul className="divide-y">
+              {recent.map((c) => (
+                <li key={c.id} className="flex items-center gap-3 py-3">
+                  <Megaphone className="h-4 w-4 shrink-0 text-amber" />
+                  <div className="min-w-0 flex-1">
+                    <Link to="/campaigns" className="block truncate text-sm font-semibold hover:underline">
+                      {c.name}
+                    </Link>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {c.contact_lists?.name ?? "No list"} · {c.stats.sent} sent · {c.stats.opened} opened
+                      {c.stats.queued > 0 ? ` · ${c.stats.queued} queued` : ""}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="shrink-0 capitalize">{c.status}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
       {stats.totalCampaigns === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
