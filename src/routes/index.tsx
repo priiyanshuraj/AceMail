@@ -85,7 +85,7 @@ function Landing() {
       </header>
 
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 text-center">
-        <p className="mb-6 text-xs uppercase tracking-[0.5em] text-jade">In the mood for outreach</p>
+        <p className="mb-6 text-xs uppercase tracking-[0.5em] text-jade">Where the road winds</p>
         <h1 className="mx-auto max-w-3xl text-5xl font-bold leading-tight md:text-6xl">
           Cold email campaigns that <span className="neon-text">run themselves</span>
         </h1>
@@ -119,7 +119,7 @@ function Landing() {
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
         <p>AceMail — open-source email automation, rebuilt for the modern web.</p>
-        <p className="mt-2 font-serif italic text-amber">Design inspired by my favourite filmmaker, Wong Kar-wai.</p>
+        <p className="mt-2 font-serif italic text-amber">Design inspired by my favourite filmmaker, Abbas Kiarostami.</p>
         <p className="mt-2 flex justify-center gap-4">
           <Link to="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>

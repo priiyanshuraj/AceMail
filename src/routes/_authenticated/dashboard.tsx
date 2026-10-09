@@ -96,11 +96,11 @@ function Dashboard() {
         </Card>
         <Card className="relative overflow-hidden">
           <CardContent className="flex h-full flex-col justify-center gap-4 p-6">
-            <span className="text-xs uppercase tracking-[0.4em] text-jade">Tonight's reel</span>
+            <span className="text-xs uppercase tracking-[0.4em] text-jade">The road so far</span>
             <blockquote className="font-serif text-xl italic leading-snug">
-              "If memories could be canned, would they also have expiry dates?"
+              "The road is long, and the wind is in the olive trees."
             </blockquote>
-            <p className="text-xs text-muted-foreground">— Chungking Express. Follow up before yours expire.</p>
+            <p className="text-xs text-muted-foreground">— after The Wind Will Carry Us. Keep following the road.</p>
             <p className="text-sm">
               Open rate: <span className="neon-text font-semibold">{stats.openRate}%</span> ·{" "}
               {stats.sent} sent · {stats.failed} failed
