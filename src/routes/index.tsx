@@ -109,7 +109,11 @@ function Landing() {
       </section>
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        AceMail — open-source email automation, rebuilt for the modern web.
+        <p>AceMail — open-source email automation, rebuilt for the modern web.</p>
+        <p className="mt-2 flex justify-center gap-4">
+          <Link to="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
+          <Link to="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
+        </p>
       </footer>
     </div>
   );
