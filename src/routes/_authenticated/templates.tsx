@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,11 +46,40 @@ function TemplatesPage() {
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
   const [previewContactId, setPreviewContactId] = useState<string>("sample");
+  const subjectRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const lastFieldRef = useRef<"subject" | "body">("body");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
   const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
   const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
+
+  const insertVar = (v: string) => {
+    const isSubject = lastFieldRef.current === "subject";
+    const el = isSubject ? subjectRef.current : bodyRef.current;
+    const field = isSubject ? "subject" : "body";
+    const current = (editing?.[field] as string) ?? "";
+    let next = current + v;
+    let caret = next.length;
+    if (el) {
+      const start = el.selectionStart ?? current.length;
+      const end = el.selectionEnd ?? start;
+      next = current.slice(0, start) + v + current.slice(end);
+      caret = start + v.length;
+    }
+    setEditing({ ...editing, [field]: next });
+    requestAnimationFrame(() => {
+      if (el) {
+        el.focus();
+        try {
+          el.setSelectionRange(caret, caret);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  };
 
   const handleSave = async () => {
     if (!editing?.name) {
@@ -114,17 +143,21 @@ function TemplatesPage() {
               <div className="space-y-1">
                 <Label>Subject</Label>
                 <Input
+                  ref={subjectRef}
                   value={editing.subject ?? ""}
                   onChange={(e) => setEditing({ ...editing, subject: e.target.value })}
+                  onFocus={() => (lastFieldRef.current = "subject")}
                   placeholder="Quick question, {{first_name}}"
                 />
               </div>
               <div className="space-y-1">
                 <Label>Body</Label>
                 <Textarea
+                  ref={bodyRef}
                   rows={12}
                   value={editing.body ?? ""}
                   onChange={(e) => setEditing({ ...editing, body: e.target.value })}
+                  onFocus={() => (lastFieldRef.current = "body")}
                   placeholder={"Hi {{first_name}},\n\nI noticed {{company}} is…"}
                 />
               </div>
@@ -134,7 +167,11 @@ function TemplatesPage() {
                     key={v}
                     variant="secondary"
                     className="cursor-pointer"
-                    onClick={() => setEditing({ ...editing, body: (editing.body ?? "") + v })}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      insertVar(v);
+                    }}
+                    onMouseDown={(e) => e.preventDefault()}
                   >
                     {v}
                   </Badge>
