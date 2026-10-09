@@ -63,7 +63,9 @@ async function processQueue() {
   }
 
   for (const [campaignId, logs] of byCampaign) {
-    const campaign = logs[0].campaigns as unknown as {
+    const first = logs[0];
+    if (!first) continue;
+    const campaign = first.campaigns as unknown as {
       status: string;
       send_window_start: string | null;
       send_window_end: string | null;
@@ -86,8 +88,8 @@ async function processQueue() {
     // Send window / day checks
     if (!campaign.send_days.includes(dayOfWeek)) continue;
     if (campaign.send_window_start && campaign.send_window_end) {
-      const [sh, sm] = campaign.send_window_start.split(":").map(Number);
-      const [eh, em] = campaign.send_window_end.split(":").map(Number);
+      const [sh = 0, sm = 0] = campaign.send_window_start.split(":").map(Number);
+      const [eh = 23, em = 59] = campaign.send_window_end.split(":").map(Number);
       if (minutesNow < sh * 60 + sm || minutesNow > eh * 60 + em) continue;
     }
 
