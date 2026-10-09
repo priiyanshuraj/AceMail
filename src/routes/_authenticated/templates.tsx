@@ -70,13 +70,19 @@ function TemplatesPage() {
     toast.success("Template saved");
   };
 
+  const selectedContact = (previewContacts ?? []).find((c) => c.id === previewContactId) ?? null;
+
   const preview = (text: string) =>
     text
-      .replaceAll("{{first_name}}", "Jane")
-      .replaceAll("{{last_name}}", "Doe")
-      .replaceAll("{{company}}", "Acme Inc")
-      .replaceAll("{{email}}", "jane@acme.com")
-      .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => `[${k}]`);
+      .replaceAll("{{first_name}}", selectedContact?.first_name || "Jane")
+      .replaceAll("{{last_name}}", selectedContact?.last_name || "Doe")
+      .replaceAll("{{company}}", selectedContact?.company || "Acme Inc")
+      .replaceAll("{{email}}", selectedContact?.email || "jane@acme.com")
+      .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => {
+        const cf = selectedContact?.custom_fields as Record<string, unknown> | null | undefined;
+        const val = cf?.[k];
+        return val !== undefined && val !== null && val !== "" ? String(val) : `[${k}]`;
+      });
 
   return (
     <div className="space-y-6">
