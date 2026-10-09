@@ -57,16 +57,19 @@ async function requireKey(userId: string) {
   return conn.key;
 }
 
-export const listMySpreadsheets = createServerFn({ method: "GET" })
+export const listMySpreadsheets = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d) => z.object({ search: z.string().max(200).optional() }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
     const { sheetsCall, SheetsReconnectError } = await import("@/server/sheets.server");
     const key = await requireKey(context.userId);
-    const q = encodeURIComponent("mimeType='application/vnd.google-apps.spreadsheet' and trashed=false");
+    let q = "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+    const search = data.search?.trim();
+    if (search) q += ` and name contains '${search.replace(/'/g, "\\'")}'`;
     try {
       const r = await sheetsCall<{ files?: { id: string; name: string; modifiedTime?: string }[] }>(
         key,
-        `/drive/v3/files?q=${q}&orderBy=modifiedTime%20desc&pageSize=50&fields=files(id,name,modifiedTime)`,
+        `/drive/v3/files?q=${encodeURIComponent(q)}&orderBy=modifiedTime%20desc&pageSize=100&fields=files(id,name,modifiedTime)`,
       );
       return { files: r.files ?? [], reconnect: false, error: null as string | null };
     } catch (e) {
