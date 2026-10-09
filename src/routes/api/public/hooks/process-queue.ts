@@ -304,3 +304,22 @@ async function processQueue() {
 
   return { processed: due.length, sent, failed, replies };
 }
+
+function localParts(date: Date, timeZone: string): { day: number; minutes: number } | null {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(date);
+    const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+    const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(get("weekday"));
+    const minutes = Number(get("hour")) * 60 + Number(get("minute"));
+    if (day < 0 || Number.isNaN(minutes)) return null;
+    return { day, minutes };
+  } catch {
+    return null;
+  }
+}
