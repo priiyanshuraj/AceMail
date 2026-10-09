@@ -65,11 +65,36 @@ const features = [
 
 function Landing() {
   const navigate = useNavigate();
+  const [accessEmail, setAccessEmail] = useState("");
+  const [requesting, setRequesting] = useState(false);
+  const [requested, setRequested] = useState(false);
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
+
+  const handleRequestAccess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRequesting(true);
+    try {
+      const { error } = await supabase
+        .from("access_requests")
+        .insert({ email: accessEmail.trim().toLowerCase() });
+      if (error) {
+        if (error.code === "23505") {
+          setRequested(true);
+          return;
+        }
+        throw error;
+      }
+      setRequested(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't submit your request");
+    } finally {
+      setRequesting(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
