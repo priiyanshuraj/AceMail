@@ -46,11 +46,40 @@ function TemplatesPage() {
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
   const [previewContactId, setPreviewContactId] = useState<string>("sample");
+  const subjectRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const lastFieldRef = useRef<"subject" | "body">("body");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
   const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
   const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
+
+  const insertVar = (v: string) => {
+    const isSubject = lastFieldRef.current === "subject";
+    const el = isSubject ? subjectRef.current : bodyRef.current;
+    const field = isSubject ? "subject" : "body";
+    const current = (editing?.[field] as string) ?? "";
+    let next = current + v;
+    let caret = next.length;
+    if (el) {
+      const start = el.selectionStart ?? current.length;
+      const end = el.selectionEnd ?? start;
+      next = current.slice(0, start) + v + current.slice(end);
+      caret = start + v.length;
+    }
+    setEditing({ ...editing, [field]: next });
+    requestAnimationFrame(() => {
+      if (el) {
+        el.focus();
+        try {
+          el.setSelectionRange(caret, caret);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+  };
 
   const handleSave = async () => {
     if (!editing?.name) {
