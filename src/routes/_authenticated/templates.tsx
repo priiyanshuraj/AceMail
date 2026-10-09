@@ -153,9 +153,11 @@ function TemplatesPage() {
               <div className="space-y-1">
                 <Label>Body</Label>
                 <Textarea
+                  ref={bodyRef}
                   rows={12}
                   value={editing.body ?? ""}
                   onChange={(e) => setEditing({ ...editing, body: e.target.value })}
+                  onFocus={() => (lastFieldRef.current = "body")}
                   placeholder={"Hi {{first_name}},\n\nI noticed {{company}} is…"}
                 />
               </div>
@@ -165,7 +167,11 @@ function TemplatesPage() {
                     key={v}
                     variant="secondary"
                     className="cursor-pointer"
-                    onClick={() => setEditing({ ...editing, body: (editing.body ?? "") + v })}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      insertVar(v);
+                    }}
+                    onMouseDown={(e) => e.preventDefault()}
                   >
                     {v}
                   </Badge>
