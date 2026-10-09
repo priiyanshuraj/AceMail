@@ -8,6 +8,13 @@
       "when": 1791569522942,
       "tag": "0000_acemail_core_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791570276122,
+      "tag": "0001_enable_pg_cron_pg_net",
+      "breakpoints": true
     }
   ]
 }
