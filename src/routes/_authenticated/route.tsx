@@ -78,7 +78,7 @@ function AuthenticatedLayout() {
           </SidebarContent>
           <SidebarFooter className="border-t border-sidebar-border p-3">
             <p className="px-2 pb-1 font-serif text-xs italic leading-snug text-amber">
-              Design inspired by my favourite filmmaker, Abbas Kiarostami.
+              "Life goes on." — Abbas Kiarostami
             </p>
             <Button
               variant="ghost"
@@ -95,7 +95,7 @@ function AuthenticatedLayout() {
             src={hillsAsset.url}
             alt=""
             aria-hidden
-            className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-[0.07]"
+            className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-[0.14]"
           />
           <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-6 py-4 backdrop-blur-md">
             <SidebarTrigger />
