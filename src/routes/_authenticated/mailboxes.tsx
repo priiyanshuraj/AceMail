@@ -168,6 +168,7 @@ function MailboxCard({
 }) {
   const [form, setForm] = useState({
     from_name: box.from_name,
+    from_email: box.from_email,
     daily_limit: box.daily_limit,
     hourly_limit: box.hourly_limit,
     delay_seconds: box.delay_seconds,
