@@ -280,7 +280,7 @@ export const sendTemplateTest = createServerFn({ method: "POST" })
       from: box.from_email,
       fromName: box.from_name,
       to: box.from_email,
-      subject: `[Test] ${render(data.subject)}`,
+      subject: render(data.subject),
       html: body.replace(/\n/g, "<br />"),
     });
     return { ok: true, to: box.from_email };

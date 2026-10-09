@@ -218,7 +218,7 @@ export const sendTestEmail = createServerFn({ method: "POST" })
       from: box.from_email,
       fromName: box.from_name,
       to: box.from_email,
-      subject: `[Test] ${render(tpl.subject)}`,
+      subject: render(tpl.subject),
       html: render(tpl.body).replace(/\n/g, "<br />"),
     });
     return { ok: true, to: box.from_email };
