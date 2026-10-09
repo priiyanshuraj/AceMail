@@ -87,10 +87,10 @@ function AuthenticatedLayout() {
           </SidebarFooter>
         </Sidebar>
         <main className="flex-1 overflow-auto">
-          <div className="flex items-center gap-3 border-b bg-card px-6 py-3">
+          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-6 py-3 backdrop-blur-md">
             <SidebarTrigger />
-            <p className="text-sm font-medium text-muted-foreground">
-              Cold email that <span className="text-primary">runs itself</span> — send, track, repeat.
+            <p className="font-serif text-sm italic tracking-wide text-muted-foreground">
+              Every message, a <span className="neon-text not-italic font-semibold">midnight rendezvous</span> — send, track, repeat.
             </p>
           </div>
           <div className="p-6">
