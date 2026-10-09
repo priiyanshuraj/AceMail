@@ -4,9 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Mail, Megaphone, Users, BarChart3, Clock, ShieldCheck } from "lucide-react";
 import logoUrl from "@/assets/acemail-logo.png";
 import roadAsset from "@/assets/kiarostami-road.jpg.asset.json";
-import fieldAsset from "@/assets/kiarostami-field.jpg.asset.json";
-import poppiesAsset from "@/assets/kiarostami-poppies.jpg.asset.json";
-import hillsAsset from "@/assets/kiarostami-hills.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
@@ -116,27 +113,6 @@ function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            { src: fieldAsset.url, caption: "The wind will carry us", alt: "Golden sunrise over misty hills" },
-            { src: poppiesAsset.url, caption: "Where is the friend's house?", alt: "Red poppies against a bright sky" },
-            { src: hillsAsset.url, caption: "And life goes on", alt: "Mountains above a sea of clouds at dusk" },
-          ].map((img) => (
-            <figure key={img.caption} className="group overflow-hidden rounded-xl border shadow-sm">
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <figcaption className="bg-card px-4 py-3 font-serif text-sm italic text-muted-foreground">
-                {img.caption}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </section>
 
       <section id="features" className="mx-auto max-w-6xl px-6 pb-24">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
