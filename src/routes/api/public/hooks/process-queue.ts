@@ -193,7 +193,16 @@ async function processQueue() {
         : "";
 
       try {
-        const html = render(template.body).replace(/\n/g, "<br />") + pixel;
+        let fullBody = render(template.body);
+        if (template.attach_signature) {
+          const { data: sig } = await supabaseAdmin
+            .from("user_signatures")
+            .select("signature")
+            .eq("user_id", log.user_id)
+            .maybeSingle();
+          if (sig?.signature?.trim()) fullBody += "\n\n" + render(sig.signature);
+        }
+        const html = fullBody.replace(/\n/g, "<br />") + pixel;
         let gmailIds: { id: string; threadId: string } | null = null;
         if (isGmail) {
           // Follow-ups reply in the same thread

@@ -182,15 +182,22 @@ export const saveTemplate = createServerFn({ method: "POST" })
         name: z.string().min(1),
         subject: z.string(),
         body: z.string(),
+        attach_signature: z.boolean().optional(),
       })
       .parse(d)
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const fields = {
+      name: data.name,
+      subject: data.subject,
+      body: data.body,
+      attach_signature: data.attach_signature ?? false,
+    };
     if (data.id) {
       const { data: row, error } = await supabase
         .from("email_templates")
-        .update({ name: data.name, subject: data.subject, body: data.body, updated_at: new Date().toISOString() })
+        .update({ ...fields, updated_at: new Date().toISOString() })
         .eq("id", data.id)
         .select()
         .single();
@@ -199,11 +206,36 @@ export const saveTemplate = createServerFn({ method: "POST" })
     }
     const { data: row, error } = await supabase
       .from("email_templates")
-      .insert({ user_id: userId, name: data.name, subject: data.subject, body: data.body })
+      .insert({ user_id: userId, ...fields })
       .select()
       .single();
     if (error) throw new Error(error.message);
     return row;
+  });
+
+// ---------- Signature ----------
+
+export const getSignature = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("user_signatures")
+      .select("signature")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data?.signature ?? "";
+  });
+
+export const saveSignature = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ signature: z.string().max(5000) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("user_signatures")
+      .upsert({ user_id: context.userId, signature: data.signature, updated_at: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const deleteTemplate = createServerFn({ method: "POST" })

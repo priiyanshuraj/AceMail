@@ -52,6 +52,7 @@ function TemplatesPage() {
   const lastFieldRef = useRef<"subject" | "body">("body");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
   const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
+  const { data: signature } = useQuery({ queryKey: ["signature"], queryFn: () => getSignature() });
   const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
