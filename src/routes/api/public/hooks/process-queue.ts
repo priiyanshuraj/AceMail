@@ -31,6 +31,23 @@ export const Route = createFileRoute("/api/public/hooks/process-queue")({
 async function processQueue() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const nodemailer = (await import("nodemailer")).default;
+  const { getMailboxKey, gmailSend, effectiveDailyLimit, syncMailboxReplies, ReconnectRequiredError } =
+    await import("@/server/gmail.server");
+
+  // Reply detection first, so replied contacts' follow-ups are cancelled before sending
+  const { data: gmailBoxes } = await supabaseAdmin
+    .from("email_configurations")
+    .select("id, user_id, from_email")
+    .eq("provider", "gmail")
+    .neq("status", "reconnect");
+  let replies = 0;
+  for (const b of gmailBoxes ?? []) {
+    try {
+      replies += (await syncMailboxReplies(b.id, b.user_id, b.from_email)).synced;
+    } catch (e) {
+      console.error("Reply sync failed for mailbox", b.id, e);
+    }
+  }
 
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 = Sunday
@@ -49,7 +66,7 @@ async function processQueue() {
     .limit(50);
 
   if (error) throw new Error(error.message);
-  if (!due || due.length === 0) return { processed: 0, sent: 0, failed: 0 };
+  if (!due || due.length === 0) return { processed: 0, sent: 0, failed: 0, replies };
 
   let sent = 0;
   let failed = 0;
@@ -72,6 +89,14 @@ async function processQueue() {
       send_days: number[];
       config_id: string | null;
       email_configurations: {
+        id: string;
+        provider: string;
+        hourly_limit: number;
+        warmup_enabled: boolean;
+        warmup_start_volume: number;
+        warmup_increment: number;
+        warmup_started_at: string | null;
+        status: string;
         smtp_host: string;
         smtp_port: number;
         smtp_username: string;
@@ -93,24 +118,39 @@ async function processQueue() {
       if (minutesNow < sh * 60 + sm || minutesNow > eh * 60 + em) continue;
     }
 
-    // Daily limit: count emails sent today for this campaign
+    if (config.status === "reconnect") continue;
+
+    // Mailbox-wide daily (warmup-aware) and hourly limits
     const dayStart = new Date(now);
     dayStart.setHours(0, 0, 0, 0);
-    const { count: sentToday } = await supabaseAdmin
-      .from("email_logs")
-      .select("id", { count: "exact", head: true })
-      .eq("campaign_id", campaignId)
-      .in("status", ["sent", "opened"])
-      .gte("sent_at", dayStart.toISOString());
-    const remaining = Math.max(0, config.daily_limit - (sentToday ?? 0));
+    const countSince = async (since: string) => {
+      const { count } = await supabaseAdmin
+        .from("email_logs")
+        .select("id, campaigns!inner(config_id)", { count: "exact", head: true })
+        .eq("campaigns.config_id", config.id)
+        .not("sent_at", "is", null)
+        .gte("sent_at", since);
+      return count ?? 0;
+    };
+    const sentToday = await countSince(dayStart.toISOString());
+    const sentHour = await countSince(new Date(now.getTime() - 3600_000).toISOString());
+    const remaining = Math.max(
+      0,
+      Math.min(effectiveDailyLimit(config) - sentToday, config.hourly_limit - sentHour)
+    );
     if (remaining === 0) continue;
 
-    const transporter = nodemailer.createTransport({
-      host: config.smtp_host,
-      port: config.smtp_port,
-      secure: config.smtp_port === 465,
-      auth: { user: config.smtp_username, pass: config.smtp_password },
-    });
+    const isGmail = config.provider === "gmail";
+    const gmailKey = isGmail ? await getMailboxKey(config.id) : null;
+    if (isGmail && !gmailKey) continue;
+    const transporter = isGmail
+      ? null
+      : nodemailer.createTransport({
+          host: config.smtp_host,
+          port: config.smtp_port,
+          secure: config.smtp_port === 465,
+          auth: { user: config.smtp_username, pass: config.smtp_password },
+        });
 
     const appUrl = process.env["APP_URL"] ?? "";
 
@@ -150,15 +190,44 @@ async function processQueue() {
         : "";
 
       try {
-        await transporter.sendMail({
-          from: config.from_name ? `"${config.from_name}" <${config.from_email}>` : config.from_email,
-          to: contact.email,
-          subject: render(template.subject),
-          html: render(template.body).replace(/\n/g, "<br />") + pixel,
-        });
+        const html = render(template.body).replace(/\n/g, "<br />") + pixel;
+        let gmailIds: { id: string; threadId: string } | null = null;
+        if (isGmail) {
+          // Follow-ups reply in the same thread
+          const { data: prev } = await supabaseAdmin
+            .from("email_logs")
+            .select("gmail_thread_id")
+            .eq("campaign_id", campaignId)
+            .eq("contact_id", log.contact_id)
+            .not("gmail_thread_id", "is", null)
+            .limit(1)
+            .maybeSingle();
+          const threadId = prev?.gmail_thread_id ?? null;
+          const subject = render(template.subject);
+          gmailIds = await gmailSend(gmailKey!, {
+            from: config.from_email,
+            fromName: config.from_name,
+            to: contact.email,
+            subject: threadId && !/^re:/i.test(subject) ? `Re: ${subject}` : subject,
+            html,
+            threadId,
+          });
+        } else {
+          await transporter!.sendMail({
+            from: config.from_name ? `"${config.from_name}" <${config.from_email}>` : config.from_email,
+            to: contact.email,
+            subject: render(template.subject),
+            html,
+          });
+        }
         await supabaseAdmin
           .from("email_logs")
-          .update({ status: "sent", sent_at: new Date().toISOString() })
+          .update({
+            status: "sent",
+            sent_at: new Date().toISOString(),
+            gmail_message_id: gmailIds?.id ?? null,
+            gmail_thread_id: gmailIds?.threadId ?? null,
+          })
           .eq("id", log.id);
         sent++;
 
@@ -190,6 +259,10 @@ async function processQueue() {
           await new Promise((r) => setTimeout(r, Math.min(config.delay_seconds, 5) * 1000));
         }
       } catch (err) {
+        if (err instanceof ReconnectRequiredError) {
+          await supabaseAdmin.from("email_configurations").update({ status: "reconnect" }).eq("id", config.id);
+          break;
+        }
         await supabaseAdmin
           .from("email_logs")
           .update({ status: "failed", error: err instanceof Error ? err.message : "Send failed" })
@@ -215,5 +288,5 @@ async function processQueue() {
     }
   }
 
-  return { processed: due.length, sent, failed };
+  return { processed: due.length, sent, failed, replies };
 }
