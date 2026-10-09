@@ -55,8 +55,8 @@ const features = [
   },
   {
     icon: ShieldCheck,
-    title: "Your own SMTP",
-    text: "Send through your own email account so messages land where they should.",
+    title: "Your own Gmail",
+    text: "Send straight from your connected Gmail so messages land where they should.",
   },
 ];
 
@@ -119,6 +119,7 @@ function Landing() {
 
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
         <p>AceMail — open-source email automation, rebuilt for the modern web.</p>
+        <p className="mt-2 font-serif italic text-amber">Design inspired by my favourite filmmaker, Wong Kar-wai.</p>
         <p className="mt-2 flex justify-center gap-4">
           <Link to="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
