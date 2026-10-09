@@ -280,17 +280,6 @@ export function GoogleSheetImport({ onRows }: { onRows: (rows: string[][]) => vo
                 </Button>
               </div>
             )}
-            {!listLoading && files.length === 0 && !listError && (
-              <p className="p-8 text-center text-sm text-muted-foreground">No spreadsheets found.</p>
-            )}
-            {listError && (
-              <div className="space-y-2 p-8 text-center">
-                <p className="text-sm text-muted-foreground">Couldn't list your sheets.</p>
-                <Button size="sm" variant="outline" onClick={connect} disabled={busy}>
-                  <RefreshCw className="mr-1 h-3 w-3" /> Reconnect Google
-                </Button>
-              </div>
-            )}
             {files.map((f) => (
               <button
                 key={f.id}
