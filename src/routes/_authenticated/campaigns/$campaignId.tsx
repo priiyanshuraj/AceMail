@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { getCampaign, setCampaignStatus } from "@/lib/acemail.functions";
+import { getCampaign, setCampaignStatus, setLogStatus, deleteLog } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Play, Pause, Square, Pencil } from "lucide-react";
+import { ArrowLeft, Play, Pause, Square, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const campaignQuery = (id: string) =>
