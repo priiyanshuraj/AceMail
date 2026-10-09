@@ -18,6 +18,7 @@ import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedMailboxesRouteImport } from './routes/_authenticated/mailboxes'
+import { Route as AuthenticatedOpensRouteImport } from './routes/_authenticated/opens'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as AuthenticatedCampaignsIndexRouteImport } from './routes/_authenticated/campaigns/index'
@@ -70,6 +71,11 @@ const AuthenticatedInboxRoute = AuthenticatedInboxRouteImport.update({
 const AuthenticatedMailboxesRoute = AuthenticatedMailboxesRouteImport.update({
   id: '/mailboxes',
   path: '/mailboxes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOpensRoute = AuthenticatedOpensRouteImport.update({
+  id: '/opens',
+  path: '/opens',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/mailboxes': typeof AuthenticatedMailboxesRoute
+  '/opens': typeof AuthenticatedOpensRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/mailboxes': typeof AuthenticatedMailboxesRoute
+  '/opens': typeof AuthenticatedOpensRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/mailboxes': typeof AuthenticatedMailboxesRoute
+  '/_authenticated/opens': typeof AuthenticatedOpensRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inbox'
     | '/mailboxes'
+    | '/opens'
     | '/settings'
     | '/templates'
     | '/campaigns/$campaignId'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/inbox'
     | '/mailboxes'
+    | '/opens'
     | '/settings'
     | '/templates'
     | '/campaigns/$campaignId'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/inbox'
     | '/_authenticated/mailboxes'
+    | '/_authenticated/opens'
     | '/_authenticated/settings'
     | '/_authenticated/templates'
     | '/_authenticated/campaigns/$campaignId'
@@ -319,6 +331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMailboxesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/opens': {
+      id: '/_authenticated/opens'
+      path: '/opens'
+      fullPath: '/opens'
+      preLoaderRoute: typeof AuthenticatedOpensRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -390,6 +409,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedMailboxesRoute: typeof AuthenticatedMailboxesRoute
+  AuthenticatedOpensRoute: typeof AuthenticatedOpensRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedCampaignsCampaignIdRoute: typeof AuthenticatedCampaignsCampaignIdRoute
@@ -403,6 +423,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedMailboxesRoute: AuthenticatedMailboxesRoute,
+  AuthenticatedOpensRoute: AuthenticatedOpensRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedCampaignsCampaignIdRoute: AuthenticatedCampaignsCampaignIdRoute,

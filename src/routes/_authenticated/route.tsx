@@ -52,10 +52,10 @@ function AuthenticatedLayout() {
       <div className="flex min-h-screen w-full">
         <Sidebar>
           <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
-            <div className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2">
               <img src={logoUrl} alt="AceMail logo" className="h-8 w-8 rounded-lg" width={32} height={32} />
               <span className="text-lg font-semibold text-sidebar-foreground">AceMail</span>
-            </div>
+            </Link>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -87,8 +87,11 @@ function AuthenticatedLayout() {
           </SidebarFooter>
         </Sidebar>
         <main className="flex-1 overflow-auto">
-          <div className="border-b bg-card px-6 py-3">
+          <div className="flex items-center gap-3 border-b bg-card px-6 py-3">
             <SidebarTrigger />
+            <p className="text-sm font-medium text-muted-foreground">
+              Cold email that <span className="text-primary">runs itself</span> — send, track, repeat.
+            </p>
           </div>
           <div className="p-6">
             <Outlet />
