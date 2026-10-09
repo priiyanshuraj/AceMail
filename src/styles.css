@@ -5,12 +5,12 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * AceMail design system — crisp editorial SaaS look.
- * Warm paper background, deep ink text, signal-orange primary.
+ * AceMail design system — Abbas Kiarostami palette.
+ * Sun-bleached cream, olive hills, terracotta dust, vast quiet space.
  */
 
 @theme inline {
-  --font-serif: "Playfair Display", Georgia, serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -56,113 +56,95 @@
 }
 
 :root {
-  /* Wong Kar-wai palette: smoky night, neon red, jade green, sodium amber */
-  --radius: 0.25rem;
-  --background: oklch(0.19 0.025 20);
-  --foreground: oklch(0.97 0.02 80);
-  --card: oklch(0.24 0.03 18 / 0.88);
-  --card-foreground: oklch(0.97 0.02 80);
-  --popover: oklch(0.23 0.03 18);
-  --popover-foreground: oklch(0.97 0.02 80);
-  --primary: oklch(0.6 0.22 22);
-  --primary-foreground: oklch(0.97 0.02 80);
-  --secondary: oklch(0.24 0.04 160);
-  --secondary-foreground: oklch(0.9 0.06 160);
-  --muted: oklch(0.28 0.03 20);
-  --muted-foreground: oklch(0.84 0.04 75);
-  --accent: oklch(0.3 0.07 160);
-  --accent-foreground: oklch(0.92 0.08 150);
-  --destructive: oklch(0.62 0.23 25);
-  --destructive-foreground: oklch(0.98 0.01 80);
-  --success: oklch(0.7 0.15 155);
-  --success-foreground: oklch(0.14 0.02 20);
-  --border: oklch(0.85 0.1 65 / 24%);
-  --input: oklch(0.85 0.1 65 / 30%);
-  --ring: oklch(0.78 0.15 75);
-  --amber: oklch(0.8 0.15 75);
-  --jade: oklch(0.72 0.14 160);
-  --chart-1: oklch(0.6 0.22 22);
-  --chart-2: oklch(0.72 0.14 160);
-  --chart-3: oklch(0.8 0.15 75);
-  --chart-4: oklch(0.6 0.15 300);
-  --chart-5: oklch(0.65 0.2 40);
-  --sidebar: oklch(0.16 0.025 15 / 0.95);
-  --sidebar-foreground: oklch(0.95 0.03 78);
-  --sidebar-primary: oklch(0.6 0.22 22);
-  --sidebar-primary-foreground: oklch(0.97 0.02 80);
-  --sidebar-accent: oklch(0.6 0.22 22 / 0.3);
-  --sidebar-accent-foreground: oklch(0.95 0.06 70);
-  --sidebar-border: oklch(0.8 0.1 60 / 12%);
-  --sidebar-ring: oklch(0.8 0.15 75);
-  --glow-red: 0 0 24px oklch(0.6 0.22 22 / 0.55);
-  --glow-amber: 0 0 18px oklch(0.8 0.15 75 / 0.4);
+  /* Kiarostami palette: wheat fields, olive groves, dusty roads, pale sky */
+  --radius: 0.375rem;
+  --background: oklch(0.955 0.02 95);
+  --foreground: oklch(0.32 0.03 75);
+  --card: oklch(0.975 0.015 95);
+  --card-foreground: oklch(0.32 0.03 75);
+  --popover: oklch(0.98 0.012 95);
+  --popover-foreground: oklch(0.32 0.03 75);
+  --primary: oklch(0.52 0.11 50);
+  --primary-foreground: oklch(0.97 0.015 95);
+  --secondary: oklch(0.9 0.03 110);
+  --secondary-foreground: oklch(0.4 0.05 120);
+  --muted: oklch(0.92 0.02 95);
+  --muted-foreground: oklch(0.52 0.03 80);
+  --accent: oklch(0.88 0.045 115);
+  --accent-foreground: oklch(0.38 0.06 125);
+  --destructive: oklch(0.55 0.18 30);
+  --destructive-foreground: oklch(0.97 0.015 95);
+  --success: oklch(0.55 0.09 140);
+  --success-foreground: oklch(0.97 0.015 95);
+  --border: oklch(0.85 0.025 90);
+  --input: oklch(0.82 0.03 90);
+  --ring: oklch(0.6 0.09 60);
+  --amber: oklch(0.55 0.11 55);
+  --jade: oklch(0.5 0.07 135);
+  --chart-1: oklch(0.52 0.11 50);
+  --chart-2: oklch(0.5 0.07 135);
+  --chart-3: oklch(0.65 0.1 80);
+  --chart-4: oklch(0.55 0.06 200);
+  --chart-5: oklch(0.6 0.09 30);
+  --sidebar: oklch(0.94 0.02 95);
+  --sidebar-foreground: oklch(0.35 0.03 75);
+  --sidebar-primary: oklch(0.52 0.11 50);
+  --sidebar-primary-foreground: oklch(0.97 0.015 95);
+  --sidebar-accent: oklch(0.52 0.11 50 / 0.12);
+  --sidebar-accent-foreground: oklch(0.4 0.08 55);
+  --sidebar-border: oklch(0.86 0.025 90);
+  --sidebar-ring: oklch(0.6 0.09 60);
+  --shadow-soft: 0 1px 2px oklch(0.4 0.03 75 / 0.05), 0 8px 24px -12px oklch(0.4 0.03 75 / 0.12);
 }
 
 .dark { color-scheme: dark; }
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { color-scheme: dark; }
+  html { color-scheme: light; }
   body {
     color: var(--color-foreground);
     font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
     background-color: var(--color-background);
     background-image:
-      radial-gradient(ellipse 60% 45% at 85% -5%, oklch(0.6 0.22 22 / 0.35), transparent 70%),
-      radial-gradient(ellipse 50% 40% at -5% 100%, oklch(0.6 0.14 160 / 0.22), transparent 70%),
-      radial-gradient(ellipse 40% 30% at 50% 50%, oklch(0.8 0.15 75 / 0.05), transparent 70%);
+      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.9 0.04 100 / 0.6), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 100% 110%, oklch(0.88 0.05 120 / 0.35), transparent 70%);
     background-attachment: fixed;
     min-height: 100vh;
   }
-  /* film grain */
-  body::before {
-    content: ""; position: fixed; inset: -50%; z-index: 60; pointer-events: none;
-    opacity: 0.05; mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    animation: grain 0.9s steps(4) infinite;
-  }
-  /* vignette */
-  body::after {
-    content: ""; position: fixed; inset: 0; z-index: 59; pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 70%, oklch(0.05 0.01 20 / 0.35) 100%);
-  }
   h1, h2, h3 {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: "Cormorant Garamond", Georgia, serif;
     font-style: italic;
+    font-weight: 500;
     letter-spacing: -0.01em;
   }
-  h1 { text-shadow: 0 0 28px oklch(0.6 0.22 22 / 0.45); }
-  ::selection { background: oklch(0.6 0.22 22 / 0.6); color: var(--color-foreground); }
-  main > div > * { animation: step-in 0.7s steps(10, end) both; }
+  ::selection { background: oklch(0.52 0.11 50 / 0.25); color: var(--color-foreground); }
+  main > div > * { animation: drift-in 0.8s ease-out both; }
   [data-slot="card"], .rounded-lg.border {
-    backdrop-filter: blur(10px);
-    transition: box-shadow .4s ease, border-color .4s ease;
+    box-shadow: var(--shadow-soft);
+    transition: box-shadow .4s ease, border-color .4s ease, transform .4s ease;
   }
-  [data-slot="card"]:hover { border-color: oklch(0.8 0.15 75 / 0.35); box-shadow: var(--glow-amber); }
-  [data-slot="button"], button { transition: box-shadow .3s ease, background-color .3s ease; }
-  .bg-primary:hover { box-shadow: var(--glow-red); }
+  [data-slot="card"]:hover {
+    border-color: oklch(0.65 0.08 70);
+    box-shadow: 0 2px 4px oklch(0.4 0.03 75 / 0.06), 0 16px 40px -16px oklch(0.45 0.06 70 / 0.25);
+    transform: translateY(-2px);
+  }
+  [data-slot="button"], button { transition: box-shadow .3s ease, background-color .3s ease, transform .2s ease; }
+  .bg-primary:hover { box-shadow: 0 6px 20px -8px oklch(0.52 0.11 50 / 0.5); }
   @media (prefers-reduced-motion: reduce) {
-    body::before, main > div > * { animation: none; }
+    main > div > * { animation: none; }
   }
 }
 
-@keyframes grain {
-  0% { transform: translate(0,0); } 25% { transform: translate(-3%,2%); }
-  50% { transform: translate(2%,-3%); } 75% { transform: translate(-2%,-1%); } 100% { transform: translate(0,0); }
-}
-/* step-printed, smeared entrance like Chungking Express */
-@keyframes step-in {
-  from { opacity: 0; filter: blur(6px); transform: translateX(-8px); }
-  to { opacity: 1; filter: blur(0); transform: none; }
-}
-@keyframes neon-flicker {
-  0%, 19%, 21%, 23%, 55%, 57%, 100% { opacity: 1; }
-  20%, 22%, 56% { opacity: 0.45; }
+/* a slow, quiet entrance — like a long take */
+@keyframes drift-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
 }
 @utility neon-text {
   color: var(--amber);
-  text-shadow: 0 0 6px oklch(0.8 0.15 75 / 0.7), 0 0 22px oklch(0.6 0.22 22 / 0.6);
-  animation: neon-flicker 6s infinite;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
 }
 @utility text-amber { color: var(--amber); }
 @utility text-jade { color: var(--jade); }
