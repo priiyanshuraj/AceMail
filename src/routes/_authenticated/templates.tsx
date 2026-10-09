@@ -149,8 +149,25 @@ function TemplatesPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Preview</CardTitle>
+              <div className="flex items-center gap-2">
+                <UserRound className="h-4 w-4 text-muted-foreground" />
+                <Select value={previewContactId} onValueChange={setPreviewContactId}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Sample contact" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sample">Sample contact</SelectItem>
+                    {(previewContacts ?? []).map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.first_name || c.email}
+                        {c.company ? ` · ${c.company}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="rounded-lg border bg-muted/50 p-4">
