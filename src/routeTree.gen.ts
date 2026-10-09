@@ -23,6 +23,7 @@ import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCampaignsIndexRouteImport } from './routes/_authenticated/campaigns/index'
 import { Route as AuthenticatedCampaignsCampaignIdRouteImport } from './routes/_authenticated/campaigns/$campaignId'
 import { Route as AuthenticatedCampaignsNewRouteImport } from './routes/_authenticated/campaigns/new'
+import { Route as AuthenticatedCampaignsEditCampaignIdRouteImport } from './routes/_authenticated/campaigns/edit.$campaignId'
 import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/google/return'
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
 import { Route as ApiPublicTrackLogIdPngRouteImport } from './routes/api/public/track/$logId.png'
@@ -99,6 +100,12 @@ const AuthenticatedCampaignsNewRoute =
     path: '/campaigns/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCampaignsEditCampaignIdRoute =
+  AuthenticatedCampaignsEditCampaignIdRouteImport.update({
+    id: '/campaigns/edit/$campaignId',
+    path: '/campaigns/edit/$campaignId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiOauthGoogleReturnRoute = ApiOauthGoogleReturnRouteImport.update({
   id: '/api/oauth/google/return',
   path: '/api/oauth/google/return',
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/campaigns/': typeof AuthenticatedCampaignsIndexRoute
+  '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/campaigns': typeof AuthenticatedCampaignsIndexRoute
+  '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
@@ -168,6 +177,7 @@ export interface FileRoutesById {
   '/_authenticated/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/_authenticated/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/_authenticated/campaigns/': typeof AuthenticatedCampaignsIndexRoute
+  '/_authenticated/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/campaigns/'
+    | '/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId/png'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/campaigns'
+    | '/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId/png'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/campaigns/$campaignId'
     | '/_authenticated/campaigns/new'
     | '/_authenticated/campaigns/'
+    | '/_authenticated/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId/png'
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCampaignsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/campaigns/edit/$campaignId': {
+      id: '/_authenticated/campaigns/edit/$campaignId'
+      path: '/campaigns/edit/$campaignId'
+      fullPath: '/campaigns/edit/$campaignId'
+      preLoaderRoute: typeof AuthenticatedCampaignsEditCampaignIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/oauth/google/return': {
       id: '/api/oauth/google/return'
       path: '/api/oauth/google/return'
@@ -375,6 +395,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCampaignsCampaignIdRoute: typeof AuthenticatedCampaignsCampaignIdRoute
   AuthenticatedCampaignsNewRoute: typeof AuthenticatedCampaignsNewRoute
   AuthenticatedCampaignsIndexRoute: typeof AuthenticatedCampaignsIndexRoute
+  AuthenticatedCampaignsEditCampaignIdRoute: typeof AuthenticatedCampaignsEditCampaignIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -387,6 +408,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCampaignsCampaignIdRoute: AuthenticatedCampaignsCampaignIdRoute,
   AuthenticatedCampaignsNewRoute: AuthenticatedCampaignsNewRoute,
   AuthenticatedCampaignsIndexRoute: AuthenticatedCampaignsIndexRoute,
+  AuthenticatedCampaignsEditCampaignIdRoute:
+    AuthenticatedCampaignsEditCampaignIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

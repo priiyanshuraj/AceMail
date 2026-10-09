@@ -408,26 +408,26 @@ export const getCampaign = createServerFn({ method: "GET" })
   });
 
 const stepInput = z.object({
+  id: z.string().uuid().optional(),
   template_id: z.string().uuid(),
   step_order: z.number().int().min(1),
   delay_days: z.number().int().min(0).max(365),
 });
 
+const campaignInput = z.object({
+  name: z.string().min(1),
+  list_id: z.string().uuid(),
+  config_id: z.string().uuid(),
+  steps: z.array(stepInput).min(1),
+  send_window_start: z.string().optional(),
+  send_window_end: z.string().optional(),
+  send_days: z.array(z.number().int().min(0).max(6)).optional(),
+  timezone: z.string().min(1).max(64).optional(),
+});
+
 export const createCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
-    z
-      .object({
-        name: z.string().min(1),
-        list_id: z.string().uuid(),
-        config_id: z.string().uuid(),
-        steps: z.array(stepInput).min(1),
-        send_window_start: z.string().optional(),
-        send_window_end: z.string().optional(),
-        send_days: z.array(z.number().int().min(0).max(6)).optional(),
-      })
-      .parse(d)
-  )
+  .inputValidator((d) => campaignInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: campaign, error } = await supabase
@@ -440,6 +440,7 @@ export const createCampaign = createServerFn({ method: "POST" })
         send_window_start: data.send_window_start ?? null,
         send_window_end: data.send_window_end ?? null,
         send_days: data.send_days ?? [1, 2, 3, 4, 5],
+        timezone: data.timezone ?? "UTC",
       })
       .select()
       .single();
@@ -454,6 +455,60 @@ export const createCampaign = createServerFn({ method: "POST" })
     );
     if (stepError) throw new Error(stepError.message);
     return campaign;
+  });
+
+export const updateCampaign = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => campaignInput.extend({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { error } = await supabase
+      .from("campaigns")
+      .update({
+        name: data.name,
+        list_id: data.list_id,
+        config_id: data.config_id,
+        send_window_start: data.send_window_start ?? null,
+        send_window_end: data.send_window_end ?? null,
+        send_days: data.send_days ?? [1, 2, 3, 4, 5],
+        timezone: data.timezone ?? "UTC",
+      })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+
+    const { data: existing } = await supabase.from("campaign_steps").select("id").eq("campaign_id", data.id);
+    const keepIds = new Set(data.steps.map((s) => s.id).filter(Boolean) as string[]);
+    const removed = (existing ?? []).filter((s) => !keepIds.has(s.id)).map((s) => s.id);
+    if (removed.length > 0) {
+      const { count } = await supabase
+        .from("email_logs")
+        .select("id", { count: "exact", head: true })
+        .in("step_id", removed)
+        .neq("status", "queued");
+      if ((count ?? 0) > 0) throw new Error("Can't remove a step that has already sent emails");
+      await supabase.from("email_logs").delete().in("step_id", removed);
+      const { error: delErr } = await supabase.from("campaign_steps").delete().in("id", removed);
+      if (delErr) throw new Error(delErr.message);
+    }
+    for (const s of data.steps) {
+      if (s.id) {
+        const { error: e } = await supabase
+          .from("campaign_steps")
+          .update({ template_id: s.template_id, step_order: s.step_order, delay_days: s.delay_days })
+          .eq("id", s.id)
+          .eq("campaign_id", data.id);
+        if (e) throw new Error(e.message);
+      } else {
+        const { error: e } = await supabase.from("campaign_steps").insert({
+          campaign_id: data.id,
+          template_id: s.template_id,
+          step_order: s.step_order,
+          delay_days: s.delay_days,
+        });
+        if (e) throw new Error(e.message);
+      }
+    }
+    return { ok: true };
   });
 
 export const setCampaignStatus = createServerFn({ method: "POST" })
