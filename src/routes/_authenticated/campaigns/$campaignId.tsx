@@ -46,6 +46,28 @@ function CampaignDetail() {
     }
   };
 
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+
+  const toggleLog = async (id: string, status: "queued" | "paused") => {
+    try {
+      await setLogStatus({ data: { id, status } });
+      refresh();
+      toast.success(status === "paused" ? "Email paused" : "Email resumed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
+    }
+  };
+
+  const removeLog = async (id: string) => {
+    try {
+      await deleteLog({ data: { id } });
+      refresh();
+      toast.success("Email removed from the queue");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to remove");
+    }
+  };
+
   const stepStats = (stepId: string) => {
     const rows = logs.filter((l) => l.step_id === stepId);
     return {
