@@ -167,11 +167,13 @@ function CampaignDetail() {
                 <TableHead>Scheduled</TableHead>
                 <TableHead>Sent</TableHead>
                 <TableHead>Error</TableHead>
+                <TableHead className="w-28" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {logs.map((l) => {
                 const c = l.contacts as { email: string } | null;
+                const pending = l.status === "queued" || l.status === "paused";
                 return (
                   <TableRow key={l.id}>
                     <TableCell>{c?.email}</TableCell>
@@ -181,12 +183,45 @@ function CampaignDetail() {
                     <TableCell className="text-xs">{new Date(l.scheduled_at).toLocaleString()}</TableCell>
                     <TableCell className="text-xs">{l.sent_at ? new Date(l.sent_at).toLocaleString() : "—"}</TableCell>
                     <TableCell className="max-w-xs truncate text-xs text-destructive">{l.error ?? ""}</TableCell>
+                    <TableCell>
+                      {pending && (
+                        <div className="flex gap-1">
+                          {l.status === "queued" ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Pause this email"
+                              onClick={() => toggleLog(l.id, "paused")}
+                            >
+                              <Pause className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Resume this email"
+                              onClick={() => toggleLog(l.id, "queued")}
+                            >
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Remove from queue"
+                            onClick={() => removeLog(l.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })}
               {logs.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     Nothing queued yet — start the campaign to enqueue emails.
                   </TableCell>
                 </TableRow>
