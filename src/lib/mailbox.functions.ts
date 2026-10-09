@@ -11,7 +11,7 @@ export const startGmailConnect = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { authorizeAppUserOAuth } = await import("@/integrations/lovable/appUserConnector");
     const { GATEWAY_BASE_URL, GMAIL_CONNECTOR, GMAIL_SCOPES, getMailboxKey } = await import("@/server/gmail.server");
-    const clientKey = process.env.GOOGLE_MAIL_APP_USER_CONNECTOR_CLIENT_API_KEY;
+    const clientKey = process.env["GOOGLE_MAIL_APP_USER_CONNECTOR_CLIENT_API_KEY"];
     if (!clientKey) throw new Error("Gmail connection is not configured yet");
     const request = getRequest();
     if (!request) throw new Error("OAuth must start from an app request.");

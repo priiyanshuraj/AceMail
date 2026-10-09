@@ -175,7 +175,7 @@ function MailboxCard({
     is_default: box.is_default,
   });
   const [preview, setPreview] = useState(false);
-  const h = healthLabel[box.health] ?? healthLabel.good!;
+  const h = healthLabel[box.health] ?? healthLabel["good"]!;
   const limit = box.effective_daily_limit;
 
   const save = async () => {
