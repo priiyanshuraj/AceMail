@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts } from "@/lib/acemail.functions";
+import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts, getSignature } from "@/lib/acemail.functions";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +52,7 @@ function TemplatesPage() {
   const lastFieldRef = useRef<"subject" | "body">("body");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
   const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
+  const { data: signature } = useQuery({ queryKey: ["signature"], queryFn: () => getSignature() });
   const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
@@ -92,6 +94,7 @@ function TemplatesPage() {
         name: editing.name,
         subject: editing.subject ?? "",
         body: editing.body ?? "",
+        attach_signature: !!editing.attach_signature,
       },
     });
     setEditing(null);
@@ -161,6 +164,18 @@ function TemplatesPage() {
                   placeholder={"Hi {{first_name}},\n\nI noticed {{company}} is…"}
                 />
               </div>
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={!!editing.attach_signature}
+                  onCheckedChange={(v) => setEditing({ ...editing, attach_signature: v === true })}
+                />
+                Attach signature
+                {!signature && (
+                  <Link to="/settings" className="text-xs text-primary underline">
+                    Add one in Settings
+                  </Link>
+                )}
+              </label>
               <div className="flex flex-wrap gap-1">
                 {allVars.map((v) => (
                   <Badge
@@ -212,6 +227,9 @@ function TemplatesPage() {
                   {preview(editing.subject ?? "") || "(no subject)"}
                 </p>
                 <div className="whitespace-pre-wrap text-sm">{preview(editing.body ?? "") || "(no body)"}</div>
+                {editing.attach_signature && signature && (
+                  <div className="mt-4 whitespace-pre-wrap border-t pt-3 text-sm text-muted-foreground">{preview(signature)}</div>
+                )}
               </div>
             </CardContent>
           </Card>

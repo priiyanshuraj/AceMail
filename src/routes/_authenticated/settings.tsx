@@ -1,16 +1,66 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   listBlacklistedDomains,
   addBlacklistedDomain,
   removeBlacklistedDomain,
+  getSignature,
+  saveSignature,
 } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+import { toast } from "sonner";
+
+function SignatureCard() {
+  const queryClient = useQueryClient();
+  const { data } = useQuery({ queryKey: ["signature"], queryFn: () => getSignature() });
+  const [value, setValue] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (data !== undefined) setValue(data);
+  }, [data]);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Email signature</CardTitle>
+        <CardDescription>
+          Added below the body of templates where "Attach signature" is ticked. Variables like {"{{first_name}}"} work here too.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Textarea
+          rows={6}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={"Best,\nRaj\nFounder, AceMail"}
+        />
+        <Button
+          disabled={saving || value === (data ?? "")}
+          onClick={async () => {
+            setSaving(true);
+            try {
+              await saveSignature({ data: { signature: value } });
+              await queryClient.invalidateQueries({ queryKey: ["signature"] });
+              toast.success("Signature saved");
+            } catch (e) {
+              toast.error((e as Error).message);
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          {saving ? "Saving…" : "Save signature"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 const settingsQuery = queryOptions({
   queryKey: ["settings"],
@@ -57,6 +107,8 @@ function SettingsPage() {
           <Button asChild variant="outline"><Link to="/mailboxes">Manage mailboxes</Link></Button>
         </CardContent>
       </Card>
+
+      <SignatureCard />
 
       <Card>
         <CardHeader>

@@ -364,6 +364,7 @@ export type Database = {
       }
       email_templates: {
         Row: {
+          attach_signature: boolean
           body: string
           copy_count: number
           created_at: string
@@ -374,6 +375,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attach_signature?: boolean
           body?: string
           copy_count?: number
           created_at?: string
@@ -384,6 +386,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attach_signature?: boolean
           body?: string
           copy_count?: number
           created_at?: string
@@ -506,6 +509,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_signatures: {
+        Row: {
+          signature: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          signature?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          signature?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
