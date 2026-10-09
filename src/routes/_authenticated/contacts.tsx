@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { GoogleSheetImport } from "@/components/GoogleSheetImport";
 
 function slug(s: string) {
   return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 64);
@@ -297,6 +298,15 @@ function ContactsPage() {
                         Upload a CSV with a header row. Map each column to a field — any extra column can become a custom field you use in templates as {"{{field_name}}"}.
                       </DialogDescription>
                     </DialogHeader>
+                    {headers.length === 0 && (
+                      <GoogleSheetImport
+                        onRows={(r) =>
+                          void loadCsv(
+                            r.map((row) => row.map((c) => (/[",\n\r]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c)).join(",")).join("\n"),
+                          )
+                        }
+                      />
+                    )}
                     <div className="space-y-2">
                       <Label htmlFor="csv-file">CSV file</Label>
                       <Input id="csv-file" type="file" accept=".csv,text/csv,text/plain" onChange={handleFileUpload} />
