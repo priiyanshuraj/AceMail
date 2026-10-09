@@ -22,6 +22,8 @@ import { Route as AuthenticatedMailboxesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedOpensRouteImport } from './routes/_authenticated/opens'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedCampaignsIndexRouteImport } from './routes/_authenticated/campaigns/index'
 import { Route as AuthenticatedCampaignsCampaignIdRouteImport } from './routes/_authenticated/campaigns/$campaignId'
 import { Route as AuthenticatedCampaignsNewRouteImport } from './routes/_authenticated/campaigns/new'
@@ -94,6 +96,16 @@ const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   path: '/templates',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCampaignsIndexRoute =
   AuthenticatedCampaignsIndexRouteImport.update({
     id: '/campaigns/',
@@ -148,6 +160,8 @@ export interface FileRoutesByFullPath {
   '/opens': typeof AuthenticatedOpensRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/campaigns/': typeof AuthenticatedCampaignsIndexRoute
@@ -169,6 +183,8 @@ export interface FileRoutesByTo {
   '/opens': typeof AuthenticatedOpensRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/campaigns': typeof AuthenticatedCampaignsIndexRoute
@@ -192,6 +208,8 @@ export interface FileRoutesById {
   '/_authenticated/opens': typeof AuthenticatedOpensRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/_authenticated/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/_authenticated/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/_authenticated/campaigns/': typeof AuthenticatedCampaignsIndexRoute
@@ -215,6 +233,8 @@ export interface FileRouteTypes {
     | '/opens'
     | '/settings'
     | '/templates'
+    | '/blog/$slug'
+    | '/blog/'
     | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/campaigns/'
@@ -236,6 +256,8 @@ export interface FileRouteTypes {
     | '/opens'
     | '/settings'
     | '/templates'
+    | '/blog/$slug'
+    | '/blog'
     | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/campaigns'
@@ -258,6 +280,8 @@ export interface FileRouteTypes {
     | '/_authenticated/opens'
     | '/_authenticated/settings'
     | '/_authenticated/templates'
+    | '/blog/$slug'
+    | '/blog/'
     | '/_authenticated/campaigns/$campaignId'
     | '/_authenticated/campaigns/new'
     | '/_authenticated/campaigns/'
@@ -274,6 +298,8 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   ApiOauthGoogleReturnRoute: typeof ApiOauthGoogleReturnRoute
   ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
   ApiPublicTrackLogIdPngRoute: typeof ApiPublicTrackLogIdPngRoute
@@ -372,6 +398,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/campaigns/': {
       id: '/_authenticated/campaigns/'
       path: '/campaigns'
@@ -463,6 +503,8 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
   ApiOauthGoogleReturnRoute: ApiOauthGoogleReturnRoute,
   ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
   ApiPublicTrackLogIdPngRoute: ApiPublicTrackLogIdPngRoute,

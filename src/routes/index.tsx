@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import logoUrl from "@/assets/acemail-logo.png";
 import roadAsset from "@/assets/kiarostami-road.jpg.asset.json";
 import { supabase } from "@/integrations/supabase/client";
+import { blogPosts, SITE_URL } from "@/lib/blog-posts";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,8 +25,12 @@ export const Route = createFileRoute("/")({
           "Build multi-step cold email campaigns, personalize templates, and track every send with AceMail.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE_URL}/` },
+      { property: "og:image", content: `${SITE_URL}${roadAsset.url}` },
+      { name: "twitter:image", content: `${SITE_URL}${roadAsset.url}` },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
   }),
   component: Landing,
 });
@@ -138,37 +143,11 @@ function Landing() {
             </Button>
           </div>
 
-          <div className="mx-auto mt-12 max-w-md rounded-xl border bg-card/80 p-6 backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.3em] text-jade">Early access</p>
-            <h2 className="mt-2 text-xl font-semibold">AceMail is in testing</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Leave your email and we'll invite you as soon as a seat opens up.
-            </p>
-            {requested ? (
-              <p className="mt-4 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-accent-foreground">
-                You're on the list — we'll be in touch soon.
-              </p>
-            ) : (
-              <form onSubmit={handleRequestAccess} className="mt-4 flex gap-2">
-                <Input
-                  type="email"
-                  required
-                  value={accessEmail}
-                  onChange={(e) => setAccessEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  className="flex-1"
-                />
-                <Button type="submit" disabled={requesting}>
-                  {requesting ? "Sending…" : "Request access"}
-                </Button>
-              </form>
-            )}
-          </div>
         </div>
       </section>
 
-
-      <section id="features" className="mx-auto max-w-6xl px-6 pb-24">
+      <section id="features" className="mx-auto max-w-6xl px-6 pb-20">
+        <h2 className="mb-8 text-center text-3xl font-semibold">Everything your outreach needs</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div key={f.title} className="rounded-xl border bg-card p-6">
@@ -182,10 +161,62 @@ function Landing() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-6 pb-20">
+        <div className="mb-8 flex items-end justify-between">
+          <h2 className="text-3xl font-semibold">From the blog</h2>
+          <Link to="/blog" className="text-sm hover:underline">All posts →</Link>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {blogPosts.map((p) => (
+            <Link
+              key={p.slug}
+              to="/blog/$slug"
+              params={{ slug: p.slug }}
+              className="rounded-xl border bg-card p-6 transition hover:shadow-md"
+            >
+              <p className="text-xs uppercase tracking-[0.2em] text-jade">{p.readMinutes} min read</p>
+              <h3 className="mt-2 text-lg font-semibold">{p.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{p.description}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section id="early-access" className="mx-auto max-w-6xl px-6 pb-24">
+        <div className="mx-auto max-w-md rounded-xl border bg-card/80 p-6 text-center backdrop-blur">
+          <p className="text-xs uppercase tracking-[0.3em] text-jade">Early access</p>
+          <h2 className="mt-2 text-xl font-semibold">AceMail is in testing</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Leave your email and we'll invite you as soon as a seat opens up.
+          </p>
+          {requested ? (
+            <p className="mt-4 rounded-lg bg-accent px-4 py-3 text-sm font-medium text-accent-foreground">
+              You're on the list — we'll be in touch soon.
+            </p>
+          ) : (
+            <form onSubmit={handleRequestAccess} className="mt-4 flex gap-2">
+              <Input
+                type="email"
+                required
+                aria-label="Email address"
+                value={accessEmail}
+                onChange={(e) => setAccessEmail(e.target.value)}
+                placeholder="you@company.com"
+                className="flex-1"
+              />
+              <Button type="submit" disabled={requesting}>
+                {requesting ? "Sending…" : "Request access"}
+              </Button>
+            </form>
+          )}
+        </div>
+      </section>
+
       <footer className="border-t py-8 text-center text-sm text-muted-foreground">
         <p>AceMail — open-source email automation, rebuilt for the modern web.</p>
         <p className="mt-2 font-serif italic text-amber">"Life goes on." — Abbas Kiarostami</p>
         <p className="mt-2 flex justify-center gap-4">
+          <Link to="/blog" className="hover:text-foreground hover:underline">Blog</Link>
           <Link to="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
         </p>
