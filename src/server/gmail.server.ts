@@ -15,12 +15,13 @@ async function admin() {
   return (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 }
 
-export async function saveMailboxKey(configId: string, userId: string, key: string) {
+export async function saveMailboxKey(configId: string, userId: string, key: string, appUserId?: string) {
   const db = await admin();
   const { error } = await db.from("mailbox_credentials").upsert({
     config_id: configId,
     user_id: userId,
     connection_key_ciphertext: encryptConnectionKey(key),
+    app_user_id: appUserId ?? userId,
     updated_at: new Date().toISOString(),
   });
   if (error) throw new Error(error.message);

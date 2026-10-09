@@ -83,17 +83,19 @@ async function connectGmail(configId?: string) {
   const popup = window.open("", "acemail-gmail", "width=600,height=720");
   if (!popup) throw new Error("Popup blocked. Allow popups and try again.");
   let code: string | null;
+  let appUserId: string;
   try {
-    const { authorizationUrl } = await startGmailConnect({ data: { configId } });
+    const res = await startGmailConnect({ data: { configId } });
+    appUserId = res.appUserId;
     const done = waitForOAuth(popup);
-    popup.location.href = authorizationUrl;
+    popup.location.href = res.authorizationUrl;
     code = await done;
   } catch (e) {
     popup.close();
     throw e;
   }
   if (!code) throw new Error("Google did not grant ongoing access. Please try again.");
-  return completeGmailConnection({ data: { code } });
+  return completeGmailConnection({ data: { code, appUserId } });
 }
 
 function MailboxesPage() {
