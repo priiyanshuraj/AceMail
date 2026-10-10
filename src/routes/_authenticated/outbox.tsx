@@ -54,7 +54,7 @@ function OutboxPage() {
         <div>
           <h1 className="text-2xl font-bold">Outbox</h1>
           <p className="text-sm text-muted-foreground">
-            Everything your campaigns have queued or sent, across every mailbox — with open and reply status.
+            Everything your campaigns have queued or sent, plus one-off emails from the Inbox — with open and reply status.
           </p>
         </div>
         <Button variant="outline" disabled={refreshing} onClick={refresh}>
@@ -74,7 +74,7 @@ function OutboxPage() {
         <CardContent className="divide-y p-0">
           {rows.length === 0 && (
             <p className="p-8 text-center text-sm text-muted-foreground">
-              Nothing here yet. Start a campaign and its emails will appear in this list.
+              Nothing here yet. Start a campaign or send an email from the Inbox and it will appear in this list.
             </p>
           )}
           {rows.map((l) => {
