@@ -14,6 +14,7 @@ describe("Email formatting", () => {
     expect(renderEmailVariables("<p>Hi {{First Name}}, {{Company}} {{contact.Recent Company Signal}} {{Product/Feature}}</p>", values, true))
       .toBe("<p>Hi Jane, Acme New release<br /><br />Hiring API</p>");
     expect(renderEmailVariables("Hi {{CONTACT.first_name}}", values)).toBe("Hi Jane");
+    expect(renderEmailVariables("{{contact.Recent Company Signal}}", { contact_recent_company_signal: "Funding" })).toBe("Funding");
   });
   it("does not guess unknown or ambiguous fields and prefers exact keys", () => {
     const values = { "Product Feature": "First", product_feature: "Second" };

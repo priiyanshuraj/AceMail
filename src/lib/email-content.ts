@@ -4,7 +4,7 @@ export const escapeEmailText = (text: string) => text.replaceAll("&", "&amp;").r
 
 const variablePattern = () => /\{\{\s*([^{}<>\r\n]+?)\s*\}\}/gu;
 const unprefixVariable = (key: string) => key.trim().replace(/^contact\s*\.\s*/i, "");
-const normalizeVariable = (key: string) => unprefixVariable(key).normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+const normalizeVariable = (key: string) => key.trim().normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
 export function detectEmailVariables(...templates: string[]): string[] {
   return [...new Set(templates.flatMap((template) =>
@@ -20,7 +20,8 @@ export function resolveEmailVariableKey(key: string, values: Record<string, unkn
   if (Object.hasOwn(values, bare)) return bare;
   const normalized = normalizeVariable(bare);
   if (!normalized) return undefined;
-  const matches = Object.keys(values).filter((field) => normalizeVariable(field) === normalized);
+  const aliases = new Set([normalized, normalizeVariable(trimmed)]);
+  const matches = Object.keys(values).filter((field) => aliases.has(normalizeVariable(field)));
   return matches.length === 1 ? matches[0] : undefined;
 }
 
