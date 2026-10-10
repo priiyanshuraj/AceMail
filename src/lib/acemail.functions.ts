@@ -93,16 +93,45 @@ export const deleteContactList = createServerFn({ method: "POST" })
 
 export const listContacts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        listId: z.string().uuid(),
+        limit: z.number().int().min(1).max(100).optional(),
+        offset: z.number().int().min(0).optional(),
+      })
+      .parse(d)
+  )
+  .handler(async ({ data, context }) => {
+    const limit = data.limit ?? 25;
+    const offset = data.offset ?? 0;
+    const [page, total] = await Promise.all([
+      context.supabase
+        .from("contacts")
+        .select("*")
+        .eq("list_id", data.listId)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1),
+      context.supabase
+        .from("contacts")
+        .select("id", { count: "exact", head: true })
+        .eq("list_id", data.listId),
+    ]);
+    if (page.error) throw new Error(page.error.message);
+    return { rows: page.data ?? [], total: total.count ?? 0 };
+  });
+
+export const listAllContactIds = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ listId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("contacts")
-      .select("*")
+      .select("id")
       .eq("list_id", data.listId)
-      .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(20000);
     if (error) throw new Error(error.message);
-    return rows;
+    return (rows ?? []).map((r) => r.id);
   });
 
 const contactRow = z.object({
