@@ -10,7 +10,7 @@ export async function trackCampaignLinks(html: string, logId: string, userId: st
     const href = attribs["href"];
     if (href && /^https?:\/\//i.test(href)) destinations.add(href);
     return { tagName, attribs };
-  } });
+  } } });
   if (destinations.size === 0) return html;
   const { data: links, error } = await db.from("email_tracking_links").upsert(
     [...destinations].map((destination) => ({ log_id: logId, user_id: userId, destination })),
