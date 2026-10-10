@@ -6,6 +6,7 @@ import {
   createContactList,
   deleteContactList,
   listContacts,
+  listAllContactIds,
   importContacts,
   deleteContact,
   deleteContacts,
@@ -103,7 +104,11 @@ function ContactsPage() {
   const [listDialogOpen, setListDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [csvText, setCsvText] = useState("");
-  const [contacts, setContacts] = useState<Awaited<ReturnType<typeof listContacts>>>([]);
+  const [contacts, setContacts] = useState<Awaited<ReturnType<typeof listContacts>>["rows"]>([]);
+  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+  const [page, setPage] = useState(1);
+  const [selectAllAcross, setSelectAllAcross] = useState(false);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["contact-lists"] });
 
@@ -116,10 +121,32 @@ function ContactsPage() {
     toast.success("List created");
   };
 
+  const loadContacts = async (listId: string, nextPage: number, size: number) => {
+    const res = await listContacts({ data: { listId, limit: size, offset: (nextPage - 1) * size } });
+    setContacts(res.rows);
+    setTotal(res.total);
+  };
+
   const handleSelectList = async (id: string) => {
     setSelectedList(id);
     setSelectedIds(new Set());
-    setContacts(await listContacts({ data: { listId: id } }));
+    setSelectAllAcross(false);
+    setPage(1);
+    await loadContacts(id, 1, pageSize);
+  };
+
+  const handlePageSizeChange = async (size: string) => {
+    if (!selectedList) return;
+    const n = Number(size);
+    setPageSize(n);
+    setPage(1);
+    await loadContacts(selectedList, 1, n);
+  };
+
+  const handlePageChange = async (next: number) => {
+    if (!selectedList) return;
+    setPage(next);
+    await loadContacts(selectedList, next, pageSize);
   };
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -129,12 +156,34 @@ function ContactsPage() {
     () => contacts.length > 0 && contacts.every((c) => selectedIds.has(c.id)),
     [contacts, selectedIds],
   );
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const toggleAll = () => {
-    setSelectedIds(allSelected ? new Set() : new Set(contacts.map((c) => c.id)));
+    if (allSelected) {
+      setSelectedIds((s) => {
+        const n = new Set(s);
+        contacts.forEach((c) => n.delete(c.id));
+        return n;
+      });
+      setSelectAllAcross(false);
+    } else {
+      setSelectedIds((s) => new Set([...s, ...contacts.map((c) => c.id)]));
+    }
+  };
+
+  const selectEntireList = async () => {
+    if (!selectedList) return;
+    try {
+      const ids = await listAllContactIds({ data: { listId: selectedList } });
+      setSelectedIds(new Set(ids));
+      setSelectAllAcross(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not select all contacts");
+    }
   };
 
   const toggleOne = (id: string) => {
+    setSelectAllAcross(false);
     setSelectedIds((s) => {
       const n = new Set(s);
       if (n.has(id)) n.delete(id);
@@ -145,16 +194,22 @@ function ContactsPage() {
 
   const handleRemoveSelected = async () => {
     if (!selectedIds.size || !selectedList) return;
+    let removed = 0;
     try {
       const result = await deleteContacts({ data: { ids: [...selectedIds] } });
+      removed = result.deleted;
       toast.success(`Removed ${result.deleted} contact${result.deleted === 1 ? "" : "s"}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Remove failed");
       return;
     }
     setSelectedIds(new Set());
+    setSelectAllAcross(false);
     setConfirmRemove(false);
-    setContacts(await listContacts({ data: { listId: selectedList } }));
+    const remaining = Math.max(0, total - removed);
+    const nextPage = Math.min(page, Math.max(1, Math.ceil(remaining / pageSize)));
+    if (nextPage !== page) setPage(nextPage);
+    await loadContacts(selectedList, nextPage, pageSize);
     refresh();
   };
 
@@ -268,13 +323,23 @@ function ContactsPage() {
     setCsvText("");
     setMapping([]);
     setImportDialogOpen(false);
-    setContacts(await listContacts({ data: { listId: selectedList } }));
+    await loadContacts(selectedList, page, pageSize);
     refresh();
   };
 
   const handleDeleteContact = async (id: string) => {
     await deleteContact({ data: { id } });
-    if (selectedList) setContacts(await listContacts({ data: { listId: selectedList } }));
+    setSelectedIds((s) => {
+      const n = new Set(s);
+      n.delete(id);
+      return n;
+    });
+    if (selectedList) {
+      const remaining = Math.max(0, total - 1);
+      const nextPage = Math.min(page, Math.max(1, Math.ceil(remaining / pageSize)));
+      if (nextPage !== page) setPage(nextPage);
+      await loadContacts(selectedList, nextPage, pageSize);
+    }
     refresh();
   };
 
@@ -466,6 +531,25 @@ function ContactsPage() {
                 </Dialog>
               </CardHeader>
               <CardContent>
+                {allSelected && total > contacts.length && (
+                  <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                    <span>All {contacts.length} contacts on this page are selected.</span>
+                    {selectAllAcross ? (
+                      <span className="text-muted-foreground">
+                        All {total} contacts in this list are selected.
+                      </span>
+                    ) : (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0"
+                        onClick={() => void selectEntireList()}
+                      >
+                        Select all {total} contacts in this list
+                      </Button>
+                    )}
+                  </div>
+                )}
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -512,6 +596,45 @@ function ContactsPage() {
                     )}
                   </TableBody>
                 </Table>
+                {total > 0 && (
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {(page - 1) * pageSize + 1}–{(page - 1) * pageSize + contacts.length} of{" "}
+                      {total}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Select value={String(pageSize)} onValueChange={(v) => void handlePageSizeChange(v)}>
+                        <SelectTrigger className="h-8 w-[130px]" aria-label="Contacts per page">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="25">25 per page</SelectItem>
+                          <SelectItem value="50">50 per page</SelectItem>
+                          <SelectItem value="100">100 per page</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page <= 1}
+                        onClick={() => void handlePageChange(page - 1)}
+                      >
+                        Previous
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Page {page} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page >= totalPages}
+                        onClick={() => void handlePageChange(page + 1)}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
