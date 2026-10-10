@@ -113,6 +113,7 @@ function ContactsPage() {
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
   const [newFieldCol, setNewFieldCol] = useState<number | null>(null);
   const [newFieldName, setNewFieldName] = useState("");
+  const [emptyCols, setEmptyCols] = useState<Set<number>>(new Set());
 
   const excludeCol = (i: number) => {
     setMapping((m) => m.map((x, j) => (j === i ? "skip" : x)));
@@ -145,8 +146,15 @@ function ContactsPage() {
     setCsvText(text);
     setExcluded(new Set());
     const keys = await listCustomFieldKeys().catch(() => [] as string[]);
-    const hdrs = parseCsv(text)[0] ?? [];
-    const mapped = autoMap(hdrs, keys);
+    const parsed = parseCsv(text);
+    const hdrs = parsed[0] ?? [];
+    const data = parsed.slice(1);
+    const empty = new Set<number>();
+    hdrs.forEach((_, i) => {
+      if (data.every((r) => !(r[i] ?? "").trim())) empty.add(i);
+    });
+    setEmptyCols(empty);
+    const mapped = autoMap(hdrs, keys).map((m, i) => (empty.has(i) ? "skip" : m));
     setCustomKeys([...new Set([...keys, ...mapped.filter((m) => m.startsWith("custom:")).map((m) => m.slice(7))])].sort());
     setMapping(mapped);
   };
@@ -335,12 +343,15 @@ function ContactsPage() {
                     ) : (
                       <div className="max-h-[45vh] space-y-2 overflow-y-auto rounded-md border p-3">
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{dataRows.length} rows · {headers.length} columns</span>
-                          <button className="underline" onClick={() => { setCsvText(""); setMapping([]); setExcluded(new Set()); }}>
+                          <span>
+                            {dataRows.length} rows · {headers.length - emptyCols.size} columns
+                            {emptyCols.size > 0 && ` (${emptyCols.size} empty hidden)`}
+                          </span>
+                          <button className="underline" onClick={() => { setCsvText(""); setMapping([]); setExcluded(new Set()); setEmptyCols(new Set()); }}>
                             Clear
                           </button>
                         </div>
-                        {headers.map((h, i) => (
+                        {headers.map((h, i) => (!emptyCols.has(i) && (
                           <div key={i} className={`grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2 ${excluded.has(i) ? "opacity-50" : ""}`}>
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium">{h || `Column ${i + 1}`}</p>
@@ -389,7 +400,7 @@ function ContactsPage() {
                             )}
                             {(excluded.has(i) || newFieldCol === i) && <span className="w-7" />}
                           </div>
-                        ))}
+                        )))}
                       </div>
                     )}
                     <Button onClick={handleImport} className="w-full" disabled={headers.length === 0}>
