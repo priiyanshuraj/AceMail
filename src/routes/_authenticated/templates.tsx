@@ -228,7 +228,7 @@ function TemplatesPage() {
               <CardTitle>Preview</CardTitle>
               <div className="flex items-center gap-2">
                 <UserRound className="h-4 w-4 text-muted-foreground" />
-                <Select value={previewContactId} onValueChange={setPreviewContactId}>
+                <Select value={effectiveContactId} onValueChange={setPreviewContactId}>
                   <SelectTrigger className="w-full max-w-[220px]">
                     <SelectValue placeholder="Sample contact" />
                   </SelectTrigger>
