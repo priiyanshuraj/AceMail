@@ -52,6 +52,10 @@ npm run dev
 
 Requires Node.js 20+ ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)). The app pairs with a Lovable Cloud backend — continue in the [Lovable editor](https://lovable.dev/projects/278b00a9-11b9-457c-912a-5277de8da386) to develop, preview, and deploy in one place.
 
+## License
+
+Released under the [Apache License 2.0](LICENSE).
+
 ## Built with Lovable
 
 This project was built with [Lovable](https://lovable.dev) — every change made in the Lovable editor commits straight to this repository, and pushes back to `main` sync into Lovable.
