@@ -227,6 +227,52 @@ export const sendTestEmail = createServerFn({ method: "POST" })
     return { ok: true, to: box.from_email };
   });
 
+// ---------- Direct send ----------
+
+export const sendDirectEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        configId: z.string().uuid(),
+        to: z.string().email().max(320),
+        subject: z.string().max(500),
+        body: z.string().max(200000),
+        includeSignature: z.boolean(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: box } = await supabase
+      .from("email_configurations")
+      .select("id, provider, from_email, from_name, status")
+      .eq("id", data.configId)
+      .single();
+    if (!box) throw new Error("Mailbox not found");
+    if (box.provider !== "gmail") throw new Error("Direct send is available for connected Gmail mailboxes");
+    const { getMailboxKey, gmailSend } = await import("@/server/gmail.server");
+    const key = await getMailboxKey(box.id);
+    if (!key) throw new Error("Mailbox needs to be reconnected");
+    const { prepareEmail } = await import("@/server/email-content.server");
+    const { appendSignature, signatureHtml } = await import("@/lib/email-content");
+    let body = data.body;
+    if (data.includeSignature) {
+      const { data: sig } = await supabase.from("user_signatures").select("signature").eq("user_id", userId).maybeSingle();
+      if (sig?.signature) body = appendSignature(body, signatureHtml(sig.signature));
+    }
+    const prepared = await prepareEmail(body, userId, supabase);
+    await gmailSend(key, {
+      from: box.from_email,
+      fromName: box.from_name,
+      to: data.to,
+      subject: data.subject,
+      html: prepared.html,
+      attachments: prepared.attachments,
+    });
+    return { ok: true, to: data.to };
+  });
+
 // ---------- Unified inbox ----------
 
 export const listInbox = createServerFn({ method: "GET" })
