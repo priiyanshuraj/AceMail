@@ -1,5 +1,5 @@
 # Template editor
-- [ ] Add a remap selector for detected variables and verify replacements update the subject, body and preview.
+- [x] Add a remap selector for detected variables; browser verified all occurrences update in subject and body, preview refreshes, and no runtime errors occur.
 - [x] Auto-detect template variables and match standard/custom contact fields, including spaces and contact prefixes; 13 tests and browser detection, matching, and removal verified.
 - [x] Preserve imported custom-field paragraphs across preview, test emails and campaigns; 10 regression tests and browser paragraph spacing verified. Live email delivery was not triggered.
 - [x] Add rich formatting, links, uploaded images/files, HTML mode, template loading, meeting and video links.
