@@ -2,11 +2,37 @@ import sanitizeHtml from "sanitize-html";
 
 export const escapeEmailText = (text: string) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
+const variablePattern = () => /\{\{\s*([^{}<>\r\n]+?)\s*\}\}/gu;
+const unprefixVariable = (key: string) => key.trim().replace(/^contact\s*\.\s*/i, "");
+const normalizeVariable = (key: string) => key.trim().normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+
+export function detectEmailVariables(...templates: string[]): string[] {
+  return [...new Set(templates.flatMap((template) =>
+    [...template.matchAll(variablePattern())].map((match) => (match[1] ?? "").trim()).filter(Boolean)
+  ))];
+}
+
+/** Exact keys win; normalized aliases must match one field, never an arbitrary field. */
+export function resolveEmailVariableKey(key: string, values: Record<string, unknown>): string | undefined {
+  const trimmed = key.trim();
+  if (Object.hasOwn(values, trimmed)) return trimmed;
+  const bare = unprefixVariable(trimmed);
+  if (Object.hasOwn(values, bare)) return bare;
+  const normalized = normalizeVariable(bare);
+  if (!normalized) return undefined;
+  const aliases = new Set([normalized, normalizeVariable(trimmed)]);
+  const matches = Object.keys(values).filter((field) => aliases.has(normalizeVariable(field)));
+  return matches.length === 1 ? matches[0] : undefined;
+}
+
 /** Contact values are plain text, not HTML; retain each imported line break. */
 export function renderEmailVariables(template: string, values: Record<string, unknown>, html = false, missing: (key: string) => string = () => "") {
   const source = html ? emailHtml(template) : template;
-  const rendered = source.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_match, key: string) => {
-    const value = values[key];
+  const rendered = source.replace(variablePattern(), (_match, rawKey: string) => {
+    const key = rawKey.trim();
+    if (!key) return _match;
+    const field = resolveEmailVariableKey(key, values);
+    const value = field === undefined ? undefined : values[field];
     const text = value === undefined || value === null || value === "" ? missing(key) : String(value);
     return html ? escapeEmailText(text).replace(/\r\n|\r|\n/g, "<br />") : text;
   });
