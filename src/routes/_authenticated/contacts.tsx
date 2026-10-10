@@ -40,7 +40,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Minus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { GoogleSheetImport } from "@/components/GoogleSheetImport";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 function slug(s: string) {
   return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 64);
