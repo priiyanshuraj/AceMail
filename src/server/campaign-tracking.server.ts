@@ -6,7 +6,7 @@ export async function trackCampaignLinks(html: string, logId: string, userId: st
   const origin = new URL(appUrl).origin;
   if (!origin.startsWith("https://") && !origin.startsWith("http://localhost")) throw new Error("Invalid tracking address");
   const destinations = new Set<string>();
-  sanitizeHtml(html, { allowedTags: false, allowedAttributes: false, transformTags: { a: (tagName, attribs) => {
+  sanitizeHtml(html, { allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "font", "center"]), allowedAttributes: false, transformTags: { a: (tagName, attribs) => {
     const href = attribs["href"];
     if (href && /^https?:\/\//i.test(href)) destinations.add(href);
     return { tagName, attribs };
@@ -18,5 +18,5 @@ export async function trackCampaignLinks(html: string, logId: string, userId: st
   ).select("id, destination");
   if (error || !links) throw new Error("Could not prepare campaign tracking");
   const urls = new Map(links.map((link) => [link.destination, `${origin}/api/public/click/${link.id}`]));
-  return sanitizeHtml(html, { allowedTags: false, allowedAttributes: false, allowedSchemes: ["http", "https", "mailto", "cid"], transformTags: { a: (tagName, attribs) => ({ tagName, attribs: { ...attribs, href: urls.get(attribs["href"] ?? "") ?? attribs["href"] ?? "#" } }) } });
+  return sanitizeHtml(html, { allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "font", "center"]), allowedAttributes: false, allowedSchemes: ["http", "https", "mailto", "cid"], transformTags: { a: (tagName, attribs) => ({ tagName, attribs: { ...attribs, href: urls.get(attribs["href"] ?? "") ?? attribs["href"] ?? "#" } }) } });
 }

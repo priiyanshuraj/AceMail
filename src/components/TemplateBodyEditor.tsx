@@ -31,7 +31,7 @@ const PrivateImage = Image.extend({
   },
 });
 export const TemplateBodyEditor = forwardRef<BodyEditorHandle, Props>(function TemplateBodyEditor({ value, onChange, onFocus, templates }, ref) {
-  const [raw, setRaw] = useState(false);
+  const [raw, setRaw] = useState(() => /<(table|html|head|style)\b/i.test(value));
   const [dialog, setDialog] = useState<"link" | "video" | "meeting" | "template" | null>(null);
   const [url, setUrl] = useState("");
   const [label, setLabel] = useState("");
@@ -99,7 +99,7 @@ export const TemplateBodyEditor = forwardRef<BodyEditorHandle, Props>(function T
       {([{ kind: "link", icon: Link, name: "Insert link" }, { kind: "video", icon: Video, name: "Add video link" }, { kind: "meeting", icon: Calendar, name: "Insert meeting link" }, { kind: "template", icon: FileText, name: "Load template" }] as const).map((tool) => <Button key={tool.kind} type="button" size="icon" variant="ghost" title={tool.name} aria-label={tool.name} onClick={() => { setUrl(""); setLabel(tool.kind === "video" ? "▶ Watch video" : tool.kind === "meeting" ? "Book a meeting" : ""); setDialog(tool.kind); }}><tool.icon className="h-4 w-4" /></Button>)}
       <Button type="button" size="icon" variant="ghost" title="Upload image" aria-label="Upload image" disabled={uploading} onClick={() => { uploadKind.current = "image"; if (uploadRef.current) { uploadRef.current.accept = "image/png,image/jpeg,image/gif,image/webp"; uploadRef.current.click(); } }}><ImagePlus className="h-4 w-4" /></Button>
       <Button type="button" size="icon" variant="ghost" title="Attach files" aria-label="Attach files" disabled={uploading} onClick={() => { uploadKind.current = "file"; if (uploadRef.current) { uploadRef.current.accept = "*/*"; uploadRef.current.click(); } }}><Paperclip className="h-4 w-4" /></Button>
-      <Button type="button" size="icon" variant={raw ? "secondary" : "ghost"} title={raw ? "Visual editor" : "Edit HTML"} aria-label={raw ? "Visual editor" : "Edit HTML"} onClick={() => { if (raw) onChange(emailHtml(value)); setRaw(!raw); }}><Code className="h-4 w-4" /></Button>
+      <Button type="button" size="icon" variant={raw ? "secondary" : "ghost"} title={raw ? "Visual editor" : "Edit HTML"} aria-label={raw ? "Visual editor" : "Edit HTML"} onClick={() => { if (raw && /<(table|html|head|style)\b/i.test(value)) { toast.info("Keep this layout in HTML mode to preserve its design."); return; } if (raw) onChange(emailHtml(value)); setRaw(!raw); }}><Code className="h-4 w-4" /></Button>
       {uploading && <span className="self-center text-xs text-muted-foreground">Uploading…</span>}
     </div>
     <input ref={uploadRef} type="file" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) void upload(file); e.target.value = ""; }} />
