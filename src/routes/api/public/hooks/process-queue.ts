@@ -76,6 +76,7 @@ async function processQueue() {
   // Group by campaign to reuse transporters and enforce daily limits
   const byCampaign = new Map<string, typeof due>();
   for (const log of due) {
+    if (!log.campaign_id || !log.contact_id) continue; // direct one-off sends are never queued
     const list = byCampaign.get(log.campaign_id) ?? [];
     list.push(log);
     byCampaign.set(log.campaign_id, list);
