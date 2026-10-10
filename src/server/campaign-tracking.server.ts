@@ -18,5 +18,5 @@ export async function trackCampaignLinks(html: string, logId: string, userId: st
   ).select("id, destination");
   if (error || !links) throw new Error("Could not prepare campaign tracking");
   const urls = new Map(links.map((link) => [link.destination, `${origin}/api/public/click/${link.id}`]));
-  return sanitizeHtml(html, { allowedTags: false, allowedAttributes: false, transformTags: { a: (tagName, attribs) => ({ tagName, attribs: { ...attribs, href: urls.get(attribs["href"] ?? "") ?? attribs["href"] ?? "#" } }) } });
+  return sanitizeHtml(html, { allowedTags: false, allowedAttributes: false, allowedSchemes: ["http", "https", "mailto", "cid"], transformTags: { a: (tagName, attribs) => ({ tagName, attribs: { ...attribs, href: urls.get(attribs["href"] ?? "") ?? attribs["href"] ?? "#" } }) } });
 }

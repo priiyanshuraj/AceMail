@@ -16,7 +16,7 @@ describe("Email formatting", () => {
   });
   it("tracks only web links with stored opaque IDs", async () => {
     const db = { from: () => ({ upsert: () => ({ select: async () => ({ data: [{ id: "opaque", destination: "https://example.com/?a=1&b=2" }], error: null }) }) }) };
-    const result = await trackCampaignLinks('<a href="https://example.com/?a=1&amp;b=2">Website</a><a href="mailto:hi@example.com">Email</a><img src="cid:image@acemail" />', "log", "owner", "https://acemail.lovable.app", db as unknown as Parameters<typeof trackCampaignLinks>[5]);
+    const result = await trackCampaignLinks('<a href="https://example.com/?a=1&amp;b=2">Website</a><a href="mailto:hi@example.com">Email</a><img src="cid:image@acemail" />', "log", "owner", "https://acemail.lovable.app", db as unknown as Parameters<typeof trackCampaignLinks>[4]);
     expect(result).toContain('href="https://acemail.lovable.app/api/public/click/opaque"');
     expect(result).toContain('href="mailto:hi@example.com"');
     expect(result).toContain('src="cid:image@acemail"');

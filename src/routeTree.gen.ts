@@ -31,7 +31,7 @@ import { Route as AuthenticatedCampaignsEditCampaignIdRouteImport } from './rout
 import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/google/return'
 import { Route as ApiPublicClickLinkIdRouteImport } from './routes/api/public/click/$linkId'
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
-import { Route as ApiPublicTrackLogIdPngRouteImport } from './routes/api/public/track/$logId.png'
+import { Route as ApiPublicTrackLogIdDotpngRouteImport } from './routes/api/public/track/$logId[.]png'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -147,11 +147,12 @@ const ApiPublicHooksProcessQueueRoute =
     path: '/api/public/hooks/process-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicTrackLogIdPngRoute = ApiPublicTrackLogIdPngRouteImport.update({
-  id: '/api/public/track/$logId/png',
-  path: '/api/public/track/$logId/png',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiPublicTrackLogIdDotpngRoute =
+  ApiPublicTrackLogIdDotpngRouteImport.update({
+    id: '/api/public/track/$logId.png',
+    path: '/api/public/track/$logId.png',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -175,7 +176,7 @@ export interface FileRoutesByFullPath {
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
-  '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
+  '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -199,7 +200,7 @@ export interface FileRoutesByTo {
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
-  '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
+  '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -225,7 +226,7 @@ export interface FileRoutesById {
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
-  '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
+  '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -251,7 +252,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
-    | '/api/public/track/$logId/png'
+    | '/api/public/track/$logId.png'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -275,7 +276,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
-    | '/api/public/track/$logId/png'
+    | '/api/public/track/$logId.png'
   id:
     | '__root__'
     | '/'
@@ -300,7 +301,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
-    | '/api/public/track/$logId/png'
+    | '/api/public/track/$logId.png'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -315,7 +316,7 @@ export interface RootRouteChildren {
   ApiOauthGoogleReturnRoute: typeof ApiOauthGoogleReturnRoute
   ApiPublicClickLinkIdRoute: typeof ApiPublicClickLinkIdRoute
   ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
-  ApiPublicTrackLogIdPngRoute: typeof ApiPublicTrackLogIdPngRoute
+  ApiPublicTrackLogIdDotpngRoute: typeof ApiPublicTrackLogIdDotpngRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -474,11 +475,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/track/$logId/png': {
-      id: '/api/public/track/$logId/png'
-      path: '/api/public/track/$logId/png'
-      fullPath: '/api/public/track/$logId/png'
-      preLoaderRoute: typeof ApiPublicTrackLogIdPngRouteImport
+    '/api/public/track/$logId.png': {
+      id: '/api/public/track/$logId.png'
+      path: '/api/public/track/$logId.png'
+      fullPath: '/api/public/track/$logId.png'
+      preLoaderRoute: typeof ApiPublicTrackLogIdDotpngRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -528,7 +529,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOauthGoogleReturnRoute: ApiOauthGoogleReturnRoute,
   ApiPublicClickLinkIdRoute: ApiPublicClickLinkIdRoute,
   ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
-  ApiPublicTrackLogIdPngRoute: ApiPublicTrackLogIdPngRoute,
+  ApiPublicTrackLogIdDotpngRoute: ApiPublicTrackLogIdDotpngRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
