@@ -14,7 +14,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, AtSign } from "lucide-react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign } from "lucide-react";
 import logoUrl from "@/assets/acemail-logo.png";
 import hillsAsset from "@/assets/kiarostami-hills.jpg.asset.json";
 
@@ -32,6 +32,7 @@ export const Route = createFileRoute("/_authenticated")({
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/outbox", label: "Outbox", icon: Send },
   { to: "/mailboxes", label: "Mailboxes", icon: AtSign },
   { to: "/contacts", label: "Contacts", icon: Users },
   { to: "/templates", label: "Templates", icon: Mail },
