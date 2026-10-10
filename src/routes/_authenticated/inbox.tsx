@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { listInbox, markInboxRead, syncInboxNow } from "@/lib/mailbox.functions";
+import { listInbox, listMailboxes, markInboxRead, sendDirectEmail, syncInboxNow } from "@/lib/mailbox.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TemplateBodyEditor } from "@/components/TemplateBodyEditor";
+import { ExternalLink, MailPlus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 const inboxQuery = queryOptions({ queryKey: ["inbox"], queryFn: () => listInbox() });
