@@ -343,8 +343,11 @@ function ContactsPage() {
                     ) : (
                       <div className="max-h-[45vh] space-y-2 overflow-y-auto rounded-md border p-3">
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{dataRows.length} rows · {headers.length} columns</span>
-                          <button className="underline" onClick={() => { setCsvText(""); setMapping([]); setExcluded(new Set()); }}>
+                          <span>
+                            {dataRows.length} rows · {headers.length - emptyCols.size} columns
+                            {emptyCols.size > 0 && ` (${emptyCols.size} empty hidden)`}
+                          </span>
+                          <button className="underline" onClick={() => { setCsvText(""); setMapping([]); setExcluded(new Set()); setEmptyCols(new Set()); }}>
                             Clear
                           </button>
                         </div>
