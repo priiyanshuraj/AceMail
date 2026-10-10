@@ -259,7 +259,7 @@ export const sendTemplateTest = createServerFn({ method: "POST" })
     z
       .object({
         subject: z.string().max(500),
-        body: z.string().max(20000),
+        body: z.string().max(200000),
         attach_signature: z.boolean().optional(),
       })
       .parse(d),
@@ -290,13 +290,17 @@ export const sendTemplateTest = createServerFn({ method: "POST" })
         .replaceAll("{{company}}", "Acme Inc")
         .replaceAll("{{email}}", "jane@acme.com")
         .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => `[${k}]`);
-    const body = render(data.body) + (signature ? `\n\n${render(signature)}` : "");
+    const { emailHtml, escapeEmailText } = await import("@/lib/email-content");
+    const { prepareEmail } = await import("@/server/email-content.server");
+    const body = render(emailHtml(data.body)) + (signature ? `<br /><br />${emailHtml(render(escapeEmailText(signature)))}` : "");
+    const prepared = await prepareEmail(body, userId, supabase);
     await gmailSend(key, {
       from: box.from_email,
       fromName: box.from_name,
       to: box.from_email,
       subject: render(data.subject),
-      html: body.replace(/\n/g, "<br />"),
+      html: prepared.html,
+      attachments: prepared.attachments,
     });
     return { ok: true, to: box.from_email };
   });

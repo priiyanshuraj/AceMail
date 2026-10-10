@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, Mail, UserRound, Send } from "lucide-react";
 import { toast } from "sonner";
+import { TemplateBodyEditor, EmailPreview, type BodyEditorHandle } from "@/components/TemplateBodyEditor";
 
 const templatesQuery = queryOptions({
   queryKey: ["templates"],
@@ -49,7 +50,7 @@ function TemplatesPage() {
   const [previewContactId, setPreviewContactId] = useState<string>("sample");
   const [sendingTest, setSendingTest] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const bodyEditorRef = useRef<BodyEditorHandle>(null);
   const lastFieldRef = useRef<"subject" | "body">("body");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
   const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
@@ -60,7 +61,11 @@ function TemplatesPage() {
 
   const insertVar = (v: string) => {
     const isSubject = lastFieldRef.current === "subject";
-    const el = isSubject ? subjectRef.current : bodyRef.current;
+    if (!isSubject) {
+      bodyEditorRef.current?.insert(v);
+      return;
+    }
+    const el = subjectRef.current;
     const field = isSubject ? "subject" : "body";
     const current = (editing?.[field] as string) ?? "";
     let next = current + v;
@@ -156,13 +161,12 @@ function TemplatesPage() {
               </div>
               <div className="space-y-1">
                 <Label>Body</Label>
-                <Textarea
-                  ref={bodyRef}
-                  rows={12}
+                <TemplateBodyEditor
+                  ref={bodyEditorRef}
                   value={editing.body ?? ""}
-                  onChange={(e) => setEditing({ ...editing, body: e.target.value })}
+                  onChange={(body) => setEditing((current) => current ? { ...current, body } : current)}
                   onFocus={() => (lastFieldRef.current = "body")}
-                  placeholder={"Hi {{first_name}},\n\nI noticed {{company}} is…"}
+                  templates={templates}
                 />
               </div>
               <label className="flex items-center gap-2 text-sm">
@@ -207,7 +211,7 @@ function TemplatesPage() {
               <div className="flex items-center gap-2">
                 <UserRound className="h-4 w-4 text-muted-foreground" />
                 <Select value={previewContactId} onValueChange={setPreviewContactId}>
-                  <SelectTrigger className="w-[220px]">
+                  <SelectTrigger className="w-full max-w-[220px]">
                     <SelectValue placeholder="Sample contact" />
                   </SelectTrigger>
                   <SelectContent>
@@ -227,7 +231,7 @@ function TemplatesPage() {
                 <p className="mb-2 border-b pb-2 text-sm font-semibold">
                   {preview(editing.subject ?? "") || "(no subject)"}
                 </p>
-                <div className="whitespace-pre-wrap text-sm">{preview(editing.body ?? "") || "(no body)"}</div>
+                <EmailPreview body={preview(editing.body ?? "") || "(no body)"} />
                 {editing.attach_signature && signature && (
                   <div className="mt-4 whitespace-pre-wrap border-t pt-3 text-sm text-muted-foreground">{preview(signature)}</div>
                 )}
