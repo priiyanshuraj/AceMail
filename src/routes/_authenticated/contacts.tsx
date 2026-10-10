@@ -146,8 +146,15 @@ function ContactsPage() {
     setCsvText(text);
     setExcluded(new Set());
     const keys = await listCustomFieldKeys().catch(() => [] as string[]);
-    const hdrs = parseCsv(text)[0] ?? [];
-    const mapped = autoMap(hdrs, keys);
+    const parsed = parseCsv(text);
+    const hdrs = parsed[0] ?? [];
+    const data = parsed.slice(1);
+    const empty = new Set<number>();
+    hdrs.forEach((_, i) => {
+      if (data.every((r) => !(r[i] ?? "").trim())) empty.add(i);
+    });
+    setEmptyCols(empty);
+    const mapped = autoMap(hdrs, keys).map((m, i) => (empty.has(i) ? "skip" : m));
     setCustomKeys([...new Set([...keys, ...mapped.filter((m) => m.startsWith("custom:")).map((m) => m.slice(7))])].sort());
     setMapping(mapped);
   };
