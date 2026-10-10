@@ -158,7 +158,7 @@ export const listPreviewContacts = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("contacts")
-      .select("id, email, first_name, last_name, company, custom_fields")
+      .select("id, list_id, email, first_name, last_name, company, custom_fields")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
       .limit(100);
