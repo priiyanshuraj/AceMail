@@ -8,8 +8,20 @@ import {
   listContacts,
   importContacts,
   deleteContact,
+  deleteContacts,
   listCustomFieldKeys,
 } from "@/lib/acemail.functions";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +40,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Minus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { GoogleSheetImport } from "@/components/GoogleSheetImport";
+import { useMemo } from "react";
 
 function slug(s: string) {
   return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 64);
@@ -105,7 +118,44 @@ function ContactsPage() {
 
   const handleSelectList = async (id: string) => {
     setSelectedList(id);
+    setSelectedIds(new Set());
     setContacts(await listContacts({ data: { listId: id } }));
+  };
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
+  const allSelected = useMemo(
+    () => contacts.length > 0 && contacts.every((c) => selectedIds.has(c.id)),
+    [contacts, selectedIds],
+  );
+
+  const toggleAll = () => {
+    setSelectedIds(allSelected ? new Set() : new Set(contacts.map((c) => c.id)));
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  };
+
+  const handleRemoveSelected = async () => {
+    if (!selectedIds.size || !selectedList) return;
+    try {
+      const result = await deleteContacts({ data: { ids: [...selectedIds] } });
+      toast.success(`Removed ${result.deleted} contact${result.deleted === 1 ? "" : "s"}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Remove failed");
+      return;
+    }
+    setSelectedIds(new Set());
+    setConfirmRemove(false);
+    setContacts(await listContacts({ data: { listId: selectedList } }));
+    refresh();
   };
 
   const [customKeys, setCustomKeys] = useState<string[]>([]);
@@ -305,14 +355,20 @@ function ContactsPage() {
         <div className="lg:col-span-2">
           {selectedList ? (
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle>Contacts</CardTitle>
-                <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Upload className="mr-2 h-4 w-4" /> Import CSV
+                <div className="flex items-center gap-2">
+                  {selectedIds.size > 0 && (
+                    <Button variant="destructive" size="sm" onClick={() => setConfirmRemove(true)}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remove selected ({selectedIds.size})
                     </Button>
-                  </DialogTrigger>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
+                    <Upload className="mr-2 h-4 w-4" /> Import CSV
+                  </Button>
+                </div>
+                <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
                   <DialogContent className="max-w-2xl">
                     <DialogHeader>
                       <DialogTitle>Import contacts</DialogTitle>
@@ -413,6 +469,14 @@ function ContactsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          aria-label="Select all contacts"
+                          checked={allSelected ? true : selectedIds.size > 0 ? "indeterminate" : false}
+                          disabled={contacts.length === 0}
+                          onCheckedChange={toggleAll}
+                        />
+                      </TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Company</TableHead>
@@ -421,7 +485,14 @@ function ContactsPage() {
                   </TableHeader>
                   <TableBody>
                     {contacts.map((c) => (
-                      <TableRow key={c.id}>
+                      <TableRow key={c.id} data-state={selectedIds.has(c.id) ? "selected" : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            aria-label={`Select ${c.email}`}
+                            checked={selectedIds.has(c.id)}
+                            onCheckedChange={() => toggleOne(c.id)}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{c.email}</TableCell>
                         <TableCell>{[c.first_name, c.last_name].filter(Boolean).join(" ") || "—"}</TableCell>
                         <TableCell>{c.company || "—"}</TableCell>
@@ -434,7 +505,7 @@ function ContactsPage() {
                     ))}
                     {contacts.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
                           No contacts in this list yet.
                         </TableCell>
                       </TableRow>
@@ -452,6 +523,22 @@ function ContactsPage() {
           )}
         </div>
       </div>
+      <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Remove {selectedIds.size} contact{selectedIds.size === 1 ? "" : "s"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the selected contacts from this list. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleRemoveSelected()}>Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
