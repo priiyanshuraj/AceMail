@@ -67,6 +67,13 @@ export function inboxDocument(body: string) {
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; style-src 'unsafe-inline';"><style>body{margin:0;padding:16px;background:#fff;color:#202124;font:14px/1.5 Arial,sans-serif;overflow-wrap:anywhere}img{max-width:100%;height:auto}a{color:#1155cc}p{margin:0 0 12px}table{max-width:100%}pre{white-space:pre-wrap}</style></head><body>${emailHtml(body)}</body></html>`;
 }
 
+/** Signatures may be plain text or HTML; HTML is sanitized, text keeps line breaks. */
+export function signatureHtml(signature: string): string {
+  return /<\/?[a-z][a-z0-9]*\b[^>]*>/i.test(signature)
+    ? emailHtml(signature)
+    : escapeEmailText(signature).replace(/\r\n|\r|\n/g, "<br />");
+}
+
 export function mediaPaths(html: string) {
   return [...new Set([...html.matchAll(/acemail-file:([^"<>\s]+)/g)].flatMap((match) => match[1] ? [match[1]] : []))];
 }
