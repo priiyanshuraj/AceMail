@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Mail, UserRound, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TemplateBodyEditor, EmailPreview, type BodyEditorHandle } from "@/components/TemplateBodyEditor";
-import { renderEmailVariables, signatureHtml, detectEmailVariables, resolveEmailVariableKey } from "@/lib/email-content";
+import { renderEmailVariables, signatureHtml, appendSignature, detectEmailVariables, resolveEmailVariableKey } from "@/lib/email-content";
 
 const templatesQuery = queryOptions({
   queryKey: ["templates"],
@@ -278,7 +278,7 @@ function TemplatesPage() {
                 <p className="mb-2 border-b pb-2 text-sm font-semibold">
                   {preview(editing.subject ?? "") || "(no subject)"}
                 </p>
-                <EmailPreview body={preview(editing.body ?? "", true) + (editing.attach_signature && signature ? `<br /><br />${preview(signatureHtml(signature), true)}` : "")} />
+                <EmailPreview body={editing.attach_signature && signature ? appendSignature(preview(editing.body ?? "", true), preview(signatureHtml(signature), true)) : preview(editing.body ?? "", true)} />
               </div>
               <Button
                 variant="outline"
