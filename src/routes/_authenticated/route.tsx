@@ -14,7 +14,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, AtSign } from "lucide-react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign } from "lucide-react";
 import logoUrl from "@/assets/acemail-logo.png";
 import hillsAsset from "@/assets/kiarostami-hills.jpg.asset.json";
 

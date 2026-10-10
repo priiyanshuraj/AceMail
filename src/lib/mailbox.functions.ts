@@ -267,3 +267,28 @@ export const syncInboxNow = createServerFn({ method: "POST" })
     }
     return { synced };
   });
+
+// ---------- Outbox ----------
+
+export const listOutbox = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("email_logs")
+      .select(
+        "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
+      )
+      .eq("user_id", context.userId)
+      .order("scheduled_at", { ascending: false })
+      .limit(300);
+    if (error) throw new Error(error.message);
+    const configIds = [...new Set((data ?? []).map((l) => (l.campaigns as unknown as { config_id: string | null })?.config_id).filter(Boolean))] as string[];
+    const { data: boxes } = configIds.length
+      ? await context.supabase.from("email_configurations").select("id, from_email").in("id", configIds)
+      : { data: [] };
+    const boxById = new Map((boxes ?? []).map((b) => [b.id, b.from_email]));
+    return (data ?? []).map((l) => ({
+      ...l,
+      mailbox_email: boxById.get((l.campaigns as unknown as { config_id: string | null })?.config_id ?? "") ?? null,
+    }));
+  });
