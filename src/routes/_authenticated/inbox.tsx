@@ -191,6 +191,16 @@ function InboxPage() {
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <span className="text-xs text-muted-foreground">{new Date(m.received_at).toLocaleString()}</span>
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openCompose(m.from_email);
+                    }}
+                  >
+                    Reply here
+                  </button>
                   {m.gmail_thread_id && (
                     <a
                       href={`https://mail.google.com/mail/u/${box?.from_email ?? 0}/#inbox/${m.gmail_thread_id}`}
