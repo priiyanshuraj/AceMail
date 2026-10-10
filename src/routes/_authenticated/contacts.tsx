@@ -118,7 +118,44 @@ function ContactsPage() {
 
   const handleSelectList = async (id: string) => {
     setSelectedList(id);
+    setSelectedIds(new Set());
     setContacts(await listContacts({ data: { listId: id } }));
+  };
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
+  const allSelected = useMemo(
+    () => contacts.length > 0 && contacts.every((c) => selectedIds.has(c.id)),
+    [contacts, selectedIds],
+  );
+
+  const toggleAll = () => {
+    setSelectedIds(allSelected ? new Set() : new Set(contacts.map((c) => c.id)));
+  };
+
+  const toggleOne = (id: string) => {
+    setSelectedIds((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  };
+
+  const handleRemoveSelected = async () => {
+    if (!selectedIds.size || !selectedList) return;
+    try {
+      const result = await deleteContacts({ data: { ids: [...selectedIds] } });
+      toast.success(`Removed ${result.deleted} contact${result.deleted === 1 ? "" : "s"}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Remove failed");
+      return;
+    }
+    setSelectedIds(new Set());
+    setConfirmRemove(false);
+    setContacts(await listContacts({ data: { listId: selectedList } }));
+    refresh();
   };
 
   const [customKeys, setCustomKeys] = useState<string[]>([]);
