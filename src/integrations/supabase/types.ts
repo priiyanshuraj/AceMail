@@ -387,9 +387,12 @@ export type Database = {
       }
       email_logs: {
         Row: {
-          campaign_id: string
-          contact_id: string
+          campaign_id: string | null
+          config_id: string | null
+          contact_id: string | null
           created_at: string
+          direct_subject: string | null
+          direct_to: string | null
           error: string | null
           gmail_message_id: string | null
           gmail_thread_id: string | null
@@ -403,9 +406,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          campaign_id: string
-          contact_id: string
+          campaign_id?: string | null
+          config_id?: string | null
+          contact_id?: string | null
           created_at?: string
+          direct_subject?: string | null
+          direct_to?: string | null
           error?: string | null
           gmail_message_id?: string | null
           gmail_thread_id?: string | null
@@ -419,9 +425,12 @@ export type Database = {
           user_id: string
         }
         Update: {
-          campaign_id?: string
-          contact_id?: string
+          campaign_id?: string | null
+          config_id?: string | null
+          contact_id?: string | null
           created_at?: string
+          direct_subject?: string | null
+          direct_to?: string | null
           error?: string | null
           gmail_message_id?: string | null
           gmail_thread_id?: string | null

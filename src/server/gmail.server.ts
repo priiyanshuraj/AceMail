@@ -171,12 +171,14 @@ export async function syncMailboxReplies(configId: string, userId: string, ownEm
     if (!log.replied_at) {
       await db.from("email_logs").update({ status: "replied", replied_at: new Date().toISOString() }).eq("id", log.id);
       // Auto-stop: cancel remaining follow-ups for this contact in this campaign
-      await db
-        .from("email_logs")
-        .update({ status: "skipped", error: "Contact replied" })
-        .eq("campaign_id", log.campaign_id)
-        .eq("contact_id", log.contact_id)
-        .eq("status", "queued");
+      if (log.campaign_id && log.contact_id) {
+        await db
+          .from("email_logs")
+          .update({ status: "skipped", error: "Contact replied" })
+          .eq("campaign_id", log.campaign_id)
+          .eq("contact_id", log.contact_id)
+          .eq("status", "queued");
+      }
     }
     synced++;
   }

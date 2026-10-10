@@ -262,13 +262,23 @@ export const sendDirectEmail = createServerFn({ method: "POST" })
       if (sig?.signature) body = appendSignature(body, signatureHtml(sig.signature));
     }
     const prepared = await prepareEmail(body, userId, supabase);
-    await gmailSend(key, {
+    const sent = await gmailSend(key, {
       from: box.from_email,
       fromName: box.from_name,
       to: data.to,
       subject: data.subject,
       html: prepared.html,
       attachments: prepared.attachments,
+    });
+    await supabase.from("email_logs").insert({
+      user_id: userId,
+      status: "sent",
+      sent_at: new Date().toISOString(),
+      gmail_message_id: sent.id,
+      gmail_thread_id: sent.threadId,
+      direct_to: data.to,
+      direct_subject: data.subject,
+      config_id: box.id,
     });
     return { ok: true, to: data.to };
   });
@@ -322,19 +332,19 @@ export const listOutbox = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("email_logs")
       .select(
-        "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
+        "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, direct_to, direct_subject, config_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
       )
       .eq("user_id", context.userId)
       .order("scheduled_at", { ascending: false })
       .limit(300);
     if (error) throw new Error(error.message);
-    const configIds = [...new Set((data ?? []).map((l) => (l.campaigns as unknown as { config_id: string | null })?.config_id).filter(Boolean))] as string[];
+    const configIds = [...new Set((data ?? []).map((l) => l.config_id ?? (l.campaigns as unknown as { config_id: string | null })?.config_id).filter(Boolean))] as string[];
     const { data: boxes } = configIds.length
       ? await context.supabase.from("email_configurations").select("id, from_email").in("id", configIds)
       : { data: [] };
     const boxById = new Map((boxes ?? []).map((b) => [b.id, b.from_email]));
     return (data ?? []).map((l) => ({
       ...l,
-      mailbox_email: boxById.get((l.campaigns as unknown as { config_id: string | null })?.config_id ?? "") ?? null,
+      mailbox_email: boxById.get(l.config_id ?? (l.campaigns as unknown as { config_id: string | null })?.config_id ?? "") ?? null,
     }));
   });
