@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/hooks/process-queue")({
 
 async function processQueue() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { renderEmailVariables, escapeEmailText } = await import("@/lib/email-content");
+  const { renderEmailVariables, signatureHtml } = await import("@/lib/email-content");
   const { prepareEmail } = await import("@/server/email-content.server");
   const nodemailer = (await import("nodemailer")).default;
   const { getMailboxKey, gmailSend, effectiveDailyLimit, syncMailboxReplies, ReconnectRequiredError } =
