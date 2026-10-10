@@ -177,6 +177,15 @@ async function processQueue() {
         const last = lastStep?.step_order ?? 0;
         // Break-up day: if final emails are due, send only those today.
         if (last > 1 && sendable.some((l) => order(l) === last)) {
+          // Push clashing follow-ups to the next day; their later steps are
+          // scheduled from the real send date, so the day gaps stay the same.
+          const moved = sendable.filter((l) => order(l) > 1 && order(l) < last).map((l) => l.id);
+          if (moved.length) {
+            const next = new Date(now.getTime() + 86400_000).toISOString();
+            for (let i = 0; i < moved.length; i += 100) {
+              await supabaseAdmin.from("email_logs").update({ scheduled_at: next }).in("id", moved.slice(i, i + 100));
+            }
+          }
           sendable = sendable.filter((l) => order(l) === last);
         }
       }
