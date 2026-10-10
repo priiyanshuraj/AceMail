@@ -14,7 +14,8 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon } from "lucide-react";
 import logoUrl from "@/assets/acemail-logo.png";
 import hillsAsset from "@/assets/kiarostami-hills.jpg.asset.json";
 
@@ -43,6 +44,15 @@ const navItems = [
 function AuthenticatedLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  const [dark, setDark] = useState(false);
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try { localStorage.setItem("acemail-theme", next ? "dark" : "light"); } catch {}
+  };
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -91,20 +101,32 @@ function AuthenticatedLayout() {
             </Button>
           </SidebarFooter>
         </Sidebar>
-        <main className="relative flex-1 overflow-auto">
+        <main className="relative min-w-0 flex-1 overflow-x-hidden">
           <img
             src={hillsAsset.url}
             alt=""
             aria-hidden
             className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-[0.14]"
           />
-          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-6 py-4 backdrop-blur-md">
-            <SidebarTrigger />
-            <p className="font-serif text-lg italic tracking-wide text-muted-foreground">
+          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-4">
+            <SidebarTrigger className="shrink-0" />
+            <img src={logoUrl} alt="" className="h-7 w-7 shrink-0 rounded-md md:hidden" width={28} height={28} />
+            <span className="font-semibold md:hidden">AceMail</span>
+            <p className="hidden min-w-0 flex-1 font-serif text-lg italic tracking-wide text-muted-foreground md:block">
               Every message, <span className="neon-text not-italic font-semibold">a road through the hills</span> — send, track, repeat.
             </p>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto shrink-0"
+              onClick={toggleTheme}
+              aria-label={dark ? "Switch to day mode" : "Switch to night mode"}
+              title={dark ? "Day mode" : "Night mode"}
+            >
+              {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
           </div>
-          <div className="relative p-6">
+          <div className="relative p-3 sm:p-6">
             <Outlet />
           </div>
         </main>
