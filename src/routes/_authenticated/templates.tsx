@@ -245,8 +245,14 @@ function TemplatesPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="rounded-md border bg-muted/50 p-3">
+                <p className="mb-2 border-b pb-2 text-sm font-semibold">
+                  {preview(editing.subject ?? "") || "(no subject)"}
+                </p>
+                <EmailPreview body={editing.attach_signature && signature ? appendSignature(preview(editing.body ?? "", true), preview(signatureHtml(signature), true)) : preview(editing.body ?? "", true)} />
+              </div>
               {detectedVars.length > 0 && (
-                <section aria-label="Detected variables" className="space-y-2 border-b pb-3">
+                <section aria-label="Detected variables" className="space-y-2 border-t pt-3">
                   <h3 className="text-sm font-semibold">Detected variables · {detectedVars.length}</h3>
                   <ul className="space-y-2">
                     {detectedVars.map((key) => {
@@ -281,12 +287,6 @@ function TemplatesPage() {
                   </ul>
                 </section>
               )}
-              <div className="rounded-md border bg-muted/50 p-3">
-                <p className="mb-2 border-b pb-2 text-sm font-semibold">
-                  {preview(editing.subject ?? "") || "(no subject)"}
-                </p>
-                <EmailPreview body={editing.attach_signature && signature ? appendSignature(preview(editing.body ?? "", true), preview(signatureHtml(signature), true)) : preview(editing.body ?? "", true)} />
-              </div>
               <Button
                 variant="outline"
                 className="w-full"
