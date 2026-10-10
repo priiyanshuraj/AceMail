@@ -65,7 +65,7 @@ function OutboxPage() {
       <div className="flex flex-wrap gap-2">
         {(["all", "queued", "sent", "opened", "replied", "failed"] as const).map((f) => (
           <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
-            {f[0].toUpperCase() + f.slice(1)} ({count(f)})
+            {f.charAt(0).toUpperCase() + f.slice(1)} ({count(f)})
           </Button>
         ))}
       </div>
@@ -105,7 +105,7 @@ function OutboxPage() {
                   )}
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[l.status] ?? STATUS_STYLE.queued}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[l.status] ?? STATUS_STYLE["queued"]}`}>
                     {l.status}
                   </span>
                   {l.gmail_thread_id && (
