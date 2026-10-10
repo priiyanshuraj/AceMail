@@ -227,6 +227,11 @@ function Landing() {
           <Link to="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
         </p>
+        <p className="mt-3">
+          Support: <a href="mailto:mepriyanshuonline@gmail.com" className="hover:text-foreground hover:underline">mepriyanshuonline@gmail.com</a>
+          {" · "}
+          Developer: <a href="mailto:hi@priyanshuraj.online" className="hover:text-foreground hover:underline">hi@priyanshuraj.online</a>
+        </p>
       </footer>
     </div>
   );
