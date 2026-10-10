@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { emailHtml, escapeEmailText, mediaPaths } from "@/lib/email-content";
+import { emailHtml, escapeEmailText, mediaPaths, inboxDocument } from "@/lib/email-content";
 import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 
@@ -110,19 +110,42 @@ export const TemplateBodyEditor = forwardRef<BodyEditorHandle, Props>(function T
 });
 
 export function EmailPreview({ body }: { body: string }) {
-  const [html, setHtml] = useState(() => emailHtml(body));
+  const [resolved, setResolved] = useState<{ source: string; html: string; files: { name: string; url: string }[]; failed: boolean } | null>(null);
+  const [height, setHeight] = useState(320);
+  const frame = useRef<HTMLIFrameElement>(null);
   useEffect(() => {
     let current = true;
     async function resolve() {
       let next = emailHtml(body);
+      let failed = false;
+      const files: { name: string; url: string }[] = [];
       for (const path of mediaPaths(next)) {
-        const { data } = await supabase.storage.from("template-files").createSignedUrl(path, 3600);
-        if (data) next = next.replaceAll(`acemail-file:${path}`, data.signedUrl.replaceAll("&", "&amp;"));
+        const inline = next.includes(`src="acemail-file:${path}"`);
+        try {
+          const { data, error } = await supabase.storage.from("template-files").createSignedUrl(path, 3600);
+          if (data && !error) {
+            if (!inline) files.push({ name: path.split("/").pop()?.replace(/^[a-f0-9-]{36}-/, "") ?? "Attachment", url: data.signedUrl });
+            next = next.replaceAll(`acemail-file:${path}`, inline ? data.signedUrl.replaceAll("&", "&amp;") : "#");
+          } else failed = true;
+        } catch { failed = true; }
       }
-      if (current) setHtml(next);
+      if (current) setResolved({ source: body, html: next, files, failed });
     }
     void resolve();
     return () => { current = false; };
   }, [body]);
-  return <div className="email-editor break-words text-sm" dangerouslySetInnerHTML={{ __html: html }} />;
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const document = frame.current?.contentDocument;
+      if (document?.body) setHeight(Math.min(900, Math.max(240, document.body.scrollHeight + 32)));
+    }, 300);
+    return () => window.clearInterval(timer);
+  }, []);
+  const ready = resolved?.source === body;
+  return <div className="space-y-3">
+    <iframe ref={frame} title="Inbox email preview" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" srcDoc={inboxDocument(ready ? resolved.html : body)} className="w-full border-0 rounded-md" style={{ height }} />
+    {!ready && mediaPaths(body).length > 0 && <p className="text-xs text-muted-foreground">Loading attachments…</p>}
+    {ready && resolved.failed && <p className="text-sm text-destructive">Some uploaded files could not be loaded. Re-upload them before sending.</p>}
+    {ready && resolved.files.length > 0 && <div className="flex flex-wrap gap-2 border-t pt-3">{resolved.files.map((file) => <Button key={file.url} variant="outline" size="sm" asChild><a href={file.url} target="_blank" rel="noopener noreferrer"><Paperclip className="mr-2 h-4 w-4" />{file.name}</a></Button>)}</div>}
+  </div>;
 }

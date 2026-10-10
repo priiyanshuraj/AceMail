@@ -259,6 +259,45 @@ export type Database = {
           },
         ]
       }
+      email_click_events: {
+        Row: {
+          clicked_at: string
+          id: string
+          link_id: string
+          log_id: string
+          user_id: string
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          link_id: string
+          log_id: string
+          user_id: string
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          link_id?: string
+          log_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_click_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "email_tracking_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_click_events_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "email_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_configurations: {
         Row: {
           created_at: string
@@ -449,6 +488,38 @@ export type Database = {
         }
         Relationships: []
       }
+      email_tracking_links: {
+        Row: {
+          created_at: string
+          destination: string
+          id: string
+          log_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination: string
+          id?: string
+          log_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string
+          id?: string
+          log_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_tracking_links_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "email_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inbox_messages: {
         Row: {
           campaign_id: string | null
@@ -584,7 +655,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      campaign_analytics: { Args: { _campaign_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
