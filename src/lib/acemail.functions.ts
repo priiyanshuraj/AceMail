@@ -178,6 +178,19 @@ export const deleteContact = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const deleteContacts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ ids: z.array(z.string().uuid()).min(1) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("contacts")
+      .delete()
+      .in("id", data.ids)
+      .select("id");
+    if (error) throw new Error(error.message);
+    return { deleted: rows?.length ?? 0 };
+  });
+
 // ---------- Templates ----------
 
 export const listTemplates = createServerFn({ method: "GET" })
