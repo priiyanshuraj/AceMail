@@ -262,13 +262,23 @@ export const sendDirectEmail = createServerFn({ method: "POST" })
       if (sig?.signature) body = appendSignature(body, signatureHtml(sig.signature));
     }
     const prepared = await prepareEmail(body, userId, supabase);
-    await gmailSend(key, {
+    const sent = await gmailSend(key, {
       from: box.from_email,
       fromName: box.from_name,
       to: data.to,
       subject: data.subject,
       html: prepared.html,
       attachments: prepared.attachments,
+    });
+    await supabase.from("email_logs").insert({
+      user_id: userId,
+      status: "sent",
+      sent_at: new Date().toISOString(),
+      gmail_message_id: sent.id,
+      gmail_thread_id: sent.threadId,
+      direct_to: data.to,
+      direct_subject: data.subject,
+      config_id: box.id,
     });
     return { ok: true, to: data.to };
   });
