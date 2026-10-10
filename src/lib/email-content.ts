@@ -2,13 +2,20 @@ import sanitizeHtml from "sanitize-html";
 
 export const escapeEmailText = (text: string) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
-const variablePattern = () => /\{\{\s*([^{}<>\r\n]+?)\s*\}\}/gu;
+// Rich-text editors can split a token with tags or entities (e.g. {{<span>first</span>&nbsp;name}}); accept and clean them.
+const variablePattern = () => /\{\{((?:[^{}\r\n]|<[^>]*>){1,200}?)\}\}/gu;
+const cleanVariable = (raw: string) => raw
+  .replace(/<[^>]*>/g, "")
+  .replace(/&nbsp;|&#160;|\u00a0/gi, " ")
+  .replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'")
+  .replace(/[\u200b-\u200d\ufeff]/g, "")
+  .replace(/\s+/g, " ").trim();
 const unprefixVariable = (key: string) => key.trim().replace(/^contact\s*\.\s*/i, "");
 const normalizeVariable = (key: string) => key.trim().normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
 export function detectEmailVariables(...templates: string[]): string[] {
   return [...new Set(templates.flatMap((template) =>
-    [...template.matchAll(variablePattern())].map((match) => (match[1] ?? "").trim()).filter(Boolean)
+    [...template.matchAll(variablePattern())].map((match) => cleanVariable(match[1] ?? "")).filter(Boolean)
   ))];
 }
 
@@ -29,7 +36,7 @@ export function resolveEmailVariableKey(key: string, values: Record<string, unkn
 export function renderEmailVariables(template: string, values: Record<string, unknown>, html = false, missing: (key: string) => string = () => "") {
   const source = html ? emailHtml(template) : template;
   const rendered = source.replace(variablePattern(), (_match, rawKey: string) => {
-    const key = rawKey.trim();
+    const key = cleanVariable(rawKey);
     if (!key) return _match;
     const field = resolveEmailVariableKey(key, values);
     const value = field === undefined ? undefined : values[field];
