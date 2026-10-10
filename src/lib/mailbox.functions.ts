@@ -332,13 +332,13 @@ export const listOutbox = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("email_logs")
       .select(
-        "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
+        "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, direct_to, direct_subject, config_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
       )
       .eq("user_id", context.userId)
       .order("scheduled_at", { ascending: false })
       .limit(300);
     if (error) throw new Error(error.message);
-    const configIds = [...new Set((data ?? []).map((l) => (l.campaigns as unknown as { config_id: string | null })?.config_id).filter(Boolean))] as string[];
+    const configIds = [...new Set((data ?? []).map((l) => l.config_id ?? (l.campaigns as unknown as { config_id: string | null })?.config_id).filter(Boolean))] as string[];
     const { data: boxes } = configIds.length
       ? await context.supabase.from("email_configurations").select("id, from_email").in("id", configIds)
       : { data: [] };
