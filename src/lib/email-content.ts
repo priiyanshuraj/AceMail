@@ -74,6 +74,11 @@ export function signatureHtml(signature: string): string {
     : escapeEmailText(signature).replace(/\r\n|\r|\n/g, "<br />");
 }
 
+/** Joins a body and signature with reliable spacing that survives block-level signature HTML. */
+export function appendSignature(body: string, signature: string) {
+  return `${body}<div style="margin-top:24px">${signature}</div>`;
+}
+
 export function mediaPaths(html: string) {
   return [...new Set([...html.matchAll(/acemail-file:([^"<>\s]+)/g)].flatMap((match) => match[1] ? [match[1]] : []))];
 }
