@@ -211,13 +211,19 @@ export const deleteContacts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ ids: z.array(z.string().uuid()).min(1) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase
-      .from("contacts")
-      .delete()
-      .in("id", data.ids)
-      .select("id");
-    if (error) throw new Error(error.message);
-    return { deleted: rows?.length ?? 0 };
+    // Chunk deletes: a single .in() with hundreds of ids exceeds the request URL limit.
+    let deleted = 0;
+    for (let i = 0; i < data.ids.length; i += 100) {
+      const chunk = data.ids.slice(i, i + 100);
+      const { data: rows, error } = await context.supabase
+        .from("contacts")
+        .delete()
+        .in("id", chunk)
+        .select("id");
+      if (error) throw new Error(error.message);
+      deleted += rows?.length ?? 0;
+    }
+    return { deleted };
   });
 
 // ---------- Templates ----------
