@@ -117,9 +117,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('acemail-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
+          }}
+        />
       </head>
       <body>
         {children}
