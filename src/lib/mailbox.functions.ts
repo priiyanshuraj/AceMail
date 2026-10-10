@@ -214,12 +214,15 @@ export const sendTestEmail = createServerFn({ method: "POST" })
     if (!key) throw new Error("Mailbox needs to be reconnected");
     const render = (t: string) =>
       t.replaceAll("{{first_name}}", "Alex").replaceAll("{{last_name}}", "Sample").replaceAll("{{company}}", "Acme Inc").replaceAll("{{email}}", box.from_email);
+    const { prepareEmail } = await import("@/server/email-content.server");
+    const prepared = await prepareEmail(render(tpl.body), context.userId, supabase);
     await gmailSend(key, {
       from: box.from_email,
       fromName: box.from_name,
       to: box.from_email,
       subject: render(tpl.subject),
-      html: render(tpl.body).replace(/\n/g, "<br />"),
+      html: prepared.html,
+      attachments: prepared.attachments,
     });
     return { ok: true, to: box.from_email };
   });
