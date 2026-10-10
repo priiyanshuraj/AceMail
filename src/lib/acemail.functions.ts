@@ -553,6 +553,8 @@ const campaignInput = z.object({
   send_window_end: z.string().optional(),
   send_days: z.array(z.number().int().min(0).max(6)).optional(),
   timezone: z.string().min(1).max(64).optional(),
+  prioritize_followups: z.boolean().optional(),
+  breakup_day_exclusive: z.boolean().optional(),
 });
 
 export const createCampaign = createServerFn({ method: "POST" })
@@ -571,6 +573,8 @@ export const createCampaign = createServerFn({ method: "POST" })
         send_window_end: data.send_window_end ?? null,
         send_days: data.send_days ?? [1, 2, 3, 4, 5],
         timezone: data.timezone ?? "UTC",
+        prioritize_followups: data.prioritize_followups ?? true,
+        breakup_day_exclusive: (data.prioritize_followups ?? true) && (data.breakup_day_exclusive ?? false),
       })
       .select()
       .single();
@@ -602,6 +606,8 @@ export const updateCampaign = createServerFn({ method: "POST" })
         send_window_end: data.send_window_end ?? null,
         send_days: data.send_days ?? [1, 2, 3, 4, 5],
         timezone: data.timezone ?? "UTC",
+        prioritize_followups: data.prioritize_followups ?? true,
+        breakup_day_exclusive: (data.prioritize_followups ?? true) && (data.breakup_day_exclusive ?? false),
       })
       .eq("id", data.id);
     if (error) throw new Error(error.message);

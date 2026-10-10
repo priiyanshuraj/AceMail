@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, ArrowRight, ArrowLeft } from "lucide-react";
 
 export type CampaignFormValues = {
@@ -16,6 +17,8 @@ export type CampaignFormValues = {
   send_window_end: string;
   send_days: number[];
   timezone: string;
+  prioritize_followups: boolean;
+  breakup_day_exclusive: boolean;
 };
 
 type Option = { id: string; name: string };
@@ -73,6 +76,8 @@ export function CampaignForm({
     const z = allTimezones();
     return z.includes(timezone) ? z : [timezone, ...z];
   });
+  const [prioritize, setPrioritize] = useState(initial?.prioritize_followups ?? true);
+  const [breakupOnly, setBreakupOnly] = useState(initial?.breakup_day_exclusive ?? false);
   const [saving, setSaving] = useState(false);
 
   const canNext =
@@ -94,6 +99,8 @@ export function CampaignForm({
         send_window_end: windowEnd,
         send_days: sendDays,
         timezone,
+        prioritize_followups: prioritize,
+        breakup_day_exclusive: prioritize && breakupOnly,
       });
     } finally {
       setSaving(false);
@@ -276,6 +283,30 @@ export function CampaignForm({
                 <Label>Window end</Label>
                 <Input type="time" value={windowEnd} onChange={(e) => setWindowEnd(e.target.value)} />
               </div>
+            </div>
+            <div className="space-y-3 rounded-lg border p-3">
+              <label className="flex items-start justify-between gap-4">
+                <span>
+                  <span className="block text-sm font-medium">Prioritize follow-ups</span>
+                  <span className="block text-xs text-muted-foreground">
+                    When follow-ups are due, they use the daily limit first. New first emails only go out with whatever is left.
+                  </span>
+                </span>
+                <Switch checked={prioritize} onCheckedChange={setPrioritize} />
+              </label>
+              <label className={`ml-4 flex items-start justify-between gap-4 border-l pl-4 ${prioritize ? "" : "opacity-50"}`}>
+                <span>
+                  <span className="block text-sm font-medium">Break-up day: send only the last email</span>
+                  <span className="block text-xs text-muted-foreground">
+                    On days when final (break-up) emails are due, nothing else is sent so they all fit in the limit. Other emails wait for the next day.
+                  </span>
+                </span>
+                <Switch
+                  checked={prioritize && breakupOnly}
+                  disabled={!prioritize || steps.length < 2}
+                  onCheckedChange={setBreakupOnly}
+                />
+              </label>
             </div>
           </CardContent>
         </Card>
