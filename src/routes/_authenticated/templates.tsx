@@ -48,7 +48,7 @@ function TemplatesPage() {
   const queryClient = useQueryClient();
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
-  const [previewContactId, setPreviewContactId] = useState<string>("sample");
+  const [previewContactId, setPreviewContactId] = useState<string>("auto");
   const [sendingTest, setSendingTest] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
   const bodyEditorRef = useRef<BodyEditorHandle>(null);
@@ -120,7 +120,14 @@ function TemplatesPage() {
     toast.success("Template saved");
   };
 
-  const selectedContact = (previewContacts ?? []).find((c) => c.id === previewContactId) ?? null;
+  // Default the preview to the real contact with the most filled-in columns, so imported fields show actual values.
+  const filledCount = (c: { custom_fields: unknown }) => Object.values((c.custom_fields as Record<string, unknown> | null) ?? {}).filter((v) => v !== null && v !== "").length;
+  const autoContactId = (previewContacts ?? []).reduce<{ id: string; n: number } | null>((best, c) => {
+    const n = filledCount(c);
+    return !best || n > best.n ? { id: c.id, n } : best;
+  }, null)?.id;
+  const effectiveContactId = previewContactId === "auto" ? autoContactId ?? "sample" : previewContactId;
+  const selectedContact = (previewContacts ?? []).find((c) => c.id === effectiveContactId) ?? null;
 
   const previewValues: Record<string, unknown> = {
     ...(selectedContact?.custom_fields as Record<string, unknown> | null ?? {}),
