@@ -1,0 +1,1 @@
+ALTER TABLE public.campaigns ADD COLUMN IF NOT EXISTS prioritize_followups boolean NOT NULL DEFAULT true, ADD COLUMN IF NOT EXISTS breakup_day_exclusive boolean NOT NULL DEFAULT false;

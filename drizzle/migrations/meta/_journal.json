@@ -78,6 +78,13 @@
       "when": 1791621172582,
       "tag": "0010_campaign_link_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791663725185,
+      "tag": "0011_campaign_followup_priority",
+      "breakpoints": true
     }
   ]
 }
