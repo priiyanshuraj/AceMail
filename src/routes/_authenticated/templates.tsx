@@ -152,12 +152,12 @@ function TemplatesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold">Templates</h1>
           <p className="text-sm text-muted-foreground">Reusable emails with personalization variables</p>
         </div>
-        <Button onClick={() => setEditing({ name: "", subject: "", body: "" })}>
+        <Button className="shrink-0" onClick={() => setEditing({ name: "", subject: "", body: "" })}>
           <Plus className="mr-2 h-4 w-4" /> New template
         </Button>
       </div>
@@ -346,9 +346,9 @@ function TemplatesPage() {
           </Card>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {templates.length === 0 && (
-            <Card className="md:col-span-2 lg:col-span-3">
+            <Card className="md:col-span-2 xl:col-span-3">
               <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
                 <Mail className="h-8 w-8 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">No templates yet — create your first one.</p>
@@ -356,19 +356,20 @@ function TemplatesPage() {
             </Card>
           )}
           {templates.map((t) => (
-            <Card key={t.id}>
-              <CardHeader className="flex flex-row items-start justify-between">
-                <div>
-                  <CardTitle className="text-base">{t.name}</CardTitle>
-                  <p className="mt-1 text-sm text-muted-foreground">{t.subject || "(no subject)"}</p>
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => setEditing(t)}>
+            <Card key={t.id} className="min-w-0 rounded-lg">
+              <CardHeader className="space-y-3 p-5">
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <CardTitle className="min-w-0 flex-1 break-words text-base leading-snug">{t.name}</CardTitle>
+                  <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Edit ${t.name}`} title="Edit template" onClick={() => setEditing(t)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
+                    aria-label={`Delete ${t.name}`}
+                    title="Delete template"
                     onClick={async () => {
                       await deleteTemplate({ data: { id: t.id } });
                       refresh();
@@ -376,10 +377,12 @@ function TemplatesPage() {
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground" />
                   </Button>
+                  </div>
                 </div>
+                <p className="line-clamp-2 break-words text-sm text-muted-foreground">{t.subject || "(no subject)"}</p>
               </CardHeader>
-              <CardContent>
-                <p className="line-clamp-3 whitespace-pre-wrap text-sm text-muted-foreground">{t.body.replace(/<[^>]*>/g, " ")}</p>
+              <CardContent className="px-5 pb-5">
+                <p className="line-clamp-3 break-words whitespace-pre-wrap text-sm text-muted-foreground">{t.body.replace(/<[^>]*>/g, " ")}</p>
               </CardContent>
             </Card>
           ))}
