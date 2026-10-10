@@ -29,6 +29,7 @@ import { Route as AuthenticatedCampaignsCampaignIdRouteImport } from './routes/_
 import { Route as AuthenticatedCampaignsNewRouteImport } from './routes/_authenticated/campaigns/new'
 import { Route as AuthenticatedCampaignsEditCampaignIdRouteImport } from './routes/_authenticated/campaigns/edit.$campaignId'
 import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/google/return'
+import { Route as ApiPublicClickLinkIdRouteImport } from './routes/api/public/click/$linkId'
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
 import { Route as ApiPublicTrackLogIdPngRouteImport } from './routes/api/public/track/$logId.png'
 
@@ -135,6 +136,11 @@ const ApiOauthGoogleReturnRoute = ApiOauthGoogleReturnRouteImport.update({
   path: '/api/oauth/google/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicClickLinkIdRoute = ApiPublicClickLinkIdRouteImport.update({
+  id: '/api/public/click/$linkId',
+  path: '/api/public/click/$linkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksProcessQueueRoute =
   ApiPublicHooksProcessQueueRouteImport.update({
     id: '/api/public/hooks/process-queue',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
+  '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
 }
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/campaigns': typeof AuthenticatedCampaignsIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
+  '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
 }
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/_authenticated/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
+  '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId/png': typeof ApiPublicTrackLogIdPngRoute
 }
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/campaigns/'
     | '/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
+    | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId/png'
   fileRoutesByTo: FileRoutesByTo
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
     | '/campaigns'
     | '/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
+    | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId/png'
   id:
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/_authenticated/campaigns/'
     | '/_authenticated/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
+    | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId/png'
   fileRoutesById: FileRoutesById
@@ -301,6 +313,7 @@ export interface RootRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
   ApiOauthGoogleReturnRoute: typeof ApiOauthGoogleReturnRoute
+  ApiPublicClickLinkIdRoute: typeof ApiPublicClickLinkIdRoute
   ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
   ApiPublicTrackLogIdPngRoute: typeof ApiPublicTrackLogIdPngRoute
 }
@@ -447,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOauthGoogleReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/click/$linkId': {
+      id: '/api/public/click/$linkId'
+      path: '/api/public/click/$linkId'
+      fullPath: '/api/public/click/$linkId'
+      preLoaderRoute: typeof ApiPublicClickLinkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-queue': {
       id: '/api/public/hooks/process-queue'
       path: '/api/public/hooks/process-queue'
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   ApiOauthGoogleReturnRoute: ApiOauthGoogleReturnRoute,
+  ApiPublicClickLinkIdRoute: ApiPublicClickLinkIdRoute,
   ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
   ApiPublicTrackLogIdPngRoute: ApiPublicTrackLogIdPngRoute,
 }

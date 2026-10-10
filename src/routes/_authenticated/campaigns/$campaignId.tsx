@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { CampaignAnalytics } from "@/components/CampaignAnalytics";
 import { getCampaign, setCampaignStatus, setLogStatus, deleteLog } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ const campaignQuery = (id: string) =>
   queryOptions({
     queryKey: ["campaign", id],
     queryFn: () => getCampaign({ data: { id } }),
+    refetchInterval: 30000,
   });
 
 export const Route = createFileRoute("/_authenticated/campaigns/$campaignId")({
@@ -32,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/campaigns/$campaignId")({
 function CampaignDetail() {
   const { campaignId } = Route.useParams();
   const queryClient = useQueryClient();
-  const { data } = useSuspenseQuery(campaignQuery(campaignId));
+  const { data, isFetching } = useSuspenseQuery(campaignQuery(campaignId));
   const { campaign, steps, logs } = data;
 
   const changeStatus = async (status: "running" | "paused" | "discontinued") => {
@@ -71,8 +73,8 @@ function CampaignDetail() {
   const stepStats = (stepId: string) => {
     const rows = logs.filter((l) => l.step_id === stepId);
     return {
-      sent: rows.filter((l) => l.status === "sent" || l.status === "opened").length,
-      opened: rows.filter((l) => l.status === "opened").length,
+      sent: rows.filter((l) => l.sent_at).length,
+      opened: rows.filter((l) => l.opened_at).length,
       failed: rows.filter((l) => l.status === "failed").length,
       queued: rows.filter((l) => l.status === "queued").length,
     };
@@ -122,6 +124,8 @@ function CampaignDetail() {
         </div>
       </div>
 
+      <CampaignAnalytics analytics={data.analytics} refresh={refresh} refreshing={isFetching} />
+
       <Card>
         <CardHeader>
           <CardTitle>Sequence</CardTitle>
@@ -164,6 +168,9 @@ function CampaignDetail() {
                 <TableHead>Status</TableHead>
                 <TableHead>Scheduled</TableHead>
                 <TableHead>Sent</TableHead>
+                <TableHead>Opened</TableHead>
+                <TableHead>Clicked</TableHead>
+                <TableHead>Replied</TableHead>
                 <TableHead>Error</TableHead>
                 <TableHead className="w-28" />
               </TableRow>
@@ -180,6 +187,9 @@ function CampaignDetail() {
                     </TableCell>
                     <TableCell className="text-xs">{new Date(l.scheduled_at).toLocaleString()}</TableCell>
                     <TableCell className="text-xs">{l.sent_at ? new Date(l.sent_at).toLocaleString() : "—"}</TableCell>
+                    <TableCell className="text-xs">{l.opened_at ? new Date(l.opened_at).toLocaleString() : "—"}</TableCell>
+                    <TableCell className="text-xs">{data.clicks.find((c) => c.log_id === l.id)?.clicked_at ? new Date(data.clicks.find((c) => c.log_id === l.id)?.clicked_at ?? "").toLocaleString() : "—"}</TableCell>
+                    <TableCell className="text-xs">{data.replies.find((r) => r.log_id === l.id)?.received_at ? new Date(data.replies.find((r) => r.log_id === l.id)?.received_at ?? "").toLocaleString() : "—"}</TableCell>
                     <TableCell className="max-w-xs truncate text-xs text-destructive">{l.error ?? ""}</TableCell>
                     <TableCell>
                       {pending && (
@@ -219,7 +229,7 @@ function CampaignDetail() {
               })}
               {logs.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center text-muted-foreground">
                     Nothing queued yet — start the campaign to enqueue emails.
                   </TableCell>
                 </TableRow>

@@ -9,7 +9,7 @@ const PIXEL = Uint8Array.from(
   (c) => c.charCodeAt(0)
 );
 
-export const Route = createFileRoute("/api/public/track/$logId/png")({
+export const Route = createFileRoute("/api/public/track/$logId.png")({
   server: {
     handlers: {
       GET: async ({ params }) => {
