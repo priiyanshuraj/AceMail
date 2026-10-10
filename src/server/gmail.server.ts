@@ -1,6 +1,7 @@
 // Server-only Gmail mailbox helpers (per-user connection via the connector gateway).
 import { callAsAppUser, appUserReconnectRequired } from "@/integrations/lovable/appUserConnector";
 import { encryptConnectionKey, decryptConnectionKey } from "@/server/connectionKeyCrypto";
+import type { EmailAttachment } from "@/server/email-content.server";
 
 export const GATEWAY_BASE_URL = "https://connector-gateway.lovable.dev";
 export const GMAIL_CONNECTOR = "google_mail";
@@ -70,17 +71,28 @@ const header = (v: string) => (/^[\x00-\x7F]*$/.test(v) ? v : `=?UTF-8?B?${b64(v
 
 export async function gmailSend(
   key: string,
-  opts: { from: string; fromName?: string; to: string; subject: string; html: string; threadId?: string | null },
+  opts: { from: string; fromName?: string; to: string; subject: string; html: string; threadId?: string | null; attachments?: EmailAttachment[] },
 ): Promise<{ id: string; threadId: string }> {
   const from = opts.fromName ? `${header(opts.fromName)} <${opts.from}>` : opts.from;
+  const boundary = `acemail_${crypto.randomUUID()}`;
+  const files = opts.attachments ?? [];
+  const content = files.length ? [
+    `--${boundary}`, 'Content-Type: text/html; charset="UTF-8"', "Content-Transfer-Encoding: base64", "", b64(opts.html),
+    ...files.flatMap((file) => [
+      `--${boundary}`, `Content-Type: ${file.contentType.replace(/[\r\n]/g, "")}`,
+      "Content-Transfer-Encoding: base64",
+      `Content-Disposition: ${file.cid ? "inline" : "attachment"}; filename="${file.filename.replace(/["\r\n]/g, "_")}"`,
+      ...(file.cid ? [`Content-ID: <${file.cid}>`] : []), "", file.base64.match(/.{1,76}/g)?.join("\r\n") ?? "",
+    ]), `--${boundary}--`,
+  ].join("\r\n") : opts.html;
   const msg = [
     `From: ${from}`,
     `To: ${opts.to}`,
     `Subject: ${header(opts.subject)}`,
     "MIME-Version: 1.0",
-    'Content-Type: text/html; charset="UTF-8"',
+    files.length ? `Content-Type: multipart/mixed; boundary="${boundary}"` : 'Content-Type: text/html; charset="UTF-8"',
     "",
-    opts.html,
+    content,
   ].join("\r\n");
   const raw = b64(msg).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   return gmailCall(key, "/gmail/v1/users/me/messages/send", {

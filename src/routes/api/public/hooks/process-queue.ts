@@ -30,6 +30,8 @@ export const Route = createFileRoute("/api/public/hooks/process-queue")({
 
 async function processQueue() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { emailHtml, escapeEmailText } = await import("@/lib/email-content");
+  const { prepareEmail } = await import("@/server/email-content.server");
   const nodemailer = (await import("nodemailer")).default;
   const { getMailboxKey, gmailSend, effectiveDailyLimit, syncMailboxReplies, ReconnectRequiredError } =
     await import("@/server/gmail.server");
@@ -195,16 +197,17 @@ async function processQueue() {
         : "";
 
       try {
-        let fullBody = render(template.body);
+        let fullBody = render(emailHtml(template.body));
         if (template.attach_signature) {
           const { data: sig } = await supabaseAdmin
             .from("user_signatures")
             .select("signature")
             .eq("user_id", log.user_id)
             .maybeSingle();
-          if (sig?.signature?.trim()) fullBody += "\n\n" + render(sig.signature);
+          if (sig?.signature?.trim()) fullBody += "<br /><br />" + emailHtml(render(escapeEmailText(sig.signature)));
         }
-        const html = fullBody.replace(/\n/g, "<br />") + pixel;
+        const prepared = await prepareEmail(fullBody, log.user_id, supabaseAdmin);
+        const html = prepared.html + pixel;
         let gmailIds: { id: string; threadId: string } | null = null;
         if (isGmail) {
           // Follow-ups reply in the same thread
@@ -224,6 +227,7 @@ async function processQueue() {
             to: contact.email,
             subject: threadId && !/^re:/i.test(subject) ? `Re: ${subject}` : subject,
             html,
+            attachments: prepared.attachments,
             threadId,
           });
         } else {
@@ -232,6 +236,7 @@ async function processQueue() {
             to: contact.email,
             subject: render(template.subject),
             html,
+            attachments: prepared.attachments.map((file) => ({ filename: file.filename, content: file.base64, encoding: "base64", contentType: file.contentType, cid: file.cid })),
           });
         }
         await supabaseAdmin
