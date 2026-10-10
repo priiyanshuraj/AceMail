@@ -14,5 +14,5 @@ export function emailHtml(body: string): string {
 }
 
 export function mediaPaths(html: string) {
-  return [...new Set([...html.matchAll(/acemail-file:([^"<>\s]+)/g)].map((match) => match[1]))];
+  return [...new Set([...html.matchAll(/acemail-file:([^"<>\s]+)/g)].flatMap((match) => match[1] ? [match[1]] : []))];
 }

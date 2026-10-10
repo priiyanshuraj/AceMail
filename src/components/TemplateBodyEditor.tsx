@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { emailHtml, escapeEmailText, mediaPaths } from "@/lib/email-content";
 import { toast } from "sonner";
+import type { LucideIcon } from "lucide-react";
 
 export type BodyEditorHandle = { insert: (value: string) => void };
 type Props = { value: string; onChange: (value: string) => void; onFocus: () => void; templates: { id: string; name: string; body: string }[] };
@@ -44,14 +45,14 @@ export const TemplateBodyEditor = forwardRef<BodyEditorHandle, Props>(function T
     } else editor?.chain().focus().insertContent(html).run();
   };
   useImperativeHandle(ref, () => ({ insert: (text) => insert(escapeEmailText(text)) }));
-  const tools = [
+  const tools: { name: string; icon: LucideIcon; active?: boolean | undefined; run: () => unknown }[] = [
     { name: "Bold", icon: Bold, active: editor?.isActive("bold"), run: () => editor?.chain().focus().toggleBold().run() },
     { name: "Italic", icon: Italic, active: editor?.isActive("italic"), run: () => editor?.chain().focus().toggleItalic().run() },
     { name: "Underline", icon: Underline, active: editor?.isActive("underline"), run: () => editor?.chain().focus().toggleUnderline().run() },
     { name: "Strikethrough", icon: Strikethrough, active: editor?.isActive("strike"), run: () => editor?.chain().focus().toggleStrike().run() },
     { name: "Bullet list", icon: List, active: editor?.isActive("bulletList"), run: () => editor?.chain().focus().toggleBulletList().run() },
     { name: "Numbered list", icon: ListOrdered, active: editor?.isActive("orderedList"), run: () => editor?.chain().focus().toggleOrderedList().run() },
-    ...(["left", "center", "right"] as const).map((align, i) => ({ name: `Align ${align}`, icon: [AlignLeft, AlignCenter, AlignRight][i], active: editor?.isActive({ textAlign: align }), run: () => editor?.chain().focus().setTextAlign(align).run() })),
+    ...(["left", "center", "right"] as const).map((align) => ({ name: `Align ${align}`, icon: align === "left" ? AlignLeft : align === "center" ? AlignCenter : AlignRight, active: editor?.isActive({ textAlign: align }), run: () => editor?.chain().focus().setTextAlign(align).run() })),
     { name: "Clear formatting", icon: RemoveFormatting, run: () => editor?.chain().focus().unsetAllMarks().clearNodes().run() },
     { name: "Undo", icon: Undo, run: () => editor?.chain().focus().undo().run() },
     { name: "Redo", icon: Redo, run: () => editor?.chain().focus().redo().run() },

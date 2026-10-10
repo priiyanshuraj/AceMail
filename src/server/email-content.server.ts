@@ -2,7 +2,7 @@ import { emailHtml, mediaPaths } from "@/lib/email-content";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-export type EmailAttachment = { filename: string; contentType: string; base64: string; cid?: string };
+export type EmailAttachment = { filename: string; contentType: string; base64: string; cid?: string | undefined };
 
 export async function prepareEmail(body: string, userId: string, db: SupabaseClient<Database>) {
   let html = emailHtml(body);
@@ -21,7 +21,7 @@ export async function prepareEmail(body: string, userId: string, db: SupabaseCli
     const bytes = new Uint8Array(await data.arrayBuffer());
     let binary = "";
     for (let start = 0; start < bytes.length; start += 8192) binary += String.fromCharCode(...bytes.subarray(start, start + 8192));
-    attachments.push({ filename: path.split("/").pop()?.replace(/^[^-]+-/, "") ?? "attachment", contentType: data.type || "application/octet-stream", base64: btoa(binary), cid });
+    attachments.push({ filename: path.split("/").pop()?.replace(/^[a-f0-9-]{36}-/, "") ?? "attachment", contentType: data.type || "application/octet-stream", base64: btoa(binary), cid });
     html = html.replaceAll(`acemail-file:${path}`, cid ? `cid:${cid}` : "#");
   }
   return { html, attachments };
