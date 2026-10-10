@@ -345,6 +345,6 @@ export const listOutbox = createServerFn({ method: "GET" })
     const boxById = new Map((boxes ?? []).map((b) => [b.id, b.from_email]));
     return (data ?? []).map((l) => ({
       ...l,
-      mailbox_email: boxById.get((l.campaigns as unknown as { config_id: string | null })?.config_id ?? "") ?? null,
+      mailbox_email: boxById.get(l.config_id ?? (l.campaigns as unknown as { config_id: string | null })?.config_id ?? "") ?? null,
     }));
   });

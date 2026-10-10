@@ -87,13 +87,14 @@ function OutboxPage() {
               <div key={l.id} className="flex items-start gap-4 p-4 hover:bg-muted/40">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{name || contact?.email || "Unknown contact"}</span>
+                    <span className="font-medium">{name || contact?.email || l.direct_to || "Unknown contact"}</span>
                     {name && contact && <span className="text-xs text-muted-foreground">{contact.email}</span>}
                     {contact?.company && <span className="text-xs text-muted-foreground">· {contact.company}</span>}
                     {campaign && <Badge variant="outline">{campaign.name}</Badge>}
                     {step && <Badge variant="outline">Step {step.step_order}</Badge>}
+                    {l.direct_to && <Badge variant="outline">Direct email</Badge>}
                   </div>
-                  <p className="truncate text-sm">{step?.email_templates?.subject || "(no subject)"}</p>
+                  <p className="truncate text-sm">{step?.email_templates?.subject || l.direct_subject || "(no subject)"}</p>
                   <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
                     {l.mailbox_email && <span>from {l.mailbox_email}</span>}
                     <span>{l.sent_at ? "sent" : "scheduled"} {new Date(when).toLocaleString()}</span>
