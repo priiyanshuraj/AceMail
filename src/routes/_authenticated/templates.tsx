@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Mail, UserRound, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TemplateBodyEditor, EmailPreview, type BodyEditorHandle } from "@/components/TemplateBodyEditor";
-import { emailHtml, escapeEmailText } from "@/lib/email-content";
+import { renderEmailVariables, escapeEmailText } from "@/lib/email-content";
 
 const templatesQuery = queryOptions({
   queryKey: ["templates"],
@@ -111,17 +111,13 @@ function TemplatesPage() {
 
   const selectedContact = (previewContacts ?? []).find((c) => c.id === previewContactId) ?? null;
 
-  const preview = (text: string) =>
-    text
-      .replaceAll("{{first_name}}", selectedContact?.first_name || "Jane")
-      .replaceAll("{{last_name}}", selectedContact?.last_name || "Doe")
-      .replaceAll("{{company}}", selectedContact?.company || "Acme Inc")
-      .replaceAll("{{email}}", selectedContact?.email || "jane@acme.com")
-      .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => {
-        const cf = selectedContact?.custom_fields as Record<string, unknown> | null | undefined;
-        const val = cf?.[k];
-        return val !== undefined && val !== null && val !== "" ? String(val) : `[${k}]`;
-      });
+  const preview = (text: string, html = false) => renderEmailVariables(text, {
+    ...(selectedContact?.custom_fields as Record<string, unknown> | null ?? {}),
+    first_name: selectedContact?.first_name || "Jane",
+    last_name: selectedContact?.last_name || "Doe",
+    company: selectedContact?.company || "Acme Inc",
+    email: selectedContact?.email || "jane@acme.com",
+  }, html, (key) => `[${key}]`);
 
   return (
     <div className="space-y-6">
@@ -232,7 +228,7 @@ function TemplatesPage() {
                 <p className="mb-2 border-b pb-2 text-sm font-semibold">
                   {preview(editing.subject ?? "") || "(no subject)"}
                 </p>
-                <EmailPreview body={preview(emailHtml(editing.body ?? "")) + (editing.attach_signature && signature ? `<br /><br />${emailHtml(preview(escapeEmailText(signature)))}` : "")} />
+                <EmailPreview body={preview(editing.body ?? "", true) + (editing.attach_signature && signature ? `<br /><br />${preview(escapeEmailText(signature), true)}` : "")} />
               </div>
               <Button
                 variant="outline"
@@ -246,6 +242,7 @@ function TemplatesPage() {
                         subject: editing.subject ?? "",
                         body: editing.body ?? "",
                         attach_signature: !!editing.attach_signature,
+                         preview_contact_id: selectedContact?.id,
                       },
                     });
                     toast.success(`Test email sent to ${res.to}`);
@@ -260,7 +257,7 @@ function TemplatesPage() {
                 {sendingTest ? "Sending…" : "Send test to myself"}
               </Button>
               <p className="text-xs text-muted-foreground">
-                Sends from your default mailbox to your own address, with sample values for the variables.
+                Sends from your default mailbox to your own address, using the selected preview contact or sample values.
               </p>
             </CardContent>
           </Card>

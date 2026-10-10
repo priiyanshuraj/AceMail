@@ -262,6 +262,7 @@ export const sendTemplateTest = createServerFn({ method: "POST" })
         subject: z.string().max(500),
         body: z.string().max(200000),
         attach_signature: z.boolean().optional(),
+        preview_contact_id: z.string().uuid().optional(),
       })
       .parse(d),
   )
@@ -284,16 +285,20 @@ export const sendTemplateTest = createServerFn({ method: "POST" })
       const { data: sig } = await supabase.from("user_signatures").select("signature").eq("user_id", userId).maybeSingle();
       signature = sig?.signature ?? "";
     }
-    const render = (t: string) =>
-      t
-        .replaceAll("{{first_name}}", "Jane")
-        .replaceAll("{{last_name}}", "Doe")
-        .replaceAll("{{company}}", "Acme Inc")
-        .replaceAll("{{email}}", "jane@acme.com")
-        .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => `[${k}]`);
-    const { emailHtml, escapeEmailText } = await import("@/lib/email-content");
+    let values: Record<string, unknown> = { first_name: "Jane", last_name: "Doe", company: "Acme Inc", email: "jane@acme.com" };
+    if (data.preview_contact_id) {
+      const { data: contact, error } = await supabase.from("contacts")
+        .select("first_name, last_name, company, email, custom_fields")
+        .eq("id", data.preview_contact_id).eq("user_id", userId).maybeSingle();
+      if (error || !contact) throw new Error("The preview contact is no longer available");
+      values = { ...(contact.custom_fields as Record<string, unknown> | null ?? {}),
+        first_name: contact.first_name || "Jane", last_name: contact.last_name || "Doe",
+        company: contact.company || "Acme Inc", email: contact.email || "jane@acme.com" };
+    }
+    const { renderEmailVariables, escapeEmailText } = await import("@/lib/email-content");
+    const render = (text: string, html = false) => renderEmailVariables(text, values, html, (key) => `[${key}]`);
     const { prepareEmail } = await import("@/server/email-content.server");
-    const body = render(emailHtml(data.body)) + (signature ? `<br /><br />${emailHtml(render(escapeEmailText(signature)))}` : "");
+    const body = render(data.body, true) + (signature ? `<br /><br />${render(escapeEmailText(signature), true)}` : "");
     const prepared = await prepareEmail(body, userId, supabase);
     await gmailSend(key, {
       from: box.from_email,

@@ -2,6 +2,17 @@ import sanitizeHtml from "sanitize-html";
 
 export const escapeEmailText = (text: string) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
+/** Contact values are plain text, not HTML; retain each imported line break. */
+export function renderEmailVariables(template: string, values: Record<string, unknown>, html = false, missing: (key: string) => string = () => "") {
+  const source = html ? emailHtml(template) : template;
+  const rendered = source.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_match, key: string) => {
+    const value = values[key];
+    const text = value === undefined || value === null || value === "" ? missing(key) : String(value);
+    return html ? escapeEmailText(text).replace(/\r\n|\r|\n/g, "<br />") : text;
+  });
+  return html ? emailHtml(rendered) : rendered;
+}
+
 export function emailHtml(body: string): string {
   const html = /<\/?[a-z][a-z0-9]*\b[^>]*>/i.test(body)
     ? body : escapeEmailText(body).replace(/\n/g, "<br />");

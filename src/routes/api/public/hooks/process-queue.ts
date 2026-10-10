@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/hooks/process-queue")({
 
 async function processQueue() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { emailHtml, escapeEmailText } = await import("@/lib/email-content");
+  const { renderEmailVariables, escapeEmailText } = await import("@/lib/email-content");
   const { prepareEmail } = await import("@/server/email-content.server");
   const nodemailer = (await import("nodemailer")).default;
   const { getMailboxKey, gmailSend, effectiveDailyLimit, syncMailboxReplies, ReconnectRequiredError } =
@@ -184,27 +184,27 @@ async function processQueue() {
       }
 
       const custom = (contact.custom_fields ?? {}) as Record<string, string>;
-      const render = (text: string) =>
-        text
-          .replaceAll("{{first_name}}", contact.first_name || "there")
-          .replaceAll("{{last_name}}", contact.last_name || "")
-          .replaceAll("{{company}}", contact.company || "")
-          .replaceAll("{{email}}", contact.email)
-          .replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, k: string) => String(custom[k] ?? ""));
+      const render = (text: string, html = false) => renderEmailVariables(text, {
+        ...custom,
+        first_name: contact.first_name || "there",
+        last_name: contact.last_name || "",
+        company: contact.company || "",
+        email: contact.email,
+      }, html);
 
       const pixel = appUrl
         ? `<img src="${appUrl}/api/public/track/${log.id}.png" width="1" height="1" alt="" />`
         : "";
 
       try {
-        let fullBody = render(emailHtml(template.body));
+        let fullBody = render(template.body, true);
         if (template.attach_signature) {
           const { data: sig } = await supabaseAdmin
             .from("user_signatures")
             .select("signature")
             .eq("user_id", log.user_id)
             .maybeSingle();
-          if (sig?.signature?.trim()) fullBody += "<br /><br />" + emailHtml(render(escapeEmailText(sig.signature)));
+          if (sig?.signature?.trim()) fullBody += "<br /><br />" + render(escapeEmailText(sig.signature), true);
         }
         const prepared = await prepareEmail(fullBody, log.user_id, supabaseAdmin);
         const { trackCampaignLinks } = await import("@/server/campaign-tracking.server");
