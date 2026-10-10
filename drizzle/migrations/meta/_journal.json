@@ -64,6 +64,13 @@
       "when": 1791584260771,
       "tag": "0008_tighten_access_requests_insert",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791620236518,
+      "tag": "0009_template_media_access",
+      "breakpoints": true
     }
   ]
 }
