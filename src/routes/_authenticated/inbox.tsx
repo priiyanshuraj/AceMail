@@ -15,6 +15,7 @@ import { ExternalLink, MailPlus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 const inboxQuery = queryOptions({ queryKey: ["inbox"], queryFn: () => listInbox() });
+const mailboxesQuery = queryOptions({ queryKey: ["mailboxes"], queryFn: () => listMailboxes() });
 
 export const Route = createFileRoute("/_authenticated/inbox")({
   loader: ({ context }) => context.queryClient.ensureQueryData(inboxQuery),
