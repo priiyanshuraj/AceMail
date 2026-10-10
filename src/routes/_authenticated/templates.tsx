@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts, getSignature, sendTemplateTest } from "@/lib/acemail.functions";
+import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts, listContactLists, getSignature, sendTemplateTest } from "@/lib/acemail.functions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +20,15 @@ const templatesQuery = queryOptions({
   queryFn: () => listTemplates(),
 });
 
-const previewContactsQuery = queryOptions({
-  queryKey: ["preview-contacts"],
-  queryFn: () => listPreviewContacts(),
+const previewContactsQuery = (listId: string) =>
+  queryOptions({
+    queryKey: ["preview-contacts", listId],
+    queryFn: () => listPreviewContacts({ data: { list_id: listId === "all" ? undefined : listId } }),
+  });
+
+const contactListsQuery = queryOptions({
+  queryKey: ["contact-lists"],
+  queryFn: () => listContactLists(),
 });
 
 export const Route = createFileRoute("/_authenticated/templates")({
