@@ -3,7 +3,7 @@ import sanitizeHtml from "sanitize-html";
 export const escapeEmailText = (text: string) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 
 // Rich-text editors can split a token with tags or entities (e.g. {{<span>first</span>&nbsp;name}}); accept and clean them.
-const variablePattern = () => /\{\{((?:[^{}\r\n]|<[^>]*>){1,200}?)\}\}/gu;
+const variablePattern = () => /\{\{((?:[^{}\r\n]|<[^>]*>){1,200}?)\}\}?/gu;
 const cleanVariable = (raw: string) => raw
   .replace(/<[^>]*>/g, "")
   .replace(/&nbsp;|&#160;|\u00a0/gi, " ")

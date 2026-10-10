@@ -7,7 +7,7 @@ describe("Email formatting", () => {
   it("detects unique variables in subjects and HTML, including human-readable field labels", () => {
     expect(detectEmailVariables("Hi {{First Name}}", "<p>{{Company}} {{contact.Recent Company Signal}} {{Product/Feature}} {{ First Name }}</p>"))
       .toEqual(["First Name", "Company", "contact.Recent Company Signal", "Product/Feature"]);
-    expect(detectEmailVariables("{{incomplete} {{ }} {{nested{{company}}}}" )).toEqual(["company"]);
+    expect(detectEmailVariables("{{incomplete} {{ }} {{nested{{company}}}}" )).toEqual(["incomplete", "company"]);
   });
   it("matches spaces, case, punctuation and contact prefixes without altering paragraphs", () => {
     const values = { first_name: "Jane", company: "Acme", recent_company_signal: "New release\n\nHiring", product_feature: "API" };

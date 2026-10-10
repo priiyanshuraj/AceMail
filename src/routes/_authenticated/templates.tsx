@@ -62,7 +62,7 @@ function TemplatesPage() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
 
   const remapVariable = (key: string, field: string) => {
-    const replace = (text: string) => text.replace(/\{\{((?:[^{}\r\n]|<[^>]*>){1,200}?)\}\}/gu,
+    const replace = (text: string) => text.replace(/\{\{((?:[^{}\r\n]|<[^>]*>){1,200}?)\}\}?/gu,
       (token, variable: string) => detectEmailVariables(`{{${variable}}}`)[0] === key ? `{{${field}}}` : token);
     setEditing((current) => current ? {
       ...current,
