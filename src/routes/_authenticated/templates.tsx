@@ -128,13 +128,16 @@ function TemplatesPage() {
     toast.success("Template saved");
   };
 
-  // Default the preview to the real contact with the most filled-in columns, so imported fields show actual values.
+  // Default the preview to the real contact with the most filled-in columns within the chosen list, so imported fields show actual values.
   const filledCount = (c: { custom_fields: unknown }) => Object.values((c.custom_fields as Record<string, unknown> | null) ?? {}).filter((v) => v !== null && v !== "").length;
   const autoContactId = (previewContacts ?? []).reduce<{ id: string; n: number } | null>((best, c) => {
     const n = filledCount(c);
     return !best || n > best.n ? { id: c.id, n } : best;
   }, null)?.id;
-  const effectiveContactId = previewContactId === "auto" ? autoContactId ?? "sample" : previewContactId;
+  const effectiveContactId =
+    previewContactId !== "auto" && (previewContacts ?? []).some((c) => c.id === previewContactId)
+      ? previewContactId
+      : autoContactId ?? "sample";
   const selectedContact = (previewContacts ?? []).find((c) => c.id === effectiveContactId) ?? null;
 
   const previewValues: Record<string, unknown> = {
