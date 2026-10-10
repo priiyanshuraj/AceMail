@@ -9,11 +9,11 @@ const PIXEL = Uint8Array.from(
   (c) => c.charCodeAt(0)
 );
 
-export const Route = createFileRoute("/api/public/track/$logId/png")({
+export const Route = createFileRoute("/api/public/track/$logId.png")({
   server: {
     handlers: {
       GET: async ({ params }) => {
-        const logId = params.logId;
+        const logId = params["logId.png"].replace(/\.png$/, "");
         if (/^[0-9a-f-]{36}$/i.test(logId)) {
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

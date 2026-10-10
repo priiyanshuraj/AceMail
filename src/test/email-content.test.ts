@@ -1,8 +1,26 @@
 import { describe, it, expect } from "vitest";
-import { emailHtml, mediaPaths } from "@/lib/email-content";
+import { emailHtml, mediaPaths, inboxDocument } from "@/lib/email-content";
+import { trackCampaignLinks } from "@/server/campaign-tracking.server";
 import { prepareEmail } from "@/server/email-content.server";
 
 describe("Email formatting", () => {
+  it("preserves email table layouts and inline HTML styling", () => {
+    const html = emailHtml('<table cellpadding="12" style="width:100%;background-color:#123456"><tr><td style="font-size:20px;padding:12px;text-align:center">Hello</td></tr></table>');
+    expect(html).toContain('<table cellpadding="12"');
+    expect(html).toContain('background-color:#123456');
+    expect(html).toContain('padding:12px');
+    expect(inboxDocument(html)).toContain("Content-Security-Policy");
+  });
+  it("keeps video links and removes unsupported executable embeds", () => {
+    expect(emailHtml('<a href="https://loom.com/share/example">▶ Watch video</a><iframe src="https://loom.com"></iframe>')).toBe('<a href="https://loom.com/share/example">▶ Watch video</a>');
+  });
+  it("tracks only web links with stored opaque IDs", async () => {
+    const db = { from: () => ({ upsert: () => ({ select: async () => ({ data: [{ id: "opaque", destination: "https://example.com/?a=1&b=2" }], error: null }) }) }) };
+    const result = await trackCampaignLinks('<a href="https://example.com/?a=1&amp;b=2">Website</a><a href="mailto:hi@example.com">Email</a><img src="cid:image@acemail" />', "log", "owner", "https://acemail.lovable.app", db as unknown as Parameters<typeof trackCampaignLinks>[4]);
+    expect(result).toContain('href="https://acemail.lovable.app/api/public/click/opaque"');
+    expect(result).toContain('href="mailto:hi@example.com"');
+    expect(result).toContain('src="cid:image@acemail"');
+  });
   it("keeps legacy text and rich formatting", () => {
     expect(emailHtml("Hello\nWorld")).toBe("Hello<br />World");
     expect(emailHtml('<p><strong>Bold</strong> <u>Underline</u></p>')).toContain("<strong>Bold</strong>");

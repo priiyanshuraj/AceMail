@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Mail, UserRound, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TemplateBodyEditor, EmailPreview, type BodyEditorHandle } from "@/components/TemplateBodyEditor";
+import { emailHtml, escapeEmailText } from "@/lib/email-content";
 
 const templatesQuery = queryOptions({
   queryKey: ["templates"],
@@ -227,14 +228,11 @@ function TemplatesPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="rounded-lg border bg-muted/50 p-4">
+              <div className="rounded-md border bg-muted/50 p-3">
                 <p className="mb-2 border-b pb-2 text-sm font-semibold">
                   {preview(editing.subject ?? "") || "(no subject)"}
                 </p>
-                <EmailPreview body={preview(editing.body ?? "") || "(no body)"} />
-                {editing.attach_signature && signature && (
-                  <div className="mt-4 whitespace-pre-wrap border-t pt-3 text-sm text-muted-foreground">{preview(signature)}</div>
-                )}
+                <EmailPreview body={preview(emailHtml(editing.body ?? "")) + (editing.attach_signature && signature ? `<br /><br />${emailHtml(preview(escapeEmailText(signature)))}` : "")} />
               </div>
               <Button
                 variant="outline"
@@ -301,7 +299,7 @@ function TemplatesPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="line-clamp-3 whitespace-pre-wrap text-sm text-muted-foreground">{t.body}</p>
+                <p className="line-clamp-3 whitespace-pre-wrap text-sm text-muted-foreground">{t.body.replace(/<[^>]*>/g, " ")}</p>
               </CardContent>
             </Card>
           ))}
