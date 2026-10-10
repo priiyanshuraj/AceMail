@@ -8,7 +8,7 @@ const normalizeVariable = (key: string) => unprefixVariable(key).normalize("NFKC
 
 export function detectEmailVariables(...templates: string[]): string[] {
   return [...new Set(templates.flatMap((template) =>
-    [...template.matchAll(variablePattern())].map((match) => (match[1] ?? "").trim())
+    [...template.matchAll(variablePattern())].map((match) => (match[1] ?? "").trim()).filter(Boolean)
   ))];
 }
 
@@ -29,6 +29,7 @@ export function renderEmailVariables(template: string, values: Record<string, un
   const source = html ? emailHtml(template) : template;
   const rendered = source.replace(variablePattern(), (_match, rawKey: string) => {
     const key = rawKey.trim();
+    if (!key) return _match;
     const field = resolveEmailVariableKey(key, values);
     const value = field === undefined ? undefined : values[field];
     const text = value === undefined || value === null || value === "" ? missing(key) : String(value);
