@@ -113,6 +113,7 @@ function ContactsPage() {
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
   const [newFieldCol, setNewFieldCol] = useState<number | null>(null);
   const [newFieldName, setNewFieldName] = useState("");
+  const [emptyCols, setEmptyCols] = useState<Set<number>>(new Set());
 
   const excludeCol = (i: number) => {
     setMapping((m) => m.map((x, j) => (j === i ? "skip" : x)));
