@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import logoUrl from "@/assets/acemail-logo.png";
 
-export const SUPPORT_EMAIL = "mepriyanshuonline@gmail.com";
-export const DEVELOPER_EMAIL = "hi@priyanshuraj.online";
+const SUPPORT_EMAIL = "mepriyanshuonline@gmail.com";
+const DEVELOPER_EMAIL = "hi@priyanshuraj.online";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
