@@ -19,4 +19,13 @@ describe("Email formatting", () => {
   it("rejects references to another user's uploads", async () => {
     await expect(prepareEmail('<p><a href="acemail-file:other/file">File</a></p>', "owner", {} as Parameters<typeof prepareEmail>[2])).rejects.toThrow("Invalid email attachment");
   });
+  it("prepares inline images and downloadable attachments for sending", async () => {
+    const db = { storage: { from: () => ({ download: async () => ({ data: new Blob(["example"], { type: "image/png" }), error: null }) }) } };
+    const result = await prepareEmail('<p><img src="acemail-file:owner/image.png" /><a href="acemail-file:owner/file.pdf">File</a></p>', "owner", db as unknown as Parameters<typeof prepareEmail>[2]);
+    expect(result.html).toContain('src="cid:image-0@acemail"');
+    expect(result.html).not.toContain("acemail-file:");
+    expect(result.attachments).toHaveLength(2);
+    expect(result.attachments[0]?.cid).toBe("image-0@acemail");
+    expect(result.attachments[1]?.cid).toBeUndefined();
+  });
 });
