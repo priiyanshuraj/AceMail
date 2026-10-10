@@ -155,15 +155,18 @@ export const listCustomFieldKeys = createServerFn({ method: "GET" })
 
 export const listPreviewContacts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+  .inputValidator((d) => z.object({ list_id: z.string().uuid().optional() }).parse(d))
+  .handler(async ({ data, context }) => {
+    let q = context.supabase
       .from("contacts")
       .select("id, list_id, email, first_name, last_name, company, custom_fields")
-      .eq("user_id", context.userId)
+      .eq("user_id", context.userId);
+    if (data.list_id) q = q.eq("list_id", data.list_id);
+    const { data: rows, error } = await q
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(500);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return rows ?? [];
   });
 
 export const deleteContact = createServerFn({ method: "POST" })
