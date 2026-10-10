@@ -295,10 +295,10 @@ export const sendTemplateTest = createServerFn({ method: "POST" })
         first_name: contact.first_name || "Jane", last_name: contact.last_name || "Doe",
         company: contact.company || "Acme Inc", email: contact.email || "jane@acme.com" };
     }
-    const { renderEmailVariables, signatureHtml } = await import("@/lib/email-content");
+    const { renderEmailVariables, signatureHtml, appendSignature } = await import("@/lib/email-content");
     const render = (text: string, html = false) => renderEmailVariables(text, values, html, (key) => `[${key}]`);
     const { prepareEmail } = await import("@/server/email-content.server");
-    const body = render(data.body, true) + (signature ? `<br /><br />${render(signatureHtml(signature), true)}` : "");
+    const body = signature ? appendSignature(render(data.body, true), render(signatureHtml(signature), true)) : render(data.body, true);
     const prepared = await prepareEmail(body, userId, supabase);
     await gmailSend(key, {
       from: box.from_email,

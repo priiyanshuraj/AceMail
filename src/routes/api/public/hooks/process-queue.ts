@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/hooks/process-queue")({
 
 async function processQueue() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { renderEmailVariables, signatureHtml } = await import("@/lib/email-content");
+  const { renderEmailVariables, signatureHtml, appendSignature } = await import("@/lib/email-content");
   const { prepareEmail } = await import("@/server/email-content.server");
   const nodemailer = (await import("nodemailer")).default;
   const { getMailboxKey, gmailSend, effectiveDailyLimit, syncMailboxReplies, ReconnectRequiredError } =
@@ -204,7 +204,7 @@ async function processQueue() {
             .select("signature")
             .eq("user_id", log.user_id)
             .maybeSingle();
-          if (sig?.signature?.trim()) fullBody += "<br /><br />" + render(signatureHtml(sig.signature), true);
+          if (sig?.signature?.trim()) fullBody = appendSignature(fullBody, render(signatureHtml(sig.signature), true));
         }
         const prepared = await prepareEmail(fullBody, log.user_id, supabaseAdmin);
         const { trackCampaignLinks } = await import("@/server/campaign-tracking.server");
