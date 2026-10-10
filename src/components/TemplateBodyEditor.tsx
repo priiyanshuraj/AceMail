@@ -17,6 +17,19 @@ import type { LucideIcon } from "lucide-react";
 
 export type BodyEditorHandle = { insert: (value: string) => void };
 type Props = { value: string; onChange: (value: string) => void; onFocus: () => void; templates: { id: string; name: string; body: string }[] };
+const PrivateImage = Image.extend({
+  addNodeView() {
+    return ({ node }) => {
+      const img = document.createElement("img");
+      img.alt = String(node.attrs["alt"] ?? "Uploaded image");
+      const src = String(node.attrs["src"] ?? "");
+      if (src.startsWith("acemail-file:")) {
+        void supabase.storage.from("template-files").createSignedUrl(src.slice(13), 3600).then(({ data }) => { if (data) img.src = data.signedUrl; });
+      } else img.src = src;
+      return { dom: img };
+    };
+  },
+});
 export const TemplateBodyEditor = forwardRef<BodyEditorHandle, Props>(function TemplateBodyEditor({ value, onChange, onFocus, templates }, ref) {
   const [raw, setRaw] = useState(false);
   const [dialog, setDialog] = useState<"link" | "video" | "meeting" | "template" | null>(null);
@@ -28,7 +41,8 @@ export const TemplateBodyEditor = forwardRef<BodyEditorHandle, Props>(function T
   const uploadKind = useRef<"image" | "file">("image");
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [StarterKit.configure({ link: { openOnClick: false, protocols: ["acemail-file"] } }), Image.configure({ allowBase64: false }), TextStyle, FontFamily, FontSize, TextAlign.configure({ types: ["heading", "paragraph"] })],
+    shouldRerenderOnTransaction: true,
+    extensions: [StarterKit.configure({ link: { openOnClick: false, protocols: ["acemail-file"] } }), PrivateImage.configure({ allowBase64: false }), TextStyle, FontFamily, FontSize, TextAlign.configure({ types: ["heading", "paragraph"] })],
     content: emailHtml(value),
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     onFocus,
