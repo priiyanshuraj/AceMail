@@ -134,6 +134,13 @@ function Landing() {
             AceMail schedules, personalizes, and tracks your outreach — multi-step sequences,
             your own Gmail, and analytics that show exactly what's working.
           </p>
+          <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground">
+            AceMail connects to your Gmail account with your permission to send the campaigns you
+            create and to detect replies so follow-ups stop automatically. We never see your Google
+            password, and you can disconnect at any time. See our{" "}
+            <Link to="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>{" "}
+            for exactly how your Google data is accessed, used, and stored.
+          </p>
           <div className="mt-8 flex justify-center gap-3">
             <Button size="lg" asChild>
               <Link to="/auth">Start sending free</Link>

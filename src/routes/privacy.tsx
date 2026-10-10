@@ -59,6 +59,45 @@ function PrivacyPage() {
           </section>
 
           <section>
+            <h2 className="text-lg font-semibold">4. How we access, use, store, and share Google user data</h2>
+            <p className="mt-2 text-muted-foreground">
+              <strong className="text-foreground">Access.</strong> When you connect a Gmail mailbox,
+              Google asks you to authorize AceMail. We request only the permissions needed to send
+              email on your behalf and to read messages in your mailbox so we can detect replies to
+              your campaigns. We never receive or store your Google password — authorization is
+              handled entirely by Google via OAuth.
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              <strong className="text-foreground">Use.</strong> Google user data is used exclusively
+              to provide AceMail's core features: sending the campaign emails you compose and
+              schedule, and scanning your inbox for replies from your campaign contacts so that
+              follow-up steps stop automatically and replies appear in your AceMail inbox. We do not
+              use Google user data for advertising, profiling, or any purpose unrelated to these
+              features.
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              <strong className="text-foreground">Storage.</strong> We store an encrypted OAuth
+              credential that lets AceMail access Gmail on your behalf, plus metadata about messages
+              related to your campaigns (such as sender, subject, and reply content for matched
+              replies). This data is stored in an encrypted database with per-user isolation and is
+              accessible only to your account.
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              <strong className="text-foreground">Sharing.</strong> We do not sell, rent, or share
+              Google user data with any third party. Google user data is never transferred to
+              advertisers, data brokers, or other apps. The only systems that process it are the
+              hosting and database infrastructure required to operate AceMail.
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              <strong className="text-foreground">Revocation and deletion.</strong> You can
+              disconnect a mailbox at any time from the Mailboxes page, which deletes the stored
+              credential, and you can revoke AceMail's access from your Google Account permissions
+              page. You may request deletion of your account and all associated data, including all
+              Google user data we hold, at any time.
+            </p>
+          </section>
+
+          <section>
             <h2 className="text-lg font-semibold">4. Data security and retention</h2>
             <p className="mt-2 text-muted-foreground">
               Data is stored in an encrypted database with per-user isolation. Mailbox credentials are
