@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Mail, UserRound, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TemplateBodyEditor, EmailPreview, type BodyEditorHandle } from "@/components/TemplateBodyEditor";
-import { renderEmailVariables, escapeEmailText } from "@/lib/email-content";
+import { renderEmailVariables, escapeEmailText, detectEmailVariables, resolveEmailVariableKey } from "@/lib/email-content";
 
 const templatesQuery = queryOptions({
   queryKey: ["templates"],
@@ -56,7 +56,8 @@ function TemplatesPage() {
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
   const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
   const { data: signature } = useQuery({ queryKey: ["signature"], queryFn: () => getSignature() });
-  const allVars = [...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}}`)];
+  const detectedVars = detectEmailVariables(editing?.subject ?? "", editing?.body ?? "", editing?.attach_signature ? signature ?? "" : "");
+  const allVars = [...new Set([...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}`), ...detectedVars.map((k) => `{{${k}}}`)])];
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
 
@@ -111,13 +112,15 @@ function TemplatesPage() {
 
   const selectedContact = (previewContacts ?? []).find((c) => c.id === previewContactId) ?? null;
 
-  const preview = (text: string, html = false) => renderEmailVariables(text, {
+  const previewValues: Record<string, unknown> = {
     ...(selectedContact?.custom_fields as Record<string, unknown> | null ?? {}),
-    first_name: selectedContact?.first_name || "Jane",
-    last_name: selectedContact?.last_name || "Doe",
-    company: selectedContact?.company || "Acme Inc",
-    email: selectedContact?.email || "jane@acme.com",
-  }, html, (key) => `[${key}]`);
+    first_name: selectedContact ? selectedContact.first_name : "Jane",
+    last_name: selectedContact ? selectedContact.last_name : "Doe",
+    company: selectedContact ? selectedContact.company : "Acme Inc",
+    email: selectedContact ? selectedContact.email : "jane@acme.com",
+  };
+  const availableFields = Object.fromEntries([...VARIABLES.map((v) => v.slice(2, -2)), ...(customKeys ?? [])].map((key) => [key, true]));
+  const preview = (text: string, html = false) => renderEmailVariables(text, previewValues, html, (key) => `[${key}]`);
 
   return (
     <div className="space-y-6">
@@ -180,10 +183,11 @@ function TemplatesPage() {
               </label>
               <div className="flex flex-wrap gap-1">
                 {allVars.map((v) => (
-                  <Badge
+                  <Button
                     key={v}
                     variant="secondary"
-                    className="cursor-pointer"
+                    size="sm"
+                    className="h-auto max-w-full whitespace-normal break-all px-2 py-1 text-xs"
                     onClick={(e) => {
                       e.preventDefault();
                       insertVar(v);
@@ -191,7 +195,7 @@ function TemplatesPage() {
                     onMouseDown={(e) => e.preventDefault()}
                   >
                     {v}
-                  </Badge>
+                  </Button>
                 ))}
               </div>
               <div className="flex gap-2">
@@ -224,6 +228,27 @@ function TemplatesPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
+              {detectedVars.length > 0 && (
+                <section aria-label="Detected variables" className="space-y-2 border-b pb-3">
+                  <h3 className="text-sm font-semibold">Detected variables · {detectedVars.length}</h3>
+                  <ul className="space-y-2">
+                    {detectedVars.map((key) => {
+                      const field = resolveEmailVariableKey(key, previewValues);
+                      const knownField = resolveEmailVariableKey(key, availableFields);
+                      const value = field === undefined ? undefined : previewValues[field];
+                      const hasValue = value !== undefined && value !== null && value !== "";
+                      return (
+                        <li key={key} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <span className="min-w-0 break-all font-mono">{`{{${key}}}`}</span>
+                          <Badge variant={hasValue ? "secondary" : "outline"} className="max-w-full whitespace-normal break-all">
+                            {hasValue ? `Matched: ${field}` : knownField ? "No preview value" : "No matching field"}
+                          </Badge>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              )}
               <div className="rounded-md border bg-muted/50 p-3">
                 <p className="mb-2 border-b pb-2 text-sm font-semibold">
                   {preview(editing.subject ?? "") || "(no subject)"}

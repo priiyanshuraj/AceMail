@@ -1,9 +1,26 @@
 import { describe, it, expect } from "vitest";
-import { emailHtml, mediaPaths, inboxDocument, renderEmailVariables } from "@/lib/email-content";
+import { emailHtml, mediaPaths, inboxDocument, renderEmailVariables, detectEmailVariables, resolveEmailVariableKey } from "@/lib/email-content";
 import { trackCampaignLinks } from "@/server/campaign-tracking.server";
 import { prepareEmail } from "@/server/email-content.server";
 
 describe("Email formatting", () => {
+  it("detects unique variables in subjects and HTML, including human-readable field labels", () => {
+    expect(detectEmailVariables("Hi {{First Name}}", "<p>{{Company}} {{contact.Recent Company Signal}} {{Product/Feature}} {{ First Name }}</p>"))
+      .toEqual(["First Name", "Company", "contact.Recent Company Signal", "Product/Feature"]);
+    expect(detectEmailVariables("{{incomplete} {{ }} {{nested{{company}}}}" )).toEqual(["company"]);
+  });
+  it("matches spaces, case, punctuation and contact prefixes without altering paragraphs", () => {
+    const values = { first_name: "Jane", company: "Acme", recent_company_signal: "New release\n\nHiring", product_feature: "API" };
+    expect(renderEmailVariables("<p>Hi {{First Name}}, {{Company}} {{contact.Recent Company Signal}} {{Product/Feature}}</p>", values, true))
+      .toBe("<p>Hi Jane, Acme New release<br /><br />Hiring API</p>");
+    expect(renderEmailVariables("Hi {{CONTACT.first_name}}", values)).toBe("Hi Jane");
+  });
+  it("does not guess unknown or ambiguous fields and prefers exact keys", () => {
+    const values = { "Product Feature": "First", product_feature: "Second" };
+    expect(resolveEmailVariableKey("product feature", values)).toBeUndefined();
+    expect(resolveEmailVariableKey("Product Feature", values)).toBe("Product Feature");
+    expect(renderEmailVariables("{{Unknown Field}}", values, false, (key) => `[${key}]`)).toBe("[Unknown Field]");
+  });
   it("preserves sheet paragraph spacing inside rich HTML and delivery preparation", async () => {
     const draft = "Hi Rajas,\r\n\r\nQuick question?\n\nBetween releases?\r\rWorth a look?";
     const html = renderEmailVariables('<p>{{personalized_email_draft}}</p>', { personalized_email_draft: draft }, true);
