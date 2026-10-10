@@ -237,22 +237,37 @@ function TemplatesPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Preview</CardTitle>
-              <div className="flex items-center gap-2">
-                <UserRound className="h-4 w-4 text-muted-foreground" />
-                <Select value={effectiveContactId} onValueChange={setPreviewContactId}>
-                  <SelectTrigger className="w-full max-w-[220px]">
-                    <SelectValue placeholder="Sample contact" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sample">Sample contact</SelectItem>
-                    {(previewContacts ?? []).map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.first_name || c.email}
-                        {c.company ? ` · ${c.company}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex w-full max-w-[280px] items-center gap-2">
+                <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="flex w-full flex-col gap-2">
+                  <Select value={previewListId} onValueChange={setPreviewListId}>
+                    <SelectTrigger aria-label="Preview contact list" className="w-full">
+                      <SelectValue placeholder="All lists" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All lists</SelectItem>
+                      {(contactLists ?? []).map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name} ({l.contact_count})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={effectiveContactId} onValueChange={setPreviewContactId}>
+                    <SelectTrigger aria-label="Preview contact" className="w-full">
+                      <SelectValue placeholder="Sample contact" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sample">Sample contact</SelectItem>
+                      {(previewContacts ?? []).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.first_name || c.email}
+                          {c.company ? ` · ${c.company}` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
