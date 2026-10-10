@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { inboxDocument, signatureHtml } from "@/lib/email-content";
 
 function SignatureCard() {
   const queryClient = useQueryClient();
