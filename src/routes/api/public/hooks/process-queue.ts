@@ -204,7 +204,7 @@ async function processQueue() {
             .select("signature")
             .eq("user_id", log.user_id)
             .maybeSingle();
-          if (sig?.signature?.trim()) fullBody += "<br /><br />" + render(escapeEmailText(sig.signature), true);
+          if (sig?.signature?.trim()) fullBody += "<br /><br />" + render(signatureHtml(sig.signature), true);
         }
         const prepared = await prepareEmail(fullBody, log.user_id, supabaseAdmin);
         const { trackCampaignLinks } = await import("@/server/campaign-tracking.server");
