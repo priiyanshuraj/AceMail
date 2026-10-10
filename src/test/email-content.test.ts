@@ -1,9 +1,23 @@
 import { describe, it, expect } from "vitest";
-import { emailHtml, mediaPaths, inboxDocument } from "@/lib/email-content";
+import { emailHtml, mediaPaths, inboxDocument, renderEmailVariables } from "@/lib/email-content";
 import { trackCampaignLinks } from "@/server/campaign-tracking.server";
 import { prepareEmail } from "@/server/email-content.server";
 
 describe("Email formatting", () => {
+  it("preserves sheet paragraph spacing inside rich HTML and delivery preparation", async () => {
+    const draft = "Hi Rajas,\r\n\r\nQuick question?\n\nBetween releases?\r\rWorth a look?";
+    const html = renderEmailVariables('<p>{{personalized_email_draft}}</p>', { personalized_email_draft: draft }, true);
+    expect(html).toBe('<p>Hi Rajas,<br /><br />Quick question?<br /><br />Between releases?<br /><br />Worth a look?</p>');
+    expect(inboxDocument(html)).toContain(html);
+    const prepared = await prepareEmail(html, "owner", {} as Parameters<typeof prepareEmail>[2]);
+    expect(prepared.html).toBe(html);
+  });
+  it("escapes imported text without changing subject text or re-expanding variables", () => {
+    const values = { draft: 'A & B <script>alert(1)</script>\n{{company}}', company: "Acme" };
+    expect(renderEmailVariables('<p>{{ draft }}</p>', values, true)).toBe('<p>A &amp; B &lt;script&gt;alert(1)&lt;/script&gt;<br />{{company}}</p>');
+    expect(renderEmailVariables('{{draft}}', values)).toBe(values.draft);
+    expect(renderEmailVariables('Hello\n\n{{draft}}', { draft: 'One\n\nTwo' }, true)).toBe('Hello<br /><br />One<br /><br />Two');
+  });
   it("preserves email table layouts and inline HTML styling", () => {
     const html = emailHtml('<table cellpadding="12" style="width:100%;background-color:#123456"><tr><td style="font-size:20px;padding:12px;text-align:center">Hello</td></tr></table>');
     expect(html).toContain('<table cellpadding="12"');

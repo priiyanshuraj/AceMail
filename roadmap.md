@@ -1,4 +1,5 @@
 # Template editor
+- [x] Preserve imported custom-field paragraphs across preview, test emails and campaigns; 10 regression tests and browser paragraph spacing verified. Live email delivery was not triggered.
 - [x] Add rich formatting, links, uploaded images/files, HTML mode, template loading, meeting and video links.
 - [x] Preserve formatting and attachments in test and campaign emails.
 - [x] Verify editor interactions and email rendering tests.
