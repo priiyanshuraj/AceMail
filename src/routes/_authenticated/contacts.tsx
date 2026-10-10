@@ -355,14 +355,20 @@ function ContactsPage() {
         <div className="lg:col-span-2">
           {selectedList ? (
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle>Contacts</CardTitle>
-                <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Upload className="mr-2 h-4 w-4" /> Import CSV
+                <div className="flex items-center gap-2">
+                  {selectedIds.size > 0 && (
+                    <Button variant="destructive" size="sm" onClick={() => setConfirmRemove(true)}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remove selected ({selectedIds.size})
                     </Button>
-                  </DialogTrigger>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
+                    <Upload className="mr-2 h-4 w-4" /> Import CSV
+                  </Button>
+                </div>
+                <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
                   <DialogContent className="max-w-2xl">
                     <DialogHeader>
                       <DialogTitle>Import contacts</DialogTitle>
