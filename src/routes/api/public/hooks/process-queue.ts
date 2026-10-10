@@ -193,6 +193,7 @@ async function processQueue() {
     }
 
     for (const log of sendable.slice(0, remaining)) {
+      if (!log.contact_id) continue;
       const contact = log.contacts as unknown as {
         email: string;
         first_name: string;
