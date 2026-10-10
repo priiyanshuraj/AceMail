@@ -61,6 +61,16 @@ function TemplatesPage() {
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["templates"] });
 
+  const remapVariable = (key: string, field: string) => {
+    const replace = (text: string) => text.replace(/\{\{\s*([^{}<>\r\n]+?)\s*\}\}/gu,
+      (token, variable: string) => variable.trim() === key ? `{{${field}}}` : token);
+    setEditing((current) => current ? {
+      ...current,
+      subject: replace(current.subject ?? ""),
+      body: replace(current.body ?? ""),
+    } : current);
+  };
+
   const insertVar = (v: string) => {
     const isSubject = lastFieldRef.current === "subject";
     if (!isSubject) {
@@ -237,12 +247,27 @@ function TemplatesPage() {
                       const knownField = resolveEmailVariableKey(key, availableFields);
                       const value = field === undefined ? undefined : previewValues[field];
                       const hasValue = value !== undefined && value !== null && value !== "";
+                      const editable = detectEmailVariables(editing.subject ?? "", editing.body ?? "").includes(key);
                       return (
                         <li key={key} className="flex flex-wrap items-center justify-between gap-2 text-xs">
                           <span className="min-w-0 break-all font-mono">{`{{${key}}}`}</span>
+                          <div className="flex min-w-0 flex-wrap items-center gap-2">
                           <Badge variant={hasValue ? "secondary" : "outline"} className="max-w-full whitespace-normal break-all">
                             {hasValue ? `Matched: ${field}` : knownField ? "No preview value" : "No matching field"}
                           </Badge>
+                          {editable && (
+                            <Select value="" onValueChange={(target) => remapVariable(key, target)}>
+                              <SelectTrigger aria-label={`Remap ${key}`} className="h-8 w-40 max-w-full text-xs">
+                                <SelectValue placeholder="Remap to field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.keys(availableFields).map((target) => (
+                                  <SelectItem key={target} value={target}>{target}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                          </div>
                         </li>
                       );
                     })}
