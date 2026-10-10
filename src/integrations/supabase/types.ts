@@ -127,12 +127,14 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          breakup_day_exclusive: boolean
           completed_at: string | null
           config_id: string | null
           created_at: string
           id: string
           list_id: string
           name: string
+          prioritize_followups: boolean
           send_days: number[]
           send_window_end: string | null
           send_window_start: string | null
@@ -142,12 +144,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          breakup_day_exclusive?: boolean
           completed_at?: string | null
           config_id?: string | null
           created_at?: string
           id?: string
           list_id: string
           name: string
+          prioritize_followups?: boolean
           send_days?: number[]
           send_window_end?: string | null
           send_window_start?: string | null
@@ -157,12 +161,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          breakup_day_exclusive?: boolean
           completed_at?: string | null
           config_id?: string | null
           created_at?: string
           id?: string
           list_id?: string
           name?: string
+          prioritize_followups?: boolean
           send_days?: number[]
           send_window_end?: string | null
           send_window_start?: string | null

@@ -47,6 +47,8 @@ function EditCampaign() {
         send_window_start: c.send_window_start ?? "",
         send_window_end: c.send_window_end ?? "",
         timezone: c.timezone,
+        prioritize_followups: c.prioritize_followups,
+        breakup_day_exclusive: c.breakup_day_exclusive,
         steps: detail.steps.map((s) => ({
           id: s.id,
           template_id: s.template_id,

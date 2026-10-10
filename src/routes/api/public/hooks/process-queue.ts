@@ -59,13 +59,13 @@ async function processQueue() {
   const { data: due, error } = await supabaseAdmin
     .from("email_logs")
     .select(
-      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, timezone, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body, attach_signature))"
+      "id, campaign_id, step_id, contact_id, user_id, campaigns!inner(status, prioritize_followups, breakup_day_exclusive, timezone, send_window_start, send_window_end, send_days, config_id, email_configurations(*)), contacts(email, first_name, last_name, company, unsubscribed, custom_fields), campaign_steps(step_order, delay_days, email_templates(subject, body, attach_signature))"
     )
     .eq("status", "queued")
     .eq("campaigns.status", "running")
     .lte("scheduled_at", now.toISOString())
     .order("scheduled_at", { ascending: true })
-    .limit(50);
+    .limit(1000);
 
   if (error) throw new Error(error.message);
   if (!due || due.length === 0) return { processed: 0, sent: 0, failed: 0, replies };
@@ -86,6 +86,8 @@ async function processQueue() {
     if (!first) continue;
     const campaign = first.campaigns as unknown as {
       status: string;
+      prioritize_followups: boolean;
+      breakup_day_exclusive: boolean;
       timezone: string | null;
       send_window_start: string | null;
       send_window_end: string | null;
@@ -158,7 +160,29 @@ async function processQueue() {
 
     const appUrl = process.env["APP_URL"] ?? "";
 
-    for (const log of logs.slice(0, remaining)) {
+    // Follow-up priority: later steps go first; initial emails only use leftover capacity.
+    const order = (l: (typeof logs)[number]) =>
+      (l.campaign_steps as unknown as { step_order: number } | null)?.step_order ?? 1;
+    let sendable = logs;
+    if (campaign.prioritize_followups) {
+      sendable = [...logs].sort((a, b) => order(b) - order(a));
+      if (campaign.breakup_day_exclusive) {
+        const { data: lastStep } = await supabaseAdmin
+          .from("campaign_steps")
+          .select("step_order")
+          .eq("campaign_id", campaignId)
+          .order("step_order", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const last = lastStep?.step_order ?? 0;
+        // Break-up day: if final emails are due, send only those today.
+        if (last > 1 && sendable.some((l) => order(l) === last)) {
+          sendable = sendable.filter((l) => order(l) === last);
+        }
+      }
+    }
+
+    for (const log of sendable.slice(0, remaining)) {
       const contact = log.contacts as unknown as {
         email: string;
         first_name: string;
