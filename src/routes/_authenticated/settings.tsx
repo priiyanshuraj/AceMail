@@ -16,14 +16,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { inboxDocument, signatureHtml } from "@/lib/email-content";
 
 function SignatureCard() {
   const queryClient = useQueryClient();
   const { data } = useQuery({ queryKey: ["signature"], queryFn: () => getSignature() });
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
+  const [mode, setMode] = useState<"plain" | "html">("plain");
   useEffect(() => {
-    if (data !== undefined) setValue(data);
+    if (data !== undefined) {
+      setValue(data);
+      if (/<\/?[a-z][a-z0-9]*\b[^>]*>/i.test(data)) setMode("html");
+    }
   }, [data]);
   return (
     <Card>
@@ -34,12 +39,32 @@ function SignatureCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
+        <div className="flex gap-2">
+          <Button type="button" size="sm" variant={mode === "plain" ? "default" : "outline"} onClick={() => setMode("plain")}>
+            Plain text
+          </Button>
+          <Button type="button" size="sm" variant={mode === "html" ? "default" : "outline"} onClick={() => setMode("html")}>
+            HTML
+          </Button>
+        </div>
         <Textarea
           rows={6}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={"Best,\nRaj\nFounder, AceMail"}
+          placeholder={mode === "html" ? '<p>Best,<br /><strong>Raj</strong><br />Founder, AceMail</p>' : "Best,\nRaj\nFounder, AceMail"}
+          className={mode === "html" ? "font-mono text-xs" : undefined}
         />
+        {value.trim() && (
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Preview</p>
+            <iframe
+              title="Signature preview"
+              sandbox=""
+              srcDoc={inboxDocument(signatureHtml(value))}
+              className="h-40 w-full rounded-md border bg-white"
+            />
+          </div>
+        )}
         <Button
           disabled={saving || value === (data ?? "")}
           onClick={async () => {
