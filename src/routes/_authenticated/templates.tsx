@@ -54,13 +54,15 @@ function TemplatesPage() {
   const queryClient = useQueryClient();
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
+  const [previewListId, setPreviewListId] = useState<string>("all");
   const [previewContactId, setPreviewContactId] = useState<string>("auto");
   const [sendingTest, setSendingTest] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
   const bodyEditorRef = useRef<BodyEditorHandle>(null);
   const lastFieldRef = useRef<"subject" | "body">("body");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
-  const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
+  const { data: contactLists } = useQuery(contactListsQuery);
+  const { data: previewContacts } = useQuery(previewContactsQuery(previewListId));
   const { data: signature } = useQuery({ queryKey: ["signature"], queryFn: () => getSignature() });
   const detectedVars = detectEmailVariables(editing?.subject ?? "", editing?.body ?? "", editing?.attach_signature ? signature ?? "" : "");
   const allVars = [...new Set([...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}`), ...detectedVars.map((k) => `{{${k}}}`)])];
