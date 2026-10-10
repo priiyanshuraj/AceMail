@@ -351,7 +351,7 @@ function ContactsPage() {
                             Clear
                           </button>
                         </div>
-                        {headers.map((h, i) => (
+                        {headers.map((h, i) => (!emptyCols.has(i) && (
                           <div key={i} className={`grid grid-cols-[1fr_auto_1fr_auto] items-center gap-2 ${excluded.has(i) ? "opacity-50" : ""}`}>
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium">{h || `Column ${i + 1}`}</p>
