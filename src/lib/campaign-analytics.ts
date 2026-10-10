@@ -1,0 +1,3 @@
+export type CampaignActivity = { kind: "opened" | "clicked" | "replied"; at: string; recipient: string; destination: string | null };
+export type CampaignAnalytics = { total: number; sent: number; opened: number; clicked: number; clickEvents: number; replied: number; sentRecipients: number; queued: number; paused: number; failed: number; activity: CampaignActivity[] };
+export const percentage = (value: number, total: number) => total ? Math.round(value / total * 100) : 0;

@@ -207,7 +207,8 @@ async function processQueue() {
           if (sig?.signature?.trim()) fullBody += "<br /><br />" + emailHtml(render(escapeEmailText(sig.signature)));
         }
         const prepared = await prepareEmail(fullBody, log.user_id, supabaseAdmin);
-        const html = prepared.html + pixel;
+        const { trackCampaignLinks } = await import("@/server/campaign-tracking.server");
+        const html = (appUrl ? await trackCampaignLinks(prepared.html, log.id, log.user_id, appUrl, supabaseAdmin) : prepared.html) + pixel;
         let gmailIds: { id: string; threadId: string } | null = null;
         if (isGmail) {
           // Follow-ups reply in the same thread
@@ -221,7 +222,8 @@ async function processQueue() {
             .maybeSingle();
           const threadId = prev?.gmail_thread_id ?? null;
           const subject = render(template.subject);
-          gmailIds = await gmailSend(gmailKey!, {
+          if (!gmailKey) throw new Error("Mailbox needs reconnecting");
+          gmailIds = await gmailSend(gmailKey, {
             from: config.from_email,
             fromName: config.from_name,
             to: contact.email,
