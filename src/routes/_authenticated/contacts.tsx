@@ -463,6 +463,14 @@ function ContactsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          aria-label="Select all contacts"
+                          checked={contacts.length > 0 && allSelected}
+                          disabled={contacts.length === 0}
+                          onCheckedChange={toggleAll}
+                        />
+                      </TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Company</TableHead>
@@ -471,7 +479,14 @@ function ContactsPage() {
                   </TableHeader>
                   <TableBody>
                     {contacts.map((c) => (
-                      <TableRow key={c.id}>
+                      <TableRow key={c.id} data-state={selectedIds.has(c.id) ? "selected" : undefined}>
+                        <TableCell>
+                          <Checkbox
+                            aria-label={`Select ${c.email}`}
+                            checked={selectedIds.has(c.id)}
+                            onCheckedChange={() => toggleOne(c.id)}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{c.email}</TableCell>
                         <TableCell>{[c.first_name, c.last_name].filter(Boolean).join(" ") || "—"}</TableCell>
                         <TableCell>{c.company || "—"}</TableCell>
@@ -484,7 +499,7 @@ function ContactsPage() {
                     ))}
                     {contacts.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground">
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
                           No contacts in this list yet.
                         </TableCell>
                       </TableRow>
