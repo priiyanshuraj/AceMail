@@ -98,7 +98,7 @@ function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">4. Data security and retention</h2>
+            <h2 className="text-lg font-semibold">5. Data security and retention</h2>
             <p className="mt-2 text-muted-foreground">
               Data is stored in an encrypted database with per-user isolation. Mailbox credentials are
               encrypted at rest. Your data is kept while your account is active; you can request
@@ -107,7 +107,7 @@ function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">5. Your rights</h2>
+            <h2 className="text-lg font-semibold">6. Your rights</h2>
             <p className="mt-2 text-muted-foreground">
               You may export or delete your contacts, templates, and campaigns at any time. For any
               privacy question or deletion request, contact the app owner through the support channel
@@ -116,7 +116,7 @@ function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold">6. Changes</h2>
+            <h2 className="text-lg font-semibold">7. Changes</h2>
             <p className="mt-2 text-muted-foreground">
               If this policy changes, the updated version will be posted on this page with a new
               "last updated" date.
