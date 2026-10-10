@@ -400,7 +400,7 @@ function ContactsPage() {
                             )}
                             {(excluded.has(i) || newFieldCol === i) && <span className="w-7" />}
                           </div>
-                        ))}
+                        )))}
                       </div>
                     )}
                     <Button onClick={handleImport} className="w-full" disabled={headers.length === 0}>
