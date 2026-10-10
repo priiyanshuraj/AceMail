@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts, getSignature, sendTemplateTest } from "@/lib/acemail.functions";
+import { listTemplates, saveTemplate, deleteTemplate, listCustomFieldKeys, listPreviewContacts, listContactLists, getSignature, sendTemplateTest } from "@/lib/acemail.functions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +20,15 @@ const templatesQuery = queryOptions({
   queryFn: () => listTemplates(),
 });
 
-const previewContactsQuery = queryOptions({
-  queryKey: ["preview-contacts"],
-  queryFn: () => listPreviewContacts(),
+const previewContactsQuery = (listId: string) =>
+  queryOptions({
+    queryKey: ["preview-contacts", listId],
+    queryFn: () => listPreviewContacts({ data: { list_id: listId === "all" ? undefined : listId } }),
+  });
+
+const contactListsQuery = queryOptions({
+  queryKey: ["contact-lists"],
+  queryFn: () => listContactLists(),
 });
 
 export const Route = createFileRoute("/_authenticated/templates")({
@@ -48,13 +54,15 @@ function TemplatesPage() {
   const queryClient = useQueryClient();
   const { data: templates } = useSuspenseQuery(templatesQuery);
   const [editing, setEditing] = useState<Partial<Template> | null>(null);
+  const [previewListId, setPreviewListId] = useState<string>("all");
   const [previewContactId, setPreviewContactId] = useState<string>("auto");
   const [sendingTest, setSendingTest] = useState(false);
   const subjectRef = useRef<HTMLInputElement>(null);
   const bodyEditorRef = useRef<BodyEditorHandle>(null);
   const lastFieldRef = useRef<"subject" | "body">("body");
   const { data: customKeys } = useQuery({ queryKey: ["custom-field-keys"], queryFn: () => listCustomFieldKeys() });
-  const { data: previewContacts } = useQuery({ queryKey: ["preview-contacts"], queryFn: () => listPreviewContacts() });
+  const { data: contactLists } = useQuery(contactListsQuery);
+  const { data: previewContacts } = useQuery(previewContactsQuery(previewListId));
   const { data: signature } = useQuery({ queryKey: ["signature"], queryFn: () => getSignature() });
   const detectedVars = detectEmailVariables(editing?.subject ?? "", editing?.body ?? "", editing?.attach_signature ? signature ?? "" : "");
   const allVars = [...new Set([...VARIABLES, ...(customKeys ?? []).map((k) => `{{${k}}`), ...detectedVars.map((k) => `{{${k}}}`)])];
@@ -120,13 +128,16 @@ function TemplatesPage() {
     toast.success("Template saved");
   };
 
-  // Default the preview to the real contact with the most filled-in columns, so imported fields show actual values.
+  // Default the preview to the real contact with the most filled-in columns within the chosen list, so imported fields show actual values.
   const filledCount = (c: { custom_fields: unknown }) => Object.values((c.custom_fields as Record<string, unknown> | null) ?? {}).filter((v) => v !== null && v !== "").length;
   const autoContactId = (previewContacts ?? []).reduce<{ id: string; n: number } | null>((best, c) => {
     const n = filledCount(c);
     return !best || n > best.n ? { id: c.id, n } : best;
   }, null)?.id;
-  const effectiveContactId = previewContactId === "auto" ? autoContactId ?? "sample" : previewContactId;
+  const effectiveContactId =
+    previewContactId !== "auto" && (previewContacts ?? []).some((c) => c.id === previewContactId)
+      ? previewContactId
+      : autoContactId ?? "sample";
   const selectedContact = (previewContacts ?? []).find((c) => c.id === effectiveContactId) ?? null;
 
   const previewValues: Record<string, unknown> = {
@@ -226,22 +237,37 @@ function TemplatesPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Preview</CardTitle>
-              <div className="flex items-center gap-2">
-                <UserRound className="h-4 w-4 text-muted-foreground" />
-                <Select value={effectiveContactId} onValueChange={setPreviewContactId}>
-                  <SelectTrigger className="w-full max-w-[220px]">
-                    <SelectValue placeholder="Sample contact" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sample">Sample contact</SelectItem>
-                    {(previewContacts ?? []).map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.first_name || c.email}
-                        {c.company ? ` · ${c.company}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex w-full max-w-[280px] items-center gap-2">
+                <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="flex w-full flex-col gap-2">
+                  <Select value={previewListId} onValueChange={setPreviewListId}>
+                    <SelectTrigger aria-label="Preview contact list" className="w-full">
+                      <SelectValue placeholder="All lists" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All lists</SelectItem>
+                      {(contactLists ?? []).map((l) => (
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.name} ({l.contact_count})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={effectiveContactId} onValueChange={setPreviewContactId}>
+                    <SelectTrigger aria-label="Preview contact" className="w-full">
+                      <SelectValue placeholder="Sample contact" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sample">Sample contact</SelectItem>
+                      {(previewContacts ?? []).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.first_name || c.email}
+                          {c.company ? ` · ${c.company}` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
