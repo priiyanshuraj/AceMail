@@ -298,7 +298,7 @@ export function CampaignForm({
                 <span>
                   <span className="block text-sm font-medium">Break-up day: send only the last email</span>
                   <span className="block text-xs text-muted-foreground">
-                    On days when final (break-up) emails are due, nothing else is sent so they all fit in the limit. Other emails wait for the next day.
+                    On days when final (break-up) emails are due, nothing else is sent so they all fit in the limit. Clashing follow-ups move to the next day, and their later follow-ups shift by the same gap.
                   </span>
                 </span>
                 <Switch
