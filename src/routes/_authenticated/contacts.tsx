@@ -472,7 +472,7 @@ function ContactsPage() {
                       <TableHead className="w-10">
                         <Checkbox
                           aria-label="Select all contacts"
-                          checked={contacts.length > 0 && allSelected}
+                          checked={allSelected ? true : selectedIds.size > 0 ? "indeterminate" : false}
                           disabled={contacts.length === 0}
                           onCheckedChange={toggleAll}
                         />
