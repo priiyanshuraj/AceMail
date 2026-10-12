@@ -23,7 +23,7 @@ import { Eye, Flame, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const mailboxesQuery = queryOptions({
-  queryKey: ["mailboxes"],
+  queryKey: ["mailboxes", "page"],
   queryFn: async () => {
     const [boxes, templates] = await Promise.all([listMailboxes(), listTemplates()]);
     return { boxes, templates };
