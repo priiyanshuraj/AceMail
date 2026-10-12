@@ -186,7 +186,7 @@ function SettingsPage() {
           <Button
             onClick={async () => {
               const emails = dnc.split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter((e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e));
-              if (!emails.length) return toast.error("Enter at least one valid email");
+              if (!emails.length) { toast.error("Enter at least one valid email"); return; }
               try {
                 await addSuppressions({ data: { emails } });
                 setDnc("");
