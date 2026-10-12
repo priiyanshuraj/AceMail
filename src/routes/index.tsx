@@ -16,6 +16,7 @@ import {
   Sun,
   ArrowRight,
   Check,
+  Github,
 } from "lucide-react";
 import { toast } from "sonner";
 import logoUrl from "@/assets/acemail-logo.png";
@@ -40,6 +41,41 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/` }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": `${SITE_URL}/#org`,
+              name: "AceMail",
+              url: `${SITE_URL}/`,
+              sameAs: ["https://github.com/priiyanshuraj/AceMail"],
+            },
+            { "@type": "WebSite", name: "AceMail", url: `${SITE_URL}/`, publisher: { "@id": `${SITE_URL}/#org` } },
+            {
+              "@type": "SoftwareApplication",
+              name: "AceMail",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              url: `${SITE_URL}/`,
+              description: DESC,
+              license: "https://www.apache.org/licenses/LICENSE-2.0",
+              featureList: [
+                "Multi-step cold email sequences from your own Gmail",
+                "Automatic follow-up stop on reply",
+                "MCP server for ChatGPT and Claude",
+                "CSV and Google Sheets import with custom fields",
+                "Spintax, spam check, email verification and one-click unsubscribe",
+                "Mailbox rotation with per-mailbox limits",
+              ],
+            },
+          ],
+        }),
+      },
+    ],
   }),
   component: Landing,
 });
@@ -144,8 +180,14 @@ function Landing() {
               <a href="#features" className="hover:text-foreground">Features</a>
               <a href="#mcp" className="hover:text-foreground">MCP</a>
               <Link to="/blog" className="hover:text-foreground">Blog</Link>
+              <a href="https://github.com/priiyanshuraj/AceMail" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">GitHub</a>
             </nav>
             <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" asChild className="md:hidden">
+                <a href="https://github.com/priiyanshuraj/AceMail" target="_blank" rel="noopener noreferrer" aria-label="AceMail on GitHub">
+                  <Github className="h-5 w-5" />
+                </a>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -260,7 +302,7 @@ function Landing() {
             <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground">All posts <ArrowRight className="inline h-3 w-3" /></Link>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
-            {blogPosts.map((p) => (
+            {blogPosts.slice(0, 3).map((p) => (
               <Link
                 key={p.slug}
                 to="/blog/$slug"
