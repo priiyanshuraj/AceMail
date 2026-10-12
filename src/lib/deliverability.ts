@@ -1,7 +1,7 @@
 // Free, AI-free deliverability helpers shared by preview, test sends and the queue.
 
 // Spintax: {Hi|Hello|Hey} picks one option. {{variables}} are left untouched.
-const spinPattern = /(?<!\{)\{([^{}]*\|[^{}]*)\}(?!\})/;
+const spinPattern = /\{([^{}]*\|[^{}]*)\}/;
 
 export function spin(text: string, random: () => number = Math.random): string {
   let out = text;
