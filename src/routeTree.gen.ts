@@ -37,6 +37,7 @@ import { Route as ApiPublicClickLinkIdRouteImport } from './routes/api/public/cl
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
 import { Route as ApiPublicTrackLogIdDotpngRouteImport } from './routes/api/public/track/$logId[.]png'
 import { Route as ApiPublicUnsubscribeLogIdRouteImport } from './routes/api/public/unsubscribe/$logId'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -185,6 +186,12 @@ const ApiPublicUnsubscribeLogIdRoute =
     path: '/api/public/unsubscribe/$logId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -243,6 +251,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -274,6 +283,7 @@ export interface FileRoutesById {
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -364,6 +376,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -383,6 +396,7 @@ export interface RootRouteChildren {
   ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
   ApiPublicTrackLogIdDotpngRoute: typeof ApiPublicTrackLogIdDotpngRoute
   ApiPublicUnsubscribeLogIdRoute: typeof ApiPublicUnsubscribeLogIdRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -583,6 +597,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicUnsubscribeLogIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -638,6 +659,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
   ApiPublicTrackLogIdDotpngRoute: ApiPublicTrackLogIdDotpngRoute,
   ApiPublicUnsubscribeLogIdRoute: ApiPublicUnsubscribeLogIdRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
