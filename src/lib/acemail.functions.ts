@@ -197,11 +197,11 @@ export const verifyListContacts = createServerFn({ method: "POST" })
     const groups = new Map<string, string[]>();
     checks.forEach((c, i) => {
       const k = `${c.status}|${c.reason}`;
-      groups.set(k, [...(groups.get(k) ?? []), list[i].id]);
+      groups.set(k, [...(groups.get(k) ?? []), list[i]!.id]);
     });
     const now = new Date().toISOString();
     for (const [k, ids] of groups) {
-      const [status, reason] = k.split("|");
+      const [status = "risky", reason = ""] = k.split("|");
       for (let i = 0; i < ids.length; i += 100) {
         const { error: e } = await context.supabase
           .from("contacts")

@@ -356,7 +356,7 @@ function ContactsPage() {
       let skipped = 0;
       if (verifyOnImport) {
         const checks = await verifyEmails({ data: { emails: parsed.map((p) => p.email) } });
-        const withStatus = parsed.map((p, i) => ({ ...p, email_status: checks[i].status, email_check_reason: checks[i].reason || undefined }));
+        const withStatus = parsed.map((p, i) => ({ ...p, email_status: checks[i]!.status, ...(checks[i]!.reason ? { email_check_reason: checks[i]!.reason } : {}) }));
         toImport = withStatus.filter((p) => p.email_status === "valid");
         skipped = withStatus.length - toImport.length;
       }
