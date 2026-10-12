@@ -1,0 +1,1 @@
+UPDATE public.email_logs SET error = replace(replace(error, '&#39;', ''''), '&quot;', '"') WHERE status = 'bounced' AND error LIKE '%&%;%';
