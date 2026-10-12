@@ -74,7 +74,7 @@ export function PetalField() {
       ctx.translate(Math.round(p.x), Math.round(p.y));
       // quantized rotation keeps the pixel look crisp
       ctx.rotate(Math.round(p.rot / (Math.PI / 4)) * (Math.PI / 4));
-      const off = (sprite[0].length * p.s) / 2;
+      const off = ((sprite[0]?.length ?? 0) * p.s) / 2;
       sprite.forEach((row, ry) => {
         for (let rx = 0; rx < row.length; rx++) {
           const c = row[rx];
@@ -92,6 +92,7 @@ export function PetalField() {
       ctx.clearRect(0, 0, w, h);
       for (let i = 0; i < ps.length; i++) {
         const p = ps[i];
+        if (!p) continue;
         p.ph += dt * 0.9;
         p.y += p.vy * dt;
         p.x += (p.vx + Math.sin(p.ph) * p.sway) * dt;
