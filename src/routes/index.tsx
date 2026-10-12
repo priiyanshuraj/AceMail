@@ -112,12 +112,12 @@ function Landing() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen overflow-x-clip bg-background">
       <SakuraScene />
       <PetalField />
 
       <div className="relative z-10">
-        <header className="sticky top-0 z-30 px-4 pt-4">
+        <header className="sticky top-0 z-40 px-4 pt-4">
           <div className="glass-strong mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-border/60 px-4 py-3">
             <Link to="/" className="flex items-center gap-2">
               <img src={logoUrl} alt="AceMail logo" className="h-8 w-8 rounded-lg" width={32} height={32} />
