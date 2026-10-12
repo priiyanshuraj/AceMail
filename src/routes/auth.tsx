@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { submitAccessRequest } from "@/lib/access-requests.functions";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,10 +52,7 @@ function AuthPage() {
     e.preventDefault();
     setAccessLoading(true);
     try {
-      const { error } = await supabase
-        .from("access_requests")
-        .insert({ email: accessEmail.trim().toLowerCase(), referral: accessReferral.trim() || null });
-      if (error && error.code !== "23505") throw error;
+      await submitAccessRequest({ data: { email: accessEmail, referral: accessReferral.trim() || null } });
       setAccessRequested(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't submit your request");

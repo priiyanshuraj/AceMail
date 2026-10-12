@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import logoUrl from "@/assets/acemail-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { submitAccessRequest } from "@/lib/access-requests.functions";
 import { blogPosts, SITE_URL } from "@/lib/blog-posts";
 import { SakuraScene } from "@/components/SakuraScene";
 import { PetalField } from "@/components/PetalField";
@@ -144,10 +145,7 @@ function Landing() {
     e.preventDefault();
     setRequesting(true);
     try {
-      const { error } = await supabase
-        .from("access_requests")
-        .insert({ email: accessEmail.trim().toLowerCase(), referral: referral.trim() || null });
-      if (error && error.code !== "23505") throw error;
+      await submitAccessRequest({ data: { email: accessEmail, referral: referral.trim() || null } });
       setRequested(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't submit your request");
