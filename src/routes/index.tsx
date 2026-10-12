@@ -144,8 +144,9 @@ function Landing() {
             Cold outreach that feels <em className="text-primary">hand-written</em>, sent while you sleep.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            AceMail sends personalized sequences from your own Gmail, stops the moment someone
-            replies, and lets your AI assistant run the busywork for you.
+            AceMail sends unlimited personalized sequences from your own Gmail, stops the moment
+            someone replies, and lets your AI assistant run the busywork for you. Every template,
+            step and schedule is fully customizable.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <Button size="lg" asChild className="h-12 rounded-full px-7">
@@ -158,7 +159,7 @@ function Landing() {
             </Button>
           </div>
           <div className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            {["One-click Gmail connect", "No SMTP setup", "Free deliverability tools", "Open source"].map((t) => (
+            {["One-click Gmail connect", "No SMTP setup", "Free deliverability tools", "Unlimited sends", "Open source"].map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5">
                 <Check className="h-4 w-4 text-primary" /> {t}
               </span>
@@ -247,10 +248,11 @@ function Landing() {
 
         <section id="early-access" className="mx-auto max-w-6xl px-6 pb-24">
           <div className="glass-strong mx-auto max-w-xl rounded-3xl border border-border/60 p-8 text-center">
-            <p className="eyebrow text-primary">Early access</p>
+            <p className="eyebrow text-primary">Initial release</p>
             <h2 className="mt-2 font-serif text-3xl">Get your seat under the blossoms</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              AceMail is in testing. Leave your email and we will invite you as soon as a seat opens.
+              AceMail is now open in initial release. Leave your email and we will send your invite.
+              The best unlimited and customizable outreach, straight from your own Gmail.
             </p>
             {requested ? (
               <p className="mt-5 rounded-xl bg-primary/15 px-4 py-3 text-sm font-medium">
