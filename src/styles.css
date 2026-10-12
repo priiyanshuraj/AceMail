@@ -250,3 +250,45 @@
 .email-editor img { max-width: 100%; max-height: 320px; object-fit: contain; }
 .email-editor blockquote { border-left: 2px solid var(--border); padding-left: 1em; }
 .email-editor .ProseMirror-selectednode { outline: 2px solid var(--ring); }
+
+/* ---------- Sakura scene: pink morning (light) / moonlit night (dark) ---------- */
+.sakura-sky {
+  background:
+    radial-gradient(70% 55% at 100% 100%, oklch(0.93 0.05 5 / 0.75), transparent 70%),
+    radial-gradient(50% 40% at 80% 0%, oklch(0.95 0.04 55 / 0.6), transparent 70%);
+}
+.sakura-haze {
+  right: -10vmin; bottom: -10vmin; width: 75vmin; height: 75vmin; border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.96 0.04 20 / 0.7), transparent 65%);
+  filter: blur(20px);
+}
+.sakura-moon { display: none; }
+.sakura-tree {
+  right: -4vmin; bottom: -2vmin; width: min(62vmin, 640px); height: auto;
+  image-rendering: pixelated; opacity: 0.55;
+  transform-origin: 90% 100%;
+  animation: sakura-sway 9s ease-in-out infinite alternate;
+  -webkit-mask-image: radial-gradient(120% 120% at 100% 100%, #000 45%, transparent 85%);
+  mask-image: radial-gradient(120% 120% at 100% 100%, #000 45%, transparent 85%);
+}
+.dark .sakura-sky {
+  background:
+    radial-gradient(60% 50% at 95% 15%, oklch(0.3 0.04 270 / 0.55), transparent 70%),
+    radial-gradient(70% 55% at 100% 100%, oklch(0.26 0.05 330 / 0.5), transparent 70%);
+}
+.dark .sakura-haze { background: radial-gradient(circle, oklch(0.4 0.04 300 / 0.25), transparent 65%); }
+.dark .sakura-moon {
+  display: block; right: 20vmin; bottom: 40vmin; width: 7vmin; height: 7vmin; filter: blur(1.5px); border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%, oklch(0.95 0.02 90), oklch(0.82 0.03 270));
+  opacity: 0.32;
+  box-shadow: 0 0 40px 12px oklch(0.85 0.03 270 / 0.18), 0 0 120px 40px oklch(0.7 0.04 280 / 0.1);
+}
+.dark .sakura-tree {
+  opacity: 0.6;
+  filter: brightness(0.42) saturate(0.7) hue-rotate(-8deg) drop-shadow(-2px -2px 0 oklch(0.85 0.04 330 / 0.25));
+  -webkit-mask-image: radial-gradient(90% 90% at 70% 40%, #000 25%, transparent 80%);
+  mask-image: radial-gradient(90% 90% at 70% 40%, #000 25%, transparent 80%);
+}
+@keyframes sakura-sway { from { transform: rotate(-0.6deg); } to { transform: rotate(0.6deg); } }
+@media (max-width: 768px) { .sakura-tree { opacity: 0.3; width: 70vmin; } .dark .sakura-tree { opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) { .sakura-tree { animation: none; } }

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon } from "lucide-react";
 import { PetalField } from "@/components/PetalField";
+import { SakuraScene } from "@/components/SakuraScene";
 import logoUrl from "@/assets/acemail-logo.png";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -61,6 +62,7 @@ function AuthenticatedLayout() {
 
   return (
     <SidebarProvider>
+      <SakuraScene />
       <PetalField />
       <div className="relative z-10 flex min-h-screen w-full">
         <Sidebar>
