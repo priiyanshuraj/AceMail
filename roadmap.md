@@ -23,5 +23,6 @@
 ## Redesign ("Ember" design system)
 - [x] Design system, fonts, light/dark tokens, system-preference theme, app shell, dashboard
 - [ ] Per-page layout polish: campaign builder, email editor, templates, analytics, contacts, inbox/outbox, mailboxes, settings
-- [ ] Marketing site (landing still uses old film photos)
+- [x] Marketing site: landing rewritten with the sakura scene, MCP section, blog and early-access form; old film photos removed
+- [x] Landing nav bar stays pinned while scrolling so Sign in / Get started are always one click away; browser verified in day and night
 - [x] Sign-in page: sakura scene, falling petals, frosted card, day/night toggle; browser verified in both themes
