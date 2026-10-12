@@ -263,6 +263,20 @@
   filter: blur(20px);
 }
 .sakura-moon { display: none; }
+.sakura-sun {
+  left: 6vmin; top: 8vmin; width: 22vmin; height: 22vmin; border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.97 0.05 70 / 0.55), transparent 65%);
+  filter: blur(10px);
+}
+.dark .sakura-sun { display: none; }
+.sakura-hills { height: 26vh; opacity: 0.55; }
+.sakura-hill-far { fill: oklch(0.9 0.03 330 / 0.35); }
+.sakura-hill-mid { fill: oklch(0.88 0.035 150 / 0.3); }
+.sakura-hill-near { fill: oklch(0.86 0.04 145 / 0.3); }
+.dark .sakura-hills { opacity: 0.7; }
+.dark .sakura-hill-far { fill: oklch(0.3 0.03 280 / 0.45); }
+.dark .sakura-hill-mid { fill: oklch(0.25 0.03 260 / 0.5); }
+.dark .sakura-hill-near { fill: oklch(0.21 0.025 250 / 0.55); }
 .sakura-tree {
   right: -4vmin; bottom: -2vmin; width: min(62vmin, 640px); height: auto;
   image-rendering: pixelated; opacity: 0.55;
@@ -273,12 +287,12 @@
 }
 .dark .sakura-sky {
   background:
-    radial-gradient(60% 50% at 95% 15%, oklch(0.3 0.04 270 / 0.55), transparent 70%),
+    radial-gradient(60% 50% at 8% 10%, oklch(0.3 0.04 270 / 0.55), transparent 70%),
     radial-gradient(70% 55% at 100% 100%, oklch(0.26 0.05 330 / 0.5), transparent 70%);
 }
 .dark .sakura-haze { background: radial-gradient(circle, oklch(0.4 0.04 300 / 0.25), transparent 65%); }
 .dark .sakura-moon {
-  display: block; right: 20vmin; bottom: 40vmin; width: 7vmin; height: 7vmin; filter: blur(1.5px); border-radius: 50%;
+  display: block; left: 10vmin; top: 12vmin; width: 7vmin; height: 7vmin; filter: blur(1px); border-radius: 50%;
   background: radial-gradient(circle at 40% 40%, oklch(0.95 0.02 90), oklch(0.82 0.03 270));
   opacity: 0.32;
   box-shadow: 0 0 40px 12px oklch(0.85 0.03 270 / 0.18), 0 0 120px 40px oklch(0.7 0.04 280 / 0.1);

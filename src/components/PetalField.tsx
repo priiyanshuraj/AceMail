@@ -15,7 +15,7 @@ const LEAF = [
   "1200",
 ];
 
-type P = { x: number; y: number; s: number; vy: number; vx: number; sway: number; ph: number; rot: number; vr: number; kind: number; a: number };
+type P = { x: number; y: number; s: number; vy: number; vx: number; sway: number; ph: number; rot: number; vr: number; kind: number; a: number; t: number; max: number };
 
 function css(name: string) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -44,21 +44,36 @@ export function PetalField() {
     };
     const mobile = window.innerWidth < 768;
     const count = mobile ? 10 : 22;
+    // Canopy of the sakura tree (bottom-right, see .sakura-tree in styles.css)
+    const canopy = () => {
+      const vmin = Math.min(w, h);
+      const tw = Math.min(vmin * (mobile ? 0.7 : 0.62), 640);
+      return { x0: w - tw * 0.95, x1: w - tw * 0.1, y0: h - tw * 0.98, y1: h - tw * 0.45 };
+    };
     const spawn = (initial: boolean): P => {
-      const leaf = Math.random() < 0.12;
-      return {
-        x: Math.random() * w,
-        y: initial ? Math.random() * h : -20,
+      const leaf = Math.random() < 0.1;
+      const c = canopy();
+      const p: P = {
+        x: c.x0 + Math.random() * (c.x1 - c.x0),
+        y: c.y0 + Math.random() * (c.y1 - c.y0),
         s: leaf ? 2 : Math.random() < 0.35 ? 3 : 2,
-        vy: 12 + Math.random() * 18,
-        vx: -4 + Math.random() * 10,
-        sway: 10 + Math.random() * 22,
+        vy: 10 + Math.random() * 16,
+        vx: -(14 + Math.random() * 26),
+        sway: 8 + Math.random() * 18,
         ph: Math.random() * Math.PI * 2,
         rot: Math.random() * Math.PI,
         vr: (Math.random() - 0.5) * 0.8,
         kind: leaf ? 2 : Math.random() < 0.4 ? 1 : 0,
-        a: 0.35 + Math.random() * 0.35,
+        a: 0,
+        t: 0,
+        max: 0.4 + Math.random() * 0.35,
       };
+      if (initial) {
+        // pre-advance so the drift is already in motion on load
+        const secs = Math.random() * 25;
+        p.x += p.vx * secs; p.y += p.vy * secs; p.t = secs; p.a = p.max;
+      }
+      return p;
     };
 
     resize();
@@ -94,10 +109,12 @@ export function PetalField() {
         const p = ps[i];
         if (!p) continue;
         p.ph += dt * 0.9;
+        p.t += dt;
+        p.a = Math.min(p.max, p.t * 0.5);
         p.y += p.vy * dt;
         p.x += (p.vx + Math.sin(p.ph) * p.sway) * dt;
         p.rot += p.vr * dt;
-        if (p.y > h + 20 || p.x < -30 || p.x > w + 30) ps[i] = spawn(false);
+        if (p.y > h + 20 || p.x < -30) ps[i] = spawn(false);
         draw(p);
       }
       raf = requestAnimationFrame(tick);
