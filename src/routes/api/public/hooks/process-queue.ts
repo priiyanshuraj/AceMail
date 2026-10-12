@@ -37,11 +37,14 @@ async function processQueue() {
     await import("@/server/gmail.server");
 
   // Reply detection first, so replied contacts' follow-ups are cancelled before sending
+  // The queue runs every minute; inbox checks only every ~5 minutes per mailbox.
+  const syncCutoff = new Date(Date.now() - 4.5 * 60_000).toISOString();
   const { data: gmailBoxes } = await supabaseAdmin
     .from("email_configurations")
     .select("id, user_id, from_email")
     .eq("provider", "gmail")
-    .neq("status", "reconnect");
+    .neq("status", "reconnect")
+    .or(`last_synced_at.is.null,last_synced_at.lt.${syncCutoff}`);
   let replies = 0;
   for (const b of gmailBoxes ?? []) {
     try {
@@ -141,11 +144,29 @@ async function processQueue() {
     };
     const sentToday = await countSince(dayStart.toISOString());
     const sentHour = await countSince(new Date(now.getTime() - 3600_000).toISOString());
-    const remaining = Math.max(
+    let remaining = Math.max(
       0,
       Math.min(effectiveDailyLimit(config) - sentToday, config.hourly_limit - sentHour)
     );
     if (remaining === 0) continue;
+
+    // Gap between emails: respect delay_seconds since this mailbox's last send
+    // (across all campaigns and runs). The queue runs every minute.
+    const gap = Math.max(0, config.delay_seconds) * 1000;
+    if (gap > 0) {
+      const { data: lastSent } = await supabaseAdmin
+        .from("email_logs")
+        .select("sent_at, campaigns!inner(config_id)")
+        .eq("campaigns.config_id", config.id)
+        .not("sent_at", "is", null)
+        .order("sent_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const since = lastSent?.sent_at ? now.getTime() - new Date(lastSent.sent_at).getTime() : Infinity;
+      if (since < gap - 5000) continue; // small tolerance for cron jitter
+      // Fit as many sends as the gap allows inside this ~1 minute run
+      remaining = Math.min(remaining, gap >= 50_000 ? 1 : Math.max(1, Math.floor(50_000 / gap)));
+    }
 
     const isGmail = config.provider === "gmail";
     const gmailKey = isGmail ? await getMailboxKey(config.id) : null;
