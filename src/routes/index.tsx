@@ -118,7 +118,11 @@ function Landing() {
 
       <div className="relative z-10">
         <header className="sticky top-0 z-40 px-4 pt-4">
-          <div className="glass-strong mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-border/60 px-4 py-3">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background from-0% via-background/70 via-20% to-transparent"
+          />
+          <div className="glass-strong relative mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-border/60 px-4 py-3">
             <Link to="/" className="flex items-center gap-2">
               <img src={logoUrl} alt="AceMail logo" className="h-8 w-8 rounded-lg" width={32} height={32} />
               <span className="font-serif text-2xl">AceMail</span>
