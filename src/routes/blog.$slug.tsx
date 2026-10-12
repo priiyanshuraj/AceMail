@@ -74,7 +74,7 @@ function BlogPostPage() {
         </div>
         <div className="mt-12 rounded-xl border bg-card p-6 text-center">
           <p className="font-semibold">Try it in AceMail</p>
-          <Link to="/" className="mt-2 inline-block text-sm underline">Request early access</Link>
+          <Link to="/" hash="early-access" className="mt-2 inline-block text-sm underline">Request your invite</Link>
         </div>
       </article>
     </div>
