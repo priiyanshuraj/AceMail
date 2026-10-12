@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useState } from "react";
 import { listOutbox } from "@/lib/mailbox.functions";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, RefreshCw } from "lucide-react";
 
-const outboxQuery = queryOptions({ queryKey: ["outbox"], queryFn: () => listOutbox() });
+type Filter = "all" | "queued" | "sent" | "opened" | "replied" | "bounced" | "failed";
+
+const outboxQuery = (status: Filter) =>
+  queryOptions({ queryKey: ["outbox", status], queryFn: () => listOutbox({ data: { status } }) });
 
 export const Route = createFileRoute("/_authenticated/outbox")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(outboxQuery),
+  loader: ({ context }) => context.queryClient.ensureQueryData(outboxQuery("all")),
   head: () => ({
     meta: [
       { title: "Outbox — AceMail" },
@@ -24,8 +27,6 @@ export const Route = createFileRoute("/_authenticated/outbox")({
   component: OutboxPage,
 });
 
-type Filter = "all" | "queued" | "sent" | "opened" | "replied" | "bounced" | "failed";
-
 const STATUS_STYLE: Record<string, string> = {
   queued: "bg-muted text-muted-foreground",
   sent: "bg-primary/10 text-primary",
@@ -37,12 +38,12 @@ const STATUS_STYLE: Record<string, string> = {
 
 function OutboxPage() {
   const queryClient = useQueryClient();
-  const { data } = useSuspenseQuery(outboxQuery);
   const [filter, setFilter] = useState<Filter>("all");
+  const { data, isFetching } = useQuery({ ...outboxQuery(filter), placeholderData: keepPreviousData });
   const [refreshing, setRefreshing] = useState(false);
 
-  const rows = filter === "all" ? data : data.filter((l) => l.status === filter);
-  const count = (s: Filter) => (s === "all" ? data.length : data.filter((l) => l.status === s).length);
+  const rows = data?.rows ?? [];
+  const count = (s: Filter) => data?.counts[s] ?? 0;
   const refresh = async () => {
     setRefreshing(true);
     await queryClient.invalidateQueries({ queryKey: ["outbox"] });
