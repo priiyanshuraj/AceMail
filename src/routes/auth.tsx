@@ -111,7 +111,7 @@ function AuthPage() {
       >
         {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
       </Button>
-      <Card className="relative z-10 w-full max-w-md">
+      <Card className="glass-strong relative z-10 w-full max-w-md border-border/60">
 
         <CardHeader className="text-center">
           <img src={logoUrl} alt="AceMail logo" className="mx-auto mb-2 h-14 w-14 rounded-xl" width={56} height={56} />
