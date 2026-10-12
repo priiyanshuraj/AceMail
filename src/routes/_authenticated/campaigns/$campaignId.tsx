@@ -141,6 +141,7 @@ function CampaignDetail() {
                   <span>Queued {st.queued}</span>
                   <span>Sent {st.sent}</span>
                   <span>Opened {st.opened}</span>
+                  <span>Bounced {st.bounced}</span>
                   <span>Failed {st.failed}</span>
                 </div>
               </div>
@@ -174,9 +175,9 @@ function CampaignDetail() {
                 const pending = l.status === "queued" || l.status === "paused";
                 return (
                   <TableRow key={l.id}>
-                    <TableCell>{c?.email}</TableCell>
+                    <TableCell>{c?.email ?? l.recipient_email ?? "—"}</TableCell>
                     <TableCell>
-                      <Badge variant={l.status === "failed" ? "destructive" : "secondary"}>{l.status}</Badge>
+                      <Badge variant={l.status === "failed" || l.status === "bounced" ? "destructive" : "secondary"}>{l.status}</Badge>
                     </TableCell>
                     <TableCell className="text-xs">{new Date(l.scheduled_at).toLocaleString()}</TableCell>
                     <TableCell className="text-xs">{l.sent_at ? new Date(l.sent_at).toLocaleString() : "—"}</TableCell>
