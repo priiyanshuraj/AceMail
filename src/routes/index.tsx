@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,11 +62,22 @@ const mcpPrompts = [
 
 function Landing() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [accessEmail, setAccessEmail] = useState("");
   const [referral, setReferral] = useState("");
   const [requesting, setRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [dark, setDark] = useState(false);
+
+  // Scroll to the #hash target after navigation (e.g. /#early-access from the auth page).
+  useEffect(() => {
+    const hash = location.hash.replace(/^#/, "");
+    if (!hash) return;
+    const t = setTimeout(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+    return () => clearTimeout(t);
+  }, [location.hash]);
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
