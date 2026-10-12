@@ -355,7 +355,7 @@ export const listOutbox = createServerFn({ method: "GET" })
     const [all, ...each] = await Promise.all([countFor(), ...OUTBOX_STATUSES.map((s) => countFor(s))]);
     const counts: Record<string, number> = { all };
     OUTBOX_STATUSES.forEach((s, i) => (counts[s] = each[i]!));
-    counts.sent = await countSentLike();
+    counts["sent"] = await countSentLike();
 
     let q = supabase
       .from("email_logs")
