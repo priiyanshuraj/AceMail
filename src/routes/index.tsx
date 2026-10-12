@@ -63,6 +63,7 @@ const mcpPrompts = [
 function Landing() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [pinned, setPinned] = useState(false);
   const [accessEmail, setAccessEmail] = useState("");
   const [referral, setReferral] = useState("");
   const [requesting, setRequesting] = useState(false);
@@ -78,6 +79,14 @@ function Landing() {
     }, 120);
     return () => clearTimeout(t);
   }, [location.hash]);
+
+  // Solidify the floating bar once the page is scrolled, so text stays readable over content.
+  useEffect(() => {
+    const onScroll = () => setPinned(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -126,7 +135,7 @@ function Landing() {
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-4 h-20 bg-gradient-to-b from-background/75 to-transparent"
           />
-          <div className="glass-strong relative mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-border/60 px-4 py-3">
+          <div className={`glass-strong relative mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-border/60 px-4 py-3${pinned ? " nav-pin" : ""}`}>
             <Link to="/" className="flex items-center gap-2">
               <img src={logoUrl} alt="AceMail logo" className="h-8 w-8 rounded-lg" width={32} height={32} />
               <span className="font-serif text-2xl">AceMail</span>
