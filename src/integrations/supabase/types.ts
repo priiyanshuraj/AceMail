@@ -224,6 +224,9 @@ export type Database = {
           created_at: string
           custom_fields: Json
           email: string
+          email_check_reason: string | null
+          email_checked_at: string | null
+          email_status: string | null
           first_name: string
           id: string
           last_name: string
@@ -236,6 +239,9 @@ export type Database = {
           created_at?: string
           custom_fields?: Json
           email: string
+          email_check_reason?: string | null
+          email_checked_at?: string | null
+          email_status?: string | null
           first_name?: string
           id?: string
           last_name?: string
@@ -248,6 +254,9 @@ export type Database = {
           created_at?: string
           custom_fields?: Json
           email?: string
+          email_check_reason?: string | null
+          email_checked_at?: string | null
+          email_status?: string | null
           first_name?: string
           id?: string
           last_name?: string

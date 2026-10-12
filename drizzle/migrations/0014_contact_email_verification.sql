@@ -1,0 +1,3 @@
+ALTER TABLE public.contacts ADD COLUMN IF NOT EXISTS email_status text, ADD COLUMN IF NOT EXISTS email_check_reason text, ADD COLUMN IF NOT EXISTS email_checked_at timestamptz;
+ALTER TABLE public.contacts ADD CONSTRAINT contacts_email_status_check CHECK (email_status IS NULL OR email_status IN ('valid','risky','invalid'));
+CREATE INDEX IF NOT EXISTS contacts_list_email_status_idx ON public.contacts (list_id, email_status);
