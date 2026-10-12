@@ -40,21 +40,21 @@ async function checkDomain(domain: string): Promise<{ ok: boolean | null; reason
 
 export async function verifyEmailList(emails: string[]): Promise<EmailCheck[]> {
   const norm = emails.map((e) => e.trim().toLowerCase());
-  const domains = [...new Set(norm.filter((e) => SYNTAX.test(e)).map((e) => e.split("@")[1]))];
+  const domains = [...new Set(norm.filter((e) => SYNTAX.test(e)).map((e) => e.split("@")[1] ?? ""))];
   const results = new Map<string, { ok: boolean | null; reason: string }>();
   for (let i = 0; i < domains.length; i += 20) {
     const batch = domains.slice(i, i + 20);
     const rs = await Promise.all(batch.map(checkDomain));
-    batch.forEach((d, k) => results.set(d, rs[k]));
+    batch.forEach((d, k) => results.set(d, rs[k]!));
   }
   return norm.map((email) => {
     if (!SYNTAX.test(email) || email.includes("..")) return { email, status: "invalid", reason: "Invalid email format" };
-    const [local, domain] = email.split("@");
+    const [local = "", domain = ""] = email.split("@");
     const d = results.get(domain)!;
     if (d.ok === false) return { email, status: "invalid", reason: d.reason };
     if (DISPOSABLE.has(domain)) return { email, status: "risky", reason: "Disposable email provider" };
     if (d.ok === null) return { email, status: "risky", reason: d.reason };
-    if (ROLE.has(local.split("+")[0])) return { email, status: "risky", reason: "Role-based address" };
+    if (ROLE.has(local.split("+")[0] ?? "")) return { email, status: "risky", reason: "Role-based address" };
     if (d.reason) return { email, status: "risky", reason: d.reason };
     return { email, status: "valid", reason: "" };
   });
