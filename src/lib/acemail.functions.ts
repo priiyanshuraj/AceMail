@@ -140,6 +140,8 @@ const contactRow = z.object({
   last_name: z.string().optional(),
   company: z.string().optional(),
   custom_fields: z.record(z.string().max(64), z.string()).optional(),
+  email_status: z.enum(["valid", "risky", "invalid"]).optional(),
+  email_check_reason: z.string().max(200).optional(),
 });
 
 export const importContacts = createServerFn({ method: "POST" })
@@ -149,6 +151,7 @@ export const importContacts = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    const now = new Date().toISOString();
     const rows = data.contacts.map((c) => ({
       user_id: userId,
       list_id: data.listId,
@@ -157,12 +160,73 @@ export const importContacts = createServerFn({ method: "POST" })
       last_name: c.last_name ?? "",
       company: c.company ?? "",
       custom_fields: c.custom_fields ?? {},
+      email_status: c.email_status ?? null,
+      email_check_reason: c.email_check_reason ?? null,
+      email_checked_at: c.email_status ? now : null,
     }));
     const { error } = await supabase
       .from("contacts")
       .upsert(rows, { onConflict: "list_id,email", ignoreDuplicates: false });
     if (error) throw new Error(error.message);
     return { imported: rows.length };
+  });
+
+/** Free check (syntax, disposable, role, MX) for emails before import. */
+export const verifyEmails = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ emails: z.array(z.string().max(320)).max(5000) }).parse(d))
+  .handler(async ({ data }) => {
+    const { verifyEmailList } = await import("@/server/email-verify.server");
+    return verifyEmailList(data.emails);
+  });
+
+/** Re-run checks on every contact in a list and store the result. */
+export const verifyListContacts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ listId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("contacts")
+      .select("id, email")
+      .eq("list_id", data.listId)
+      .limit(5000);
+    if (error) throw new Error(error.message);
+    const list = rows ?? [];
+    const { verifyEmailList } = await import("@/server/email-verify.server");
+    const checks = await verifyEmailList(list.map((r) => r.email));
+    const groups = new Map<string, string[]>();
+    checks.forEach((c, i) => {
+      const k = `${c.status}|${c.reason}`;
+      groups.set(k, [...(groups.get(k) ?? []), list[i].id]);
+    });
+    const now = new Date().toISOString();
+    for (const [k, ids] of groups) {
+      const [status, reason] = k.split("|");
+      for (let i = 0; i < ids.length; i += 100) {
+        const { error: e } = await context.supabase
+          .from("contacts")
+          .update({ email_status: status, email_check_reason: reason || null, email_checked_at: now })
+          .in("id", ids.slice(i, i + 100));
+        if (e) throw new Error(e.message);
+      }
+    }
+    const count = (s: string) => checks.filter((c) => c.status === s).length;
+    return { checked: checks.length, valid: count("valid"), risky: count("risky"), invalid: count("invalid") };
+  });
+
+/** IDs of contacts flagged risky or invalid in a list. */
+export const listRiskyContactIds = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ listId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("contacts")
+      .select("id")
+      .eq("list_id", data.listId)
+      .in("email_status", ["risky", "invalid"])
+      .limit(20000);
+    if (error) throw new Error(error.message);
+    return (rows ?? []).map((r) => r.id);
   });
 
 /** All custom field names used across the user's contacts (for mapping + template variables). */
