@@ -151,6 +151,7 @@ export async function syncMailboxReplies(configId: string, userId: string, ownEm
     const match = fromRaw.match(/^(.*?)\s*<(.+)>$/);
     const fromEmail = (match?.[2] ?? fromRaw).trim().toLowerCase();
     if (fromEmail === ownEmail.toLowerCase()) continue;
+    if (/^(mailer-daemon|postmaster)@/.test(fromEmail)) continue; // bounces handled separately
     await db.from("inbox_messages").upsert(
       {
         user_id: userId,
@@ -182,8 +183,91 @@ export async function syncMailboxReplies(configId: string, userId: string, ownEm
     }
     synced++;
   }
+  synced += await syncMailboxBounces(key, userId).catch((e) => {
+    console.error("Bounce sync failed", configId, e);
+    return 0;
+  });
   await db.from("email_configurations").update({ last_synced_at: new Date().toISOString(), status: "active" }).eq("id", configId);
   return { synced };
+}
+
+/** Find delivery-failure notices (mailer-daemon) and mark the matching sent emails as bounced. */
+async function syncMailboxBounces(key: string, userId: string) {
+  const db = await admin();
+  const q = "newer_than:7d (from:mailer-daemon OR from:postmaster OR subject:\"Delivery Status Notification\" OR subject:Undeliverable OR subject:\"Mail delivery failed\")";
+  const list: { messages?: { id: string; threadId: string }[] } = await gmailCall(
+    key,
+    `/gmail/v1/users/me/messages?maxResults=50&q=${encodeURIComponent(q)}`,
+  );
+  const msgs = list.messages ?? [];
+  if (!msgs.length) return 0;
+  let count = 0;
+  for (const m of msgs) {
+    const detail = await gmailCall(key, `/gmail/v1/users/me/messages/${m.id}?format=full`);
+    const hdrs: Hdr[] = detail.payload?.headers ?? [];
+    const failedHdr = hdrs.find((h) => h.name.toLowerCase() === "x-failed-recipients")?.value ?? "";
+    const text = collectText(detail.payload);
+    const recipients = new Set<string>();
+    for (const r of failedHdr.split(",")) if (r.trim()) recipients.add(r.trim().toLowerCase());
+    for (const mm of text.matchAll(/Final-Recipient:\s*rfc822;\s*<?([^\s>]+@[^\s>]+)>?/gi)) recipients.add(mm[1]!.toLowerCase());
+    const reason = (detail.snippet ?? "Email bounced").slice(0, 300);
+
+    // Match by thread first (Gmail threads bounces with the original), then by recipient
+    const { data: byThread } = await db
+      .from("email_logs")
+      .select("id, campaign_id, contact_id, status, direct_to, contacts(email)")
+      .eq("user_id", userId)
+      .eq("gmail_thread_id", m.threadId)
+      .not("sent_at", "is", null);
+    let targets = (byThread ?? []).filter((l) => {
+      if (!recipients.size) return true;
+      const to = ((l.contacts as unknown as { email: string } | null)?.email ?? l.direct_to ?? "").toLowerCase();
+      return recipients.has(to);
+    });
+    if (!targets.length && recipients.size) {
+      const { data: contacts } = await db.from("contacts").select("id").eq("user_id", userId).in("email", [...recipients]);
+      const ids = (contacts ?? []).map((c) => c.id);
+      if (ids.length) {
+        const { data } = await db
+          .from("email_logs")
+          .select("id, campaign_id, contact_id, status, direct_to, contacts(email)")
+          .eq("user_id", userId)
+          .in("contact_id", ids)
+          .not("sent_at", "is", null)
+          .order("sent_at", { ascending: false })
+          .limit(ids.length);
+        targets = data ?? [];
+      }
+    }
+    for (const t of targets) {
+      if (t.status === "bounced") continue;
+      await db.from("email_logs").update({ status: "bounced", bounced_at: new Date().toISOString(), error: reason }).eq("id", t.id);
+      if (t.campaign_id && t.contact_id) {
+        await db
+          .from("email_logs")
+          .update({ status: "skipped", error: "Earlier email bounced" })
+          .eq("campaign_id", t.campaign_id)
+          .eq("contact_id", t.contact_id)
+          .eq("status", "queued");
+      }
+      count++;
+    }
+  }
+  return count;
+}
+
+type Part = { mimeType?: string; body?: { data?: string }; parts?: Part[] };
+function collectText(p: Part | undefined): string {
+  if (!p) return "";
+  let out = "";
+  if (p.body?.data && /^(text\/|message\/delivery-status)/.test(p.mimeType ?? "")) {
+    try {
+      const bin = atob(p.body.data.replace(/-/g, "+").replace(/_/g, "/"));
+      out += new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))) + "\n";
+    } catch { /* ignore */ }
+  }
+  for (const c of p.parts ?? []) out += collectText(c);
+  return out;
 }
 
 /** Effective daily cap: warmup ramps from start volume by `increment` per day up to daily_limit. */

@@ -24,13 +24,14 @@ export const Route = createFileRoute("/_authenticated/outbox")({
   component: OutboxPage,
 });
 
-type Filter = "all" | "queued" | "sent" | "opened" | "replied" | "failed";
+type Filter = "all" | "queued" | "sent" | "opened" | "replied" | "bounced" | "failed";
 
 const STATUS_STYLE: Record<string, string> = {
   queued: "bg-muted text-muted-foreground",
   sent: "bg-primary/10 text-primary",
   opened: "bg-amber/15 text-amber",
   replied: "bg-green-700/15 text-green-700",
+  bounced: "bg-destructive/10 text-destructive",
   failed: "bg-destructive/10 text-destructive",
 };
 
@@ -63,7 +64,7 @@ function OutboxPage() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {(["all", "queued", "sent", "opened", "replied", "failed"] as const).map((f) => (
+        {(["all", "queued", "sent", "opened", "replied", "bounced", "failed"] as const).map((f) => (
           <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
             {f.charAt(0).toUpperCase() + f.slice(1)} ({count(f)})
           </Button>
@@ -101,7 +102,7 @@ function OutboxPage() {
                     {l.opened_at && <span>opened {new Date(l.opened_at).toLocaleString()}</span>}
                     {l.replied_at && <span>replied {new Date(l.replied_at).toLocaleString()}</span>}
                   </div>
-                  {l.status === "failed" && l.error && (
+                  {(l.status === "failed" || l.status === "bounced") && l.error && (
                     <p className="mt-1 truncate text-xs text-destructive">{l.error}</p>
                   )}
                 </div>
