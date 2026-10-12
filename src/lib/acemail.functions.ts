@@ -12,7 +12,7 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     const [campaigns, contacts, logs] = await Promise.all([
       supabase.from("campaigns").select("id, status").eq("user_id", userId),
       supabase.from("contacts").select("id", { count: "exact", head: true }).eq("user_id", userId),
-      supabase.from("email_logs").select("status").eq("user_id", userId),
+      supabase.from("email_logs").select("status, sent_at").eq("user_id", userId),
     ]);
     const logRows = logs.data ?? [];
     const sent = logRows.filter((l) => l.status === "sent" || l.status === "opened").length;
@@ -26,6 +26,13 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       opened,
       failed,
       openRate: sent > 0 ? Math.round((opened / sent) * 100) : 0,
+      replied: logRows.filter((l) => l.status === "replied").length,
+      bounced: logRows.filter((l) => l.status === "bounced").length,
+      queued: logRows.filter((l) => l.status === "queued").length,
+      trend: Array.from({ length: 14 }, (_, i) => {
+        const day = new Date(Date.now() - (13 - i) * 86400000).toISOString().slice(0, 10);
+        return { day, sent: logRows.filter((l) => l.sent_at?.slice(0, 10) === day).length };
+      }),
     };
   });
 
