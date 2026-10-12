@@ -326,25 +326,47 @@ export const syncInboxNow = createServerFn({ method: "POST" })
 
 // ---------- Outbox ----------
 
+const OUTBOX_STATUSES = ["queued", "sent", "opened", "replied", "bounced", "failed"] as const;
+
 export const listOutbox = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+  .inputValidator((d: { status?: string } | undefined) =>
+    z.object({ status: z.enum(["all", ...OUTBOX_STATUSES]).default("all") }).parse(d ?? {}),
+  )
+  .handler(async ({ data: input, context }) => {
+    const { supabase, userId } = context;
+    // Counts come from the whole table so filters stay accurate beyond the rows we load.
+    const countFor = async (status?: string) => {
+      let q = supabase.from("email_logs").select("id", { count: "exact", head: true }).eq("user_id", userId);
+      if (status) q = q.eq("status", status);
+      const { count } = await q;
+      return count ?? 0;
+    };
+    const [all, ...each] = await Promise.all([countFor(), ...OUTBOX_STATUSES.map((s) => countFor(s))]);
+    const counts: Record<string, number> = { all };
+    OUTBOX_STATUSES.forEach((s, i) => (counts[s] = each[i]!));
+
+    let q = supabase
       .from("email_logs")
       .select(
-        "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, direct_to, direct_subject, config_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
+        "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, direct_to, direct_subject, recipient_email, config_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
       )
-      .eq("user_id", context.userId)
-      .order("scheduled_at", { ascending: false })
+      .eq("user_id", userId);
+    if (input.status !== "all") q = q.eq("status", input.status);
+    // Sent emails first (newest on top), then upcoming queued ones.
+    const { data, error } = await q
+      .order("sent_at", { ascending: false, nullsFirst: false })
+      .order("scheduled_at", { ascending: true })
       .limit(300);
     if (error) throw new Error(error.message);
     const configIds = [...new Set((data ?? []).map((l) => l.config_id ?? (l.campaigns as unknown as { config_id: string | null })?.config_id).filter(Boolean))] as string[];
     const { data: boxes } = configIds.length
-      ? await context.supabase.from("email_configurations").select("id, from_email").in("id", configIds)
+      ? await supabase.from("email_configurations").select("id, from_email").in("id", configIds)
       : { data: [] };
     const boxById = new Map((boxes ?? []).map((b) => [b.id, b.from_email]));
-    return (data ?? []).map((l) => ({
+    const rows = (data ?? []).map((l) => ({
       ...l,
       mailbox_email: boxById.get(l.config_id ?? (l.campaigns as unknown as { config_id: string | null })?.config_id ?? "") ?? null,
     }));
+    return { rows, counts };
   });

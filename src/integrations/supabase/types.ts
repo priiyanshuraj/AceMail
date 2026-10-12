@@ -408,6 +408,7 @@ export type Database = {
           gmail_thread_id: string | null
           id: string
           opened_at: string | null
+          recipient_email: string | null
           replied_at: string | null
           scheduled_at: string
           sent_at: string | null
@@ -428,6 +429,7 @@ export type Database = {
           gmail_thread_id?: string | null
           id?: string
           opened_at?: string | null
+          recipient_email?: string | null
           replied_at?: string | null
           scheduled_at?: string
           sent_at?: string | null
@@ -448,6 +450,7 @@ export type Database = {
           gmail_thread_id?: string | null
           id?: string
           opened_at?: string | null
+          recipient_email?: string | null
           replied_at?: string | null
           scheduled_at?: string
           sent_at?: string | null

@@ -210,7 +210,9 @@ async function syncMailboxBounces(key: string, userId: string) {
     const recipients = new Set<string>();
     for (const r of failedHdr.split(",")) if (r.trim()) recipients.add(r.trim().toLowerCase());
     for (const mm of text.matchAll(/Final-Recipient:\s*rfc822;\s*<?([^\s>]+@[^\s>]+)>?/gi)) recipients.add(mm[1]!.toLowerCase());
-    const reason = (detail.snippet ?? "Email bounced").slice(0, 300);
+    const reason = (detail.snippet ?? "Email bounced")
+      .replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
+      .slice(0, 300);
 
     // Match by thread first (Gmail threads bounces with the original), then by recipient
     const { data: byThread } = await db

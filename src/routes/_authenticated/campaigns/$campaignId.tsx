@@ -70,15 +70,8 @@ function CampaignDetail() {
     }
   };
 
-  const stepStats = (stepId: string) => {
-    const rows = logs.filter((l) => l.step_id === stepId);
-    return {
-      sent: rows.filter((l) => l.sent_at).length,
-      opened: rows.filter((l) => l.opened_at).length,
-      failed: rows.filter((l) => l.status === "failed").length,
-      queued: rows.filter((l) => l.status === "queued").length,
-    };
-  };
+  const stepStats = (stepId: string) =>
+    data.stepStats[stepId] ?? { sent: 0, opened: 0, bounced: 0, failed: 0, queued: 0 };
 
   const list = campaign.contact_lists as { name: string } | null;
   const config = campaign.email_configurations as { name: string; from_email: string } | null;
@@ -148,6 +141,7 @@ function CampaignDetail() {
                   <span>Queued {st.queued}</span>
                   <span>Sent {st.sent}</span>
                   <span>Opened {st.opened}</span>
+                  <span>Bounced {st.bounced}</span>
                   <span>Failed {st.failed}</span>
                 </div>
               </div>
@@ -181,9 +175,9 @@ function CampaignDetail() {
                 const pending = l.status === "queued" || l.status === "paused";
                 return (
                   <TableRow key={l.id}>
-                    <TableCell>{c?.email}</TableCell>
+                    <TableCell>{c?.email ?? l.recipient_email ?? "—"}</TableCell>
                     <TableCell>
-                      <Badge variant={l.status === "failed" ? "destructive" : "secondary"}>{l.status}</Badge>
+                      <Badge variant={l.status === "failed" || l.status === "bounced" ? "destructive" : "secondary"}>{l.status}</Badge>
                     </TableCell>
                     <TableCell className="text-xs">{new Date(l.scheduled_at).toLocaleString()}</TableCell>
                     <TableCell className="text-xs">{l.sent_at ? new Date(l.sent_at).toLocaleString() : "—"}</TableCell>

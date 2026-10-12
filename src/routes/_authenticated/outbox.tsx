@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useState } from "react";
 import { listOutbox } from "@/lib/mailbox.functions";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, RefreshCw } from "lucide-react";
 
-const outboxQuery = queryOptions({ queryKey: ["outbox"], queryFn: () => listOutbox() });
+type Filter = "all" | "queued" | "sent" | "opened" | "replied" | "bounced" | "failed";
+
+const outboxQuery = (status: Filter) =>
+  queryOptions({ queryKey: ["outbox", status], queryFn: () => listOutbox({ data: { status } }) });
 
 export const Route = createFileRoute("/_authenticated/outbox")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(outboxQuery),
+  loader: ({ context }) => context.queryClient.ensureQueryData(outboxQuery("all")),
   head: () => ({
     meta: [
       { title: "Outbox — AceMail" },
@@ -24,8 +27,6 @@ export const Route = createFileRoute("/_authenticated/outbox")({
   component: OutboxPage,
 });
 
-type Filter = "all" | "queued" | "sent" | "opened" | "replied" | "bounced" | "failed";
-
 const STATUS_STYLE: Record<string, string> = {
   queued: "bg-muted text-muted-foreground",
   sent: "bg-primary/10 text-primary",
@@ -37,12 +38,12 @@ const STATUS_STYLE: Record<string, string> = {
 
 function OutboxPage() {
   const queryClient = useQueryClient();
-  const { data } = useSuspenseQuery(outboxQuery);
   const [filter, setFilter] = useState<Filter>("all");
+  const { data, isFetching } = useQuery({ ...outboxQuery(filter), placeholderData: keepPreviousData });
   const [refreshing, setRefreshing] = useState(false);
 
-  const rows = filter === "all" ? data : data.filter((l) => l.status === filter);
-  const count = (s: Filter) => (s === "all" ? data.length : data.filter((l) => l.status === s).length);
+  const rows = data?.rows ?? [];
+  const count = (s: Filter) => data?.counts[s] ?? 0;
   const refresh = async () => {
     setRefreshing(true);
     await queryClient.invalidateQueries({ queryKey: ["outbox"] });
@@ -73,6 +74,11 @@ function OutboxPage() {
 
       <Card>
         <CardContent className="divide-y p-0">
+          {count(filter) > rows.length && (
+            <p className="p-3 text-center text-xs text-muted-foreground">
+              Showing the {rows.length} most recent of {count(filter)}{isFetching ? " · updating…" : ""}
+            </p>
+          )}
           {rows.length === 0 && (
             <p className="p-8 text-center text-sm text-muted-foreground">
               Nothing here yet. Start a campaign or send an email from the Inbox and it will appear in this list.
@@ -88,7 +94,8 @@ function OutboxPage() {
               <div key={l.id} className="flex items-start gap-4 p-4 hover:bg-muted/40">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{name || contact?.email || l.direct_to || "Unknown contact"}</span>
+                    <span className="font-medium">{name || contact?.email || l.direct_to || l.recipient_email || "Unknown contact"}</span>
+                    {!contact && !l.direct_to && l.recipient_email && <Badge variant="outline">Contact removed</Badge>}
                     {name && contact && <span className="text-xs text-muted-foreground">{contact.email}</span>}
                     {contact?.company && <span className="text-xs text-muted-foreground">· {contact.company}</span>}
                     {campaign && <Badge variant="outline">{campaign.name}</Badge>}

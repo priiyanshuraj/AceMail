@@ -588,17 +588,38 @@ export const getCampaign = createServerFn({ method: "GET" })
       .order("step_order");
     const { data: logs } = await supabase
       .from("email_logs")
-      .select("id, status, error, scheduled_at, sent_at, opened_at, step_id, contacts(email, first_name, last_name)")
+      .select("id, status, error, scheduled_at, sent_at, opened_at, step_id, recipient_email, contacts(email, first_name, last_name)")
       .eq("campaign_id", data.id)
-      .order("created_at", { ascending: false })
+      .order("sent_at", { ascending: false, nullsFirst: false })
+      .order("scheduled_at", { ascending: true })
       .limit(200);
+    // Per-step totals across every log (the delivery log above is only the latest 200).
+    const stepStats: Record<string, { sent: number; opened: number; bounced: number; failed: number; queued: number }> = {};
+    for (let from = 0; ; from += 1000) {
+      const { data: slim } = await supabase
+        .from("email_logs")
+        .select("step_id, status, sent_at, opened_at")
+        .eq("campaign_id", data.id)
+        .order("id")
+        .range(from, from + 999);
+      for (const l of slim ?? []) {
+        if (!l.step_id) continue;
+        const s = (stepStats[l.step_id] ??= { sent: 0, opened: 0, bounced: 0, failed: 0, queued: 0 });
+        if (l.sent_at) s.sent++;
+        if (l.opened_at && l.status !== "bounced") s.opened++;
+        if (l.status === "bounced") s.bounced++;
+        if (l.status === "failed") s.failed++;
+        if (l.status === "queued") s.queued++;
+      }
+      if (!slim || slim.length < 1000) break;
+    }
     const [{ data: analytics, error: analyticsError }, { data: clicks, error: clickError }, { data: replies, error: replyError }] = await Promise.all([
       supabase.rpc("campaign_analytics", { _campaign_id: data.id }),
       supabase.from("email_click_events").select("log_id, clicked_at, email_logs!inner(campaign_id)").eq("email_logs.campaign_id", data.id).order("clicked_at", { ascending: false }).limit(1000),
       supabase.from("inbox_messages").select("log_id, received_at").eq("campaign_id", data.id).order("received_at", { ascending: false }).limit(1000),
     ]);
     if (analyticsError || clickError || replyError) throw new Error("Could not load campaign analytics");
-    return { campaign, steps: steps ?? [], logs: logs ?? [], analytics: analytics as unknown as CampaignAnalytics, clicks: clicks ?? [], replies: replies ?? [] };
+    return { campaign, steps: steps ?? [], logs: logs ?? [], stepStats, analytics: analytics as unknown as CampaignAnalytics, clicks: clicks ?? [], replies: replies ?? [] };
   });
 
 const stepInput = z.object({
