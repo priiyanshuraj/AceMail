@@ -8,6 +8,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 import logoUrl from "@/assets/acemail-logo.png";
 
 export const Route = createFileRoute("/auth")({
@@ -52,7 +53,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: nextHref() },
         });
         if (error) throw error;
         toast.success("Account created — check your email to confirm, then sign in.");
@@ -60,7 +61,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/dashboard" });
+        goNext();
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -71,14 +72,14 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: nextHref(),
     });
     if (result.error) {
       toast.error("Google sign-in failed");
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/dashboard" });
+    goNext();
   };
 
   return (
