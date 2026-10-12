@@ -74,6 +74,11 @@ function OutboxPage() {
 
       <Card>
         <CardContent className="divide-y p-0">
+          {count(filter) > rows.length && (
+            <p className="p-3 text-center text-xs text-muted-foreground">
+              Showing the {rows.length} most recent of {count(filter)}{isFetching ? " · updating…" : ""}
+            </p>
+          )}
           {rows.length === 0 && (
             <p className="p-8 text-center text-sm text-muted-foreground">
               Nothing here yet. Start a campaign or send an email from the Inbox and it will appear in this list.
@@ -89,7 +94,8 @@ function OutboxPage() {
               <div key={l.id} className="flex items-start gap-4 p-4 hover:bg-muted/40">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{name || contact?.email || l.direct_to || "Unknown contact"}</span>
+                    <span className="font-medium">{name || contact?.email || l.direct_to || l.recipient_email || "Unknown contact"}</span>
+                    {!contact && !l.direct_to && l.recipient_email && <Badge variant="outline">Contact removed</Badge>}
                     {name && contact && <span className="text-xs text-muted-foreground">{contact.email}</span>}
                     {contact?.company && <span className="text-xs text-muted-foreground">· {contact.company}</span>}
                     {campaign && <Badge variant="outline">{campaign.name}</Badge>}
