@@ -387,6 +387,7 @@ export type Database = {
       }
       email_logs: {
         Row: {
+          bounced_at: string | null
           campaign_id: string | null
           config_id: string | null
           contact_id: string | null
@@ -406,6 +407,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bounced_at?: string | null
           campaign_id?: string | null
           config_id?: string | null
           contact_id?: string | null
@@ -425,6 +427,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bounced_at?: string | null
           campaign_id?: string | null
           config_id?: string | null
           contact_id?: string | null
