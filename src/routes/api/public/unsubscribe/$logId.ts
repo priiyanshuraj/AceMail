@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/public/unsubscribe/$logId")({
             if (log.contact_id) await supabaseAdmin.from("contacts").update({ unsubscribed: true }).eq("id", log.contact_id);
             if (email) {
               await supabaseAdmin.from("suppressions").upsert({ user_id: log.user_id, email, reason: "unsubscribed" }, { onConflict: "user_id,email", ignoreDuplicates: true });
-              const { data: same } = await supabaseAdmin.from("contacts").select("id").eq("user_id", log.user_id).ilike("email", email);
+              const { data: same } = await supabaseAdmin.from("contacts").select("id").eq("user_id", log.user_id).ilike("email", email.replace(/[%_\\]/g, "\\$&"));
               const ids = (same ?? []).map((c) => c.id);
               if (ids.length) {
                 await supabaseAdmin.from("contacts").update({ unsubscribed: true }).in("id", ids);

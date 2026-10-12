@@ -595,10 +595,11 @@ export const getCampaign = createServerFn({ method: "GET" })
       .limit(200);
     // Per-step totals across every log (the delivery log above is only the latest 200).
     const stepStats: Record<string, { sent: number; opened: number; bounced: number; failed: number; queued: number }> = {};
+    const variantStats: Record<string, Record<string, { sent: number; opened: number; replied: number }>> = {};
     for (let from = 0; ; from += 1000) {
       const { data: slim } = await supabase
         .from("email_logs")
-        .select("step_id, status, sent_at, opened_at")
+        .select("step_id, status, sent_at, opened_at, replied_at, variant")
         .eq("campaign_id", data.id)
         .order("id")
         .range(from, from + 999);
@@ -610,6 +611,12 @@ export const getCampaign = createServerFn({ method: "GET" })
         if (l.status === "bounced") s.bounced++;
         if (l.status === "failed") s.failed++;
         if (l.status === "queued") s.queued++;
+        if (l.variant && l.sent_at) {
+          const v = ((variantStats[l.step_id] ??= {})[l.variant] ??= { sent: 0, opened: 0, replied: 0 });
+          v.sent++;
+          if (l.opened_at && l.status !== "bounced") v.opened++;
+          if (l.replied_at) v.replied++;
+        }
       }
       if (!slim || slim.length < 1000) break;
     }
@@ -619,7 +626,7 @@ export const getCampaign = createServerFn({ method: "GET" })
       supabase.from("inbox_messages").select("log_id, received_at").eq("campaign_id", data.id).order("received_at", { ascending: false }).limit(1000),
     ]);
     if (analyticsError || clickError || replyError) throw new Error("Could not load campaign analytics");
-    return { campaign, steps: steps ?? [], logs: logs ?? [], stepStats, analytics: analytics as unknown as CampaignAnalytics, clicks: clicks ?? [], replies: replies ?? [] };
+    return { campaign, steps: steps ?? [], logs: logs ?? [], stepStats, variantStats, analytics: analytics as unknown as CampaignAnalytics, clicks: clicks ?? [], replies: replies ?? [] };
   });
 
 const stepInput = z.object({
@@ -627,6 +634,7 @@ const stepInput = z.object({
   template_id: z.string().uuid(),
   step_order: z.number().int().min(1),
   delay_days: z.number().int().min(0).max(365),
+  variant_template_id: z.string().uuid().nullable().optional(),
 });
 
 const campaignInput = z.object({
@@ -640,6 +648,14 @@ const campaignInput = z.object({
   timezone: z.string().min(1).max(64).optional(),
   prioritize_followups: z.boolean().optional(),
   breakup_day_exclusive: z.boolean().optional(),
+  rotation_config_ids: z.array(z.string().uuid()).max(20).optional(),
+  recipient_timezone: z.boolean().optional(),
+  include_unsubscribe: z.boolean().optional(),
+});
+const extraCampaignFields = (d: z.infer<typeof campaignInput>) => ({
+  rotation_config_ids: (d.rotation_config_ids ?? []).filter((id) => id !== d.config_id),
+  recipient_timezone: d.recipient_timezone ?? false,
+  include_unsubscribe: d.include_unsubscribe ?? false,
 });
 
 export const createCampaign = createServerFn({ method: "POST" })
@@ -660,6 +676,7 @@ export const createCampaign = createServerFn({ method: "POST" })
         timezone: data.timezone ?? "UTC",
         prioritize_followups: data.prioritize_followups ?? true,
         breakup_day_exclusive: (data.prioritize_followups ?? true) && (data.breakup_day_exclusive ?? false),
+        ...extraCampaignFields(data),
       })
       .select()
       .single();
@@ -670,6 +687,7 @@ export const createCampaign = createServerFn({ method: "POST" })
         template_id: s.template_id,
         step_order: s.step_order,
         delay_days: s.delay_days,
+        variant_template_id: s.variant_template_id ?? null,
       }))
     );
     if (stepError) throw new Error(stepError.message);
@@ -693,6 +711,7 @@ export const updateCampaign = createServerFn({ method: "POST" })
         timezone: data.timezone ?? "UTC",
         prioritize_followups: data.prioritize_followups ?? true,
         breakup_day_exclusive: (data.prioritize_followups ?? true) && (data.breakup_day_exclusive ?? false),
+        ...extraCampaignFields(data),
       })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -715,7 +734,7 @@ export const updateCampaign = createServerFn({ method: "POST" })
       if (s.id) {
         const { error: e } = await supabase
           .from("campaign_steps")
-          .update({ template_id: s.template_id, step_order: s.step_order, delay_days: s.delay_days })
+          .update({ template_id: s.template_id, step_order: s.step_order, delay_days: s.delay_days, variant_template_id: s.variant_template_id ?? null })
           .eq("id", s.id)
           .eq("campaign_id", data.id);
         if (e) throw new Error(e.message);
@@ -725,6 +744,7 @@ export const updateCampaign = createServerFn({ method: "POST" })
           template_id: s.template_id,
           step_order: s.step_order,
           delay_days: s.delay_days,
+          variant_template_id: s.variant_template_id ?? null,
         });
         if (e) throw new Error(e.message);
       }
@@ -755,6 +775,12 @@ export const setCampaignStatus = createServerFn({ method: "POST" })
         .eq("unsubscribed", false);
       const { data: blacklist } = await supabase.from("blacklisted_domains").select("domain").eq("user_id", userId);
       const blocked = new Set((blacklist ?? []).map((b) => b.domain));
+      const suppressed = new Set<string>();
+      for (let from = 0; ; from += 1000) {
+        const { data: sup } = await supabase.from("suppressions").select("email").eq("user_id", userId).range(from, from + 999);
+        for (const r of sup ?? []) suppressed.add(r.email.toLowerCase());
+        if (!sup || sup.length < 1000) break;
+      }
       const { data: steps } = await supabase
         .from("campaign_steps")
         .select("id")
@@ -763,7 +789,7 @@ export const setCampaignStatus = createServerFn({ method: "POST" })
       const step1 = steps?.[0];
       if (step1 && contacts) {
         const rows = contacts
-          .filter((c) => !blocked.has(c.email.split("@")[1]?.toLowerCase() ?? ""))
+          .filter((c) => !blocked.has(c.email.split("@")[1]?.toLowerCase() ?? "") && !suppressed.has(c.email.toLowerCase()))
           .map((c) => ({
             user_id: userId,
             campaign_id: data.id,
@@ -821,6 +847,41 @@ export const deleteLog = createServerFn({ method: "POST" })
       .delete()
       .eq("id", data.id)
       .in("status", ["queued", "paused"]);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ---------- Do-not-contact (suppression) list ----------
+
+export const listSuppressions = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("suppressions").select("*").eq("user_id", context.userId).order("created_at", { ascending: false }).limit(1000);
+    if (error) throw new Error(error.message);
+    return data;
+  });
+
+export const addSuppressions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ emails: z.array(z.string().trim().toLowerCase().email()).min(1).max(1000) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const emails = [...new Set(data.emails)];
+    const { error } = await supabase.from("suppressions").upsert(emails.map((email) => ({ user_id: userId, email, reason: "manual" })), { onConflict: "user_id,email", ignoreDuplicates: true });
+    if (error) throw new Error(error.message);
+    for (let i = 0; i < emails.length; i += 100) {
+      const { data: contacts } = await supabase.from("contacts").select("id").eq("user_id", userId).in("email", emails.slice(i, i + 100));
+      const ids = (contacts ?? []).map((c) => c.id);
+      if (ids.length) await supabase.from("email_logs").update({ status: "skipped", error: "On do-not-contact list" }).in("contact_id", ids).eq("status", "queued");
+    }
+    return { ok: true, added: emails.length };
+  });
+
+export const removeSuppression = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("suppressions").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

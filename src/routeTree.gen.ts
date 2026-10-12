@@ -36,6 +36,7 @@ import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/goo
 import { Route as ApiPublicClickLinkIdRouteImport } from './routes/api/public/click/$linkId'
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
 import { Route as ApiPublicTrackLogIdDotpngRouteImport } from './routes/api/public/track/$logId[.]png'
+import { Route as ApiPublicUnsubscribeLogIdRouteImport } from './routes/api/public/unsubscribe/$logId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -178,6 +179,12 @@ const ApiPublicTrackLogIdDotpngRoute =
     path: '/api/public/track/$logId.png',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicUnsubscribeLogIdRoute =
+  ApiPublicUnsubscribeLogIdRouteImport.update({
+    id: '/api/public/unsubscribe/$logId',
+    path: '/api/public/unsubscribe/$logId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
+  '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -234,6 +242,7 @@ export interface FileRoutesByTo {
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
+  '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -264,6 +273,7 @@ export interface FileRoutesById {
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
+  '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId.png'
+    | '/api/public/unsubscribe/$logId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId.png'
+    | '/api/public/unsubscribe/$logId'
   id:
     | '__root__'
     | '/'
@@ -351,6 +363,7 @@ export interface FileRouteTypes {
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
     | '/api/public/track/$logId.png'
+    | '/api/public/unsubscribe/$logId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -369,6 +382,7 @@ export interface RootRouteChildren {
   ApiPublicClickLinkIdRoute: typeof ApiPublicClickLinkIdRoute
   ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
   ApiPublicTrackLogIdDotpngRoute: typeof ApiPublicTrackLogIdDotpngRoute
+  ApiPublicUnsubscribeLogIdRoute: typeof ApiPublicUnsubscribeLogIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -562,6 +576,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTrackLogIdDotpngRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/unsubscribe/$logId': {
+      id: '/api/public/unsubscribe/$logId'
+      path: '/api/public/unsubscribe/$logId'
+      fullPath: '/api/public/unsubscribe/$logId'
+      preLoaderRoute: typeof ApiPublicUnsubscribeLogIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -616,6 +637,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicClickLinkIdRoute: ApiPublicClickLinkIdRoute,
   ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
   ApiPublicTrackLogIdDotpngRoute: ApiPublicTrackLogIdDotpngRoute,
+  ApiPublicUnsubscribeLogIdRoute: ApiPublicUnsubscribeLogIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
