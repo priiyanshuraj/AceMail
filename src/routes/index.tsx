@@ -120,7 +120,11 @@ function Landing() {
         <header className="sticky top-0 z-40 px-4 pt-4">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background from-0% via-background/70 via-20% to-transparent"
+            className="pointer-events-none absolute inset-x-0 top-0 h-4 bg-background"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-4 h-20 bg-gradient-to-b from-background/75 to-transparent"
           />
           <div className="glass-strong relative mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-border/60 px-4 py-3">
             <Link to="/" className="flex items-center gap-2">
