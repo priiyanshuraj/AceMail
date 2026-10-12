@@ -120,10 +120,10 @@ Open the URL it prints (usually `http://localhost:3000`). Create your account wi
 
 ### Step 6: Keep the sending queue alive
 
-AceMail sends scheduled follow-ups through a queue processor at `/api/public/hooks/process-queue`. It runs every time that URL is called, so you need something to call it every minute or two:
+AceMail sends scheduled follow-ups through a queue processor at `/api/public/hooks/process-queue`. It runs every time that URL is called with a **POST** request that carries an `Authorization: Bearer <token>` header, so you need something to call it every minute or two:
 
-- Easiest: a free cron service like [cron-job.org](https://cron-job.org) — create a job that requests `https://your-domain/api/public/hooks/process-queue` every minute, with the header `Authorization: Bearer <your QUEUE_HOOK_SECRET>`.
-- On a VPS: a crontab entry like `* * * * * curl -s -H "Authorization: Bearer <secret>" https://your-domain/api/public/hooks/process-queue`.
+- Easiest: a free cron service like [cron-job.org](https://cron-job.org) — create a job that sends a **POST** to `https://your-domain/api/public/hooks/process-queue` every minute, with the header `Authorization: Bearer <your QUEUE_HOOK_SECRET>`.
+- On a VPS: a crontab entry like `* * * * * curl -s -X POST -H "Authorization: Bearer <secret>" https://your-domain/api/public/hooks/process-queue`.
 
 Without this, emails stay queued and never send.
 
