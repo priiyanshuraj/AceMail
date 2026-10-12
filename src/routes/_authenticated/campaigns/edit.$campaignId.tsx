@@ -49,11 +49,15 @@ function EditCampaign() {
         timezone: c.timezone,
         prioritize_followups: c.prioritize_followups,
         breakup_day_exclusive: c.breakup_day_exclusive,
+        rotation_config_ids: c.rotation_config_ids ?? [],
+        recipient_timezone: c.recipient_timezone,
+        include_unsubscribe: c.include_unsubscribe,
         steps: detail.steps.map((s) => ({
           id: s.id,
           template_id: s.template_id,
           delay_days: s.delay_days,
           step_order: s.step_order,
+          variant_template_id: s.variant_template_id,
         })),
       }}
       onSubmit={async (values) => {

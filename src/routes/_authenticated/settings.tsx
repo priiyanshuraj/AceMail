@@ -8,6 +8,9 @@ import {
   removeBlacklistedDomain,
   getSignature,
   saveSignature,
+  listSuppressions,
+  addSuppressions,
+  removeSuppression,
 } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,8 +93,8 @@ function SignatureCard() {
 const settingsQuery = queryOptions({
   queryKey: ["settings"],
   queryFn: async () => {
-    const domains = await listBlacklistedDomains();
-    return { domains };
+    const [domains, suppressions] = await Promise.all([listBlacklistedDomains(), listSuppressions()]);
+    return { domains, suppressions };
   },
 });
 
@@ -114,6 +117,7 @@ function SettingsPage() {
   const queryClient = useQueryClient();
   const { data } = useSuspenseQuery(settingsQuery);
   const [domain, setDomain] = useState("");
+  const [dnc, setDnc] = useState("");
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["settings"] });
 
   return (
@@ -164,6 +168,42 @@ function SettingsPage() {
                     refresh();
                   }}
                 >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Do-not-contact list · {data.suppressions.length}</CardTitle>
+          <CardDescription>These addresses are never emailed by any campaign. People who click unsubscribe are added automatically.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea value={dnc} onChange={(e) => setDnc(e.target.value)} placeholder="one@example.com, two@example.com" rows={2} />
+          <Button
+            onClick={async () => {
+              const emails = dnc.split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter((e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e));
+              if (!emails.length) { toast.error("Enter at least one valid email"); return; }
+              try {
+                await addSuppressions({ data: { emails } });
+                setDnc("");
+                toast.success(`Added ${emails.length} address${emails.length > 1 ? "es" : ""}`);
+                refresh();
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Could not add");
+              }
+            }}
+          >
+            Add to list
+          </Button>
+          <div className="flex max-h-64 flex-wrap gap-2 overflow-auto">
+            {data.suppressions.map((s) => (
+              <Badge key={s.id} variant="secondary" className="gap-1" title={s.reason}>
+                {s.email}{s.reason === "unsubscribed" ? " · unsubscribed" : ""}
+                <button aria-label={`Remove ${s.email}`} onClick={async () => { await removeSuppression({ data: { id: s.id } }); refresh(); }}>
                   <X className="h-3 w-3" />
                 </button>
               </Badge>

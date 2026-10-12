@@ -1,6 +1,7 @@
 // Server-only Gmail mailbox helpers (per-user connection via the connector gateway).
 import { callAsAppUser, appUserReconnectRequired } from "@/integrations/lovable/appUserConnector";
 import { encryptConnectionKey, decryptConnectionKey } from "@/server/connectionKeyCrypto";
+import { isAutoReply } from "@/lib/deliverability";
 import type { EmailAttachment } from "@/server/email-content.server";
 
 export const GATEWAY_BASE_URL = "https://connector-gateway.lovable.dev";
@@ -71,7 +72,7 @@ const header = (v: string) => (/^[\x00-\x7F]*$/.test(v) ? v : `=?UTF-8?B?${b64(v
 
 export async function gmailSend(
   key: string,
-  opts: { from: string; fromName?: string; to: string; subject: string; html: string; threadId?: string | null; attachments?: EmailAttachment[] },
+  opts: { from: string; fromName?: string; to: string; subject: string; html: string; threadId?: string | null; attachments?: EmailAttachment[]; headers?: string[] },
 ): Promise<{ id: string; threadId: string }> {
   const from = opts.fromName ? `${header(opts.fromName)} <${opts.from}>` : opts.from;
   const boundary = `acemail_${crypto.randomUUID()}`;
@@ -89,6 +90,7 @@ export async function gmailSend(
     `From: ${from}`,
     `To: ${opts.to}`,
     `Subject: ${header(opts.subject)}`,
+    ...(opts.headers ?? []).map((h) => h.replace(/[\r\n]/g, "")),
     "MIME-Version: 1.0",
     files.length ? `Content-Type: multipart/mixed; boundary="${boundary}"` : 'Content-Type: text/html; charset="UTF-8"',
     "",
@@ -144,7 +146,7 @@ export async function syncMailboxReplies(configId: string, userId: string, ownEm
     if (!log || seen.has(m.id)) continue;
     const detail = await gmailCall(
       key,
-      `/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
+      `/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date&metadataHeaders=Auto-Submitted&metadataHeaders=X-Autoreply&metadataHeaders=Precedence`,
     );
     const hdrs: Hdr[] = detail.payload?.headers ?? [];
     const fromRaw = hdrs.find((h) => h.name === "From")?.value ?? "";
@@ -152,6 +154,7 @@ export async function syncMailboxReplies(configId: string, userId: string, ownEm
     const fromEmail = (match?.[2] ?? fromRaw).trim().toLowerCase();
     if (fromEmail === ownEmail.toLowerCase()) continue;
     if (/^(mailer-daemon|postmaster)@/.test(fromEmail)) continue; // bounces handled separately
+    const autoReply = isAutoReply(hdrs.find((h) => h.name === "Subject")?.value ?? "", hdrs);
     await db.from("inbox_messages").upsert(
       {
         user_id: userId,
@@ -166,10 +169,23 @@ export async function syncMailboxReplies(configId: string, userId: string, ownEm
         subject: hdrs.find((h) => h.name === "Subject")?.value ?? "",
         snippet: detail.snippet ?? "",
         received_at: detail.internalDate ? new Date(Number(detail.internalDate)).toISOString() : new Date().toISOString(),
+        is_auto_reply: autoReply,
       },
       { onConflict: "config_id,gmail_message_id", ignoreDuplicates: true },
     );
-    if (!log.replied_at) {
+    if (autoReply) {
+      // Out of office: keep the sequence going, just push queued follow-ups back a week.
+      if (log.campaign_id && log.contact_id) {
+        const { data: queued } = await db.from("email_logs").select("id, scheduled_at")
+          .eq("campaign_id", log.campaign_id).eq("contact_id", log.contact_id).eq("status", "queued");
+        const later = Date.now() + 7 * 86400_000;
+        for (const q of queued ?? []) {
+          if (new Date(q.scheduled_at).getTime() < later) {
+            await db.from("email_logs").update({ scheduled_at: new Date(later).toISOString() }).eq("id", q.id);
+          }
+        }
+      }
+    } else if (!log.replied_at) {
       await db.from("email_logs").update({ status: "replied", replied_at: new Date().toISOString() }).eq("id", log.id);
       // Auto-stop: cancel remaining follow-ups for this contact in this campaign
       if (log.campaign_id && log.contact_id) {

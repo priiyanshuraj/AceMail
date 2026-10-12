@@ -11,3 +11,11 @@
 - [x] Render safe HTML layouts, images, video links, signature and attachments in an isolated inbox preview.
 - [x] Add campaign performance totals and recipient-level opens, clicks and replies.
 - [x] Verify HTML/image/video preview in the browser, tracking pixel, nine tests and build results. Live campaign activity remains unverified because the signed-in account has no campaigns.
+# Free deliverability features
+- [x] Spintax + spam checker
+- [x] Unsubscribe link + do-not-contact list
+- [x] A/B testing per step
+- [x] Mailbox rotation
+- [x] Out-of-office handling
+- [x] Recipient time zone sending
+- [ ] WhatsApp reply alerts — blocked: needs a WhatsApp Business connection and an approved message template

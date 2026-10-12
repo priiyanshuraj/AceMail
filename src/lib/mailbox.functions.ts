@@ -290,7 +290,7 @@ export const listInbox = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("inbox_messages")
-      .select("id, from_email, from_name, subject, snippet, is_read, received_at, gmail_thread_id, config_id, campaigns(name), email_configurations(from_email)")
+      .select("id, from_email, from_name, subject, snippet, is_read, is_auto_reply, received_at, gmail_thread_id, config_id, campaigns(name), email_configurations(from_email)")
       .eq("user_id", context.userId)
       .order("received_at", { ascending: false })
       .limit(200);

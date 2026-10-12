@@ -91,6 +91,7 @@ export type Database = {
           id: string
           step_order: number
           template_id: string
+          variant_template_id: string | null
         }
         Insert: {
           campaign_id: string
@@ -99,6 +100,7 @@ export type Database = {
           id?: string
           step_order?: number
           template_id: string
+          variant_template_id?: string | null
         }
         Update: {
           campaign_id?: string
@@ -107,6 +109,7 @@ export type Database = {
           id?: string
           step_order?: number
           template_id?: string
+          variant_template_id?: string | null
         }
         Relationships: [
           {
@@ -132,9 +135,12 @@ export type Database = {
           config_id: string | null
           created_at: string
           id: string
+          include_unsubscribe: boolean
           list_id: string
           name: string
           prioritize_followups: boolean
+          recipient_timezone: boolean
+          rotation_config_ids: string[]
           send_days: number[]
           send_window_end: string | null
           send_window_start: string | null
@@ -149,9 +155,12 @@ export type Database = {
           config_id?: string | null
           created_at?: string
           id?: string
+          include_unsubscribe?: boolean
           list_id: string
           name: string
           prioritize_followups?: boolean
+          recipient_timezone?: boolean
+          rotation_config_ids?: string[]
           send_days?: number[]
           send_window_end?: string | null
           send_window_start?: string | null
@@ -166,9 +175,12 @@ export type Database = {
           config_id?: string | null
           created_at?: string
           id?: string
+          include_unsubscribe?: boolean
           list_id?: string
           name?: string
           prioritize_followups?: boolean
+          recipient_timezone?: boolean
+          rotation_config_ids?: string[]
           send_days?: number[]
           send_window_end?: string | null
           send_window_start?: string | null
@@ -415,6 +427,7 @@ export type Database = {
           status: string
           step_id: string | null
           user_id: string
+          variant: string | null
         }
         Insert: {
           bounced_at?: string | null
@@ -436,6 +449,7 @@ export type Database = {
           status?: string
           step_id?: string | null
           user_id: string
+          variant?: string | null
         }
         Update: {
           bounced_at?: string | null
@@ -457,6 +471,7 @@ export type Database = {
           status?: string
           step_id?: string | null
           user_id?: string
+          variant?: string | null
         }
         Relationships: [
           {
@@ -560,6 +575,7 @@ export type Database = {
           gmail_message_id: string
           gmail_thread_id: string | null
           id: string
+          is_auto_reply: boolean
           is_read: boolean
           log_id: string | null
           received_at: string
@@ -576,6 +592,7 @@ export type Database = {
           gmail_message_id: string
           gmail_thread_id?: string | null
           id?: string
+          is_auto_reply?: boolean
           is_read?: boolean
           log_id?: string | null
           received_at?: string
@@ -592,6 +609,7 @@ export type Database = {
           gmail_message_id?: string
           gmail_thread_id?: string | null
           id?: string
+          is_auto_reply?: boolean
           is_read?: boolean
           log_id?: string | null
           received_at?: string
@@ -661,6 +679,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppressions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_signatures: {
         Row: {

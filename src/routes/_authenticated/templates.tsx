@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Trash2, Pencil, Mail, UserRound, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TemplateBodyEditor, EmailPreview, type BodyEditorHandle } from "@/components/TemplateBodyEditor";
+import { spin, seededRandom, hasSpintax, spamCheck } from "@/lib/deliverability";
 import { renderEmailVariables, signatureHtml, appendSignature, detectEmailVariables, resolveEmailVariableKey } from "@/lib/email-content";
 
 const templatesQuery = queryOptions({
@@ -138,6 +139,7 @@ function TemplatesPage() {
     previewContactId !== "auto" && (previewContacts ?? []).some((c) => c.id === previewContactId)
       ? previewContactId
       : autoContactId ?? "sample";
+  const [spinSeed, setSpinSeed] = useState(1);
   const selectedContact = (previewContacts ?? []).find((c) => c.id === effectiveContactId) ?? null;
 
   const previewValues: Record<string, unknown> = {
@@ -148,7 +150,9 @@ function TemplatesPage() {
     email: selectedContact ? selectedContact.email : "jane@acme.com",
   };
   const availableFields = Object.fromEntries([...VARIABLES.map((v) => v.slice(2, -2)), ...(customKeys ?? [])].map((key) => [key, true]));
-  const preview = (text: string, html = false) => renderEmailVariables(text, previewValues, html, (key) => `[${key}]`);
+  const preview = (text: string, html = false) => renderEmailVariables(spin(text, seededRandom(spinSeed + text.length)), previewValues, html, (key) => `[${key}]`);
+  const spam = editing ? spamCheck(editing.subject ?? "", editing.body ?? "") : null;
+  const usesSpintax = editing ? hasSpintax(`${editing.subject ?? ""} ${editing.body ?? ""}`) : false;
 
   return (
     <div className="space-y-6">
@@ -277,6 +281,25 @@ function TemplatesPage() {
                 </p>
                 <EmailPreview body={editing.attach_signature && signature ? appendSignature(preview(editing.body ?? "", true), preview(signatureHtml(signature), true)) : preview(editing.body ?? "", true)} />
               </div>
+              {usesSpintax && (
+                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <span>Spintax found — each recipient gets a random variation.</span>
+                  <Button type="button" size="sm" variant="outline" onClick={() => setSpinSeed((n) => n + 1)}>Show another variation</Button>
+                </div>
+              )}
+              {spam && (
+                <section aria-label="Spam check" className="space-y-1 border-t pt-3 text-xs">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold">
+                    Spam check
+                    <Badge variant={spam.score >= 80 ? "secondary" : spam.score >= 60 ? "outline" : "destructive"}>{spam.score}/100</Badge>
+                  </h3>
+                  {spam.issues.length === 0 ? <p className="text-muted-foreground">Looks clean.</p> : (
+                    <ul className="list-disc space-y-0.5 pl-4">
+                      {spam.issues.map((i) => <li key={i.label}><span className="font-medium">{i.label}:</span> <span className="text-muted-foreground">{i.detail}</span></li>)}
+                    </ul>
+                  )}
+                </section>
+              )}
               {detectedVars.length > 0 && (
                 <section aria-label="Detected variables" className="space-y-2 border-t pt-3">
                   <h3 className="text-sm font-semibold">Detected variables · {detectedVars.length}</h3>

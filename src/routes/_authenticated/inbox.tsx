@@ -182,6 +182,7 @@ function InboxPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className={m.is_read ? "" : "font-semibold"}>{m.from_name || m.from_email}</span>
+                    {m.is_auto_reply && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">Out of office</span>}
                     <span className="text-xs text-muted-foreground">{m.from_email}</span>
                     {campaign && <Badge variant="outline">{campaign.name}</Badge>}
                   </div>
