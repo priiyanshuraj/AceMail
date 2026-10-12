@@ -241,7 +241,7 @@ async function syncMailboxBounces(key: string, userId: string) {
     }
     for (const t of targets) {
       if (t.status === "bounced") continue;
-      await db.from("email_logs").update({ status: "bounced", bounced_at: new Date().toISOString(), error: reason }).eq("id", t.id);
+      await db.from("email_logs").update({ status: "bounced", bounced_at: new Date().toISOString(), opened_at: null, error: reason }).eq("id", t.id);
       if (t.campaign_id && t.contact_id) {
         await db
           .from("email_logs")
