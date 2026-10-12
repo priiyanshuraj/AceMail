@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -208,7 +208,7 @@ function AuthPage() {
               Request access with your email
             </Button>
             <p className="mt-2 text-center text-xs text-muted-foreground">
-              No account yet? Go back to the home page and ask for access.
+              Not on the list yet? Enter your email on the home page to ask for access.
             </p>
           </div>
         </CardContent>
