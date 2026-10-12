@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon } from "lucide-react";
+import { PetalField } from "@/components/PetalField";
 import logoUrl from "@/assets/acemail-logo.png";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -60,7 +61,8 @@ function AuthenticatedLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <PetalField />
+      <div className="relative z-10 flex min-h-screen w-full">
         <Sidebar>
           <SidebarHeader className="px-4 pb-2 pt-5">
             <Link to="/" className="flex items-center gap-2">
@@ -99,7 +101,7 @@ function AuthenticatedLayout() {
           </SidebarFooter>
         </Sidebar>
         <main className="relative min-w-0 flex-1 overflow-x-hidden">
-          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/80 px-3 py-2.5 backdrop-blur-xl sm:px-8">
+          <div className="sticky top-0 z-20 flex items-center gap-3 glass border-b px-3 py-2.5 sm:px-8">
             <SidebarTrigger className="shrink-0" />
             <img src={logoUrl} alt="" className="h-7 w-7 shrink-0 rounded-md md:hidden" width={28} height={28} />
             <span className="font-semibold md:hidden">AceMail</span>
