@@ -352,7 +352,7 @@ function ContactsPage() {
     }
     setImporting(true);
     try {
-      let toImport: typeof parsed & { email_status?: "valid" | "risky" | "invalid"; email_check_reason?: string }[] = parsed;
+      let toImport: (typeof parsed[number] & { email_status?: "valid" | "risky" | "invalid"; email_check_reason?: string })[] = parsed;
       let skipped = 0;
       if (verifyOnImport) {
         const checks = await verifyEmails({ data: { emails: parsed.map((p) => p.email) } });
@@ -472,7 +472,7 @@ function ContactsPage() {
         <div className="lg:col-span-2">
           {selectedList ? (
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between gap-2">
+              <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
                 <CardTitle>Contacts</CardTitle>
                 <div className="flex items-center gap-2">
                   {selectedIds.size > 0 && (
