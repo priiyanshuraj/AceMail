@@ -335,16 +335,27 @@ export const listOutbox = createServerFn({ method: "GET" })
   )
   .handler(async ({ data: input, context }) => {
     const { supabase, userId } = context;
-    // Counts come from the whole table so filters stay accurate beyond the rows we load.
+    // "Sent" means the email actually went out — that includes ones later
+    // opened, replied to or bounced, which carry their own status.
+    const SENT_LIKE = ["sent", "opened", "replied", "bounced"];
     const countFor = async (status?: string) => {
       let q = supabase.from("email_logs").select("id", { count: "exact", head: true }).eq("user_id", userId);
       if (status) q = q.eq("status", status);
       const { count } = await q;
       return count ?? 0;
     };
+    const countSentLike = async () => {
+      const { count } = await supabase
+        .from("email_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .in("status", SENT_LIKE);
+      return count ?? 0;
+    };
     const [all, ...each] = await Promise.all([countFor(), ...OUTBOX_STATUSES.map((s) => countFor(s))]);
     const counts: Record<string, number> = { all };
     OUTBOX_STATUSES.forEach((s, i) => (counts[s] = each[i]!));
+    counts["sent"] = await countSentLike();
 
     let q = supabase
       .from("email_logs")
@@ -352,7 +363,8 @@ export const listOutbox = createServerFn({ method: "GET" })
         "id, status, error, scheduled_at, sent_at, opened_at, replied_at, gmail_thread_id, direct_to, direct_subject, recipient_email, config_id, contacts(email, first_name, last_name, company), campaigns(name, config_id), campaign_steps(step_order, email_templates(subject))",
       )
       .eq("user_id", userId);
-    if (input.status !== "all") q = q.eq("status", input.status);
+    if (input.status === "sent") q = q.in("status", SENT_LIKE);
+    else if (input.status !== "all") q = q.eq("status", input.status);
     // Sent emails first (newest on top), then upcoming queued ones.
     const { data, error } = await q
       .order("sent_at", { ascending: false, nullsFirst: false })
