@@ -332,7 +332,7 @@ async function processQueue() {
         }
 
         // Delay between sends (rate limiting), capped for worker runtime
-        if (config.delay_seconds > 0) {
+        if (config.delay_seconds > 0 && remaining > 1) {
           await new Promise((r) => setTimeout(r, Math.min(config.delay_seconds, 5) * 1000));
         }
       } catch (err) {
