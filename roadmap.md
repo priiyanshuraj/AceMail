@@ -24,3 +24,4 @@
 - [x] Design system, fonts, light/dark tokens, system-preference theme, app shell, dashboard
 - [ ] Per-page layout polish: campaign builder, email editor, templates, analytics, contacts, inbox/outbox, mailboxes, settings
 - [ ] Marketing site (landing still uses old film photos)
+- [x] Sign-in page: sakura scene, falling petals, frosted card, day/night toggle; browser verified in both themes
