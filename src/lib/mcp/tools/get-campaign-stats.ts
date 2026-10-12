@@ -12,7 +12,7 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ campaign_id }, ctx) => {
     const sb = supabaseForUser(ctx);
-    const counts: Record<string, number> = {};
+    const counts = { queued: 0, sent: 0, opened: 0, replied: 0, bounced: 0, failed: 0, cancelled: 0 };
     for (const s of STATUSES) {
       let q = sb.from("email_logs").select("id", { count: "exact", head: true }).eq("status", s);
       if (campaign_id) q = q.eq("campaign_id", campaign_id);

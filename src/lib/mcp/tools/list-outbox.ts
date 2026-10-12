@@ -26,7 +26,7 @@ export default defineTool({
     if (error) throw new ToolError(error.message);
     const emails = (data ?? []).map(({ contacts, ...l }) => ({
       ...l,
-      to: (contacts as { email: string } | null)?.email ?? l.recipient_email ?? l.direct_to,
+      to: (contacts as unknown as { email: string } | null)?.email ?? l.recipient_email ?? l.direct_to,
     }));
     return { content: [{ type: "text", text: JSON.stringify(emails) }], structuredContent: { emails } };
   },
