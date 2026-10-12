@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -197,6 +197,16 @@ function AuthPage() {
             >
               {mode === "signin" ? "Sign up" : "Sign in"}
             </button>
+          </p>
+          <p className="text-center text-sm text-muted-foreground">
+            Not invited yet?{" "}
+            <Link
+              to="/"
+              hash="early-access"
+              className="font-medium text-primary hover:underline"
+            >
+              Go back and enter your email to request access
+            </Link>
           </p>
         </CardContent>
       </Card>
