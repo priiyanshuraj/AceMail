@@ -99,6 +99,13 @@
       "when": 1791787950668,
       "tag": "0013_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791788631850,
+      "tag": "0014_contact_email_verification",
+      "breakpoints": true
     }
   ]
 }
