@@ -1,0 +1,20 @@
+# AceMail
+
+> AceMail is an open-source (Apache 2.0) cold email outreach app that sends personalized multi-step sequences from your own Gmail, stops follow-ups automatically when someone replies, and connects to ChatGPT and Claude through an MCP server.
+
+## Key facts
+- Mailboxes connect with one-click Google sign-in; no SMTP setup.
+- Features: sequences with follow-ups and A/B tests, CSV and Google Sheets import with custom fields, spintax, spam score, email verification, one-click unsubscribe and do-not-contact list, mailbox rotation with per-mailbox limits, unified inbox, open/click/reply/bounce analytics.
+- MCP endpoint: https://acemail.online/mcp (OAuth sign-in with an AceMail account).
+- Source code: https://github.com/priiyanshuraj/AceMail
+
+## Pages
+- [Home](https://acemail.online/)
+- [Blog](https://acemail.online/blog)
+- [How to run cold email from ChatGPT or Claude with MCP](https://acemail.online/blog/connect-chatgpt-claude-to-cold-email-mcp)
+- [Gmail sending limits for cold email: how many emails per day is safe?](https://acemail.online/blog/gmail-cold-email-sending-limits)
+- [How to reduce your cold email bounce rate below 2%](https://acemail.online/blog/reduce-cold-email-bounce-rate)
+- [Unsubscribe links and spam words: staying compliant with cold email](https://acemail.online/blog/cold-email-unsubscribe-and-spam-words)
+- [How to write a cold email follow-up sequence that gets replies](https://acemail.online/blog/cold-email-follow-up-sequence)
+- [Personalizing cold emails at scale with custom fields](https://acemail.online/blog/personalize-cold-emails-at-scale)
+- [Protecting your Gmail sender reputation during outreach](https://acemail.online/blog/protect-gmail-sender-reputation)

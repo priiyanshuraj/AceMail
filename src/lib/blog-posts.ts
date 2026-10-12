@@ -7,9 +7,65 @@ export type BlogPost = {
   body: { heading?: string; text: string }[];
 };
 
-export const SITE_URL = "https://acemail.lovable.app";
+export const SITE_URL = "https://acemail.online";
 
 export const blogPosts: BlogPost[] = [
+  {
+    slug: "connect-chatgpt-claude-to-cold-email-mcp",
+    title: "How to run cold email from ChatGPT or Claude with MCP",
+    description:
+      "MCP lets ChatGPT and Claude work with your contacts, templates and campaign stats directly. Here is what that looks like in AceMail.",
+    date: "2026-10-10",
+    readMinutes: 5,
+    body: [
+      { text: "The Model Context Protocol (MCP) is an open standard that lets AI assistants like ChatGPT and Claude use tools in other apps. AceMail ships an MCP server, so your assistant can work inside your outreach account as you." },
+      { heading: "What you can ask", text: "Add a list of leads, write a template and save it, fill a new custom column for every contact, or ask how your last campaign performed. The assistant only sees data that belongs to your account." },
+      { heading: "How to connect", text: "Add AceMail's MCP URL (https://acemail.online/mcp) as a connector in ChatGPT or Claude, sign in with your AceMail account and approve access. That is the whole setup." },
+      { heading: "Why it matters", text: "Research and personalization are the slowest parts of outreach. Letting an assistant enrich contacts and draft copy, while AceMail handles sending, follow-ups and reply detection, saves hours per campaign." },
+    ],
+  },
+  {
+    slug: "gmail-cold-email-sending-limits",
+    title: "Gmail sending limits for cold email: how many emails per day is safe?",
+    description:
+      "Gmail allows up to 500 emails a day on personal accounts and 2,000 on Workspace, but safe cold outreach volume is much lower. Here is a practical guide.",
+    date: "2026-10-06",
+    readMinutes: 4,
+    body: [
+      { text: "Google publishes hard caps: roughly 500 recipients per day for a personal Gmail account and 2,000 for Google Workspace. Hitting those caps with cold email is a fast way to land in spam." },
+      { heading: "A safe starting point", text: "Begin around 20 to 30 cold emails per day on a new mailbox and grow slowly over several weeks. Well-established mailboxes commonly stay under 100 cold emails per day." },
+      { heading: "Leave gaps between sends", text: "Sending one email every couple of minutes looks human. AceMail enforces a gap between sends and per-hour and per-day limits on every mailbox." },
+      { heading: "Scale with more mailboxes, not more volume", text: "If you need more reach, rotate across several Gmail accounts instead of pushing one harder. AceMail can rotate a campaign across mailboxes while keeping each contact's follow-ups on the same one." },
+    ],
+  },
+  {
+    slug: "reduce-cold-email-bounce-rate",
+    title: "How to reduce your cold email bounce rate below 2%",
+    description:
+      "Bounces quietly damage sender reputation. Verify lists, drop role and disposable addresses, and stop sending to bounced contacts.",
+    date: "2026-10-03",
+    readMinutes: 4,
+    body: [
+      { text: "A bounce happens when the receiving server rejects your email. A few are normal, but a bounce rate above roughly 2 to 5% tells mailbox providers your list is low quality." },
+      { heading: "Verify before you send", text: "Check syntax, confirm the domain accepts mail (MX records) and filter out disposable addresses. AceMail runs these free checks when you import contacts." },
+      { heading: "Be careful with role addresses", text: "Addresses like info@ or sales@ often go to shared inboxes or filters. They are not always bad, but they rarely reply to cold email." },
+      { heading: "Stop after the first bounce", text: "When a bounce notice arrives, AceMail marks the contact as bounced and cancels its follow-ups so you never hit the same dead address twice." },
+    ],
+  },
+  {
+    slug: "cold-email-unsubscribe-and-spam-words",
+    title: "Unsubscribe links and spam words: staying compliant with cold email",
+    description:
+      "One-click unsubscribe, a do-not-contact list and fewer trigger words keep your outreach compliant and out of the spam folder.",
+    date: "2026-09-29",
+    readMinutes: 4,
+    body: [
+      { text: "Gmail and Yahoo now expect bulk senders to offer easy unsubscribe. Even for smaller cold outreach, a clear way out protects your reputation and respects people's time." },
+      { heading: "Add one-click unsubscribe", text: "AceMail can add an unsubscribe footer and the List-Unsubscribe header. Anyone who opts out goes to your do-not-contact list automatically." },
+      { heading: "Watch your wording", text: "Phrases like 'act now', 'free money' or heavy use of capitals and exclamation marks raise spam scores. AceMail scores every template so you can fix risky lines before sending." },
+      { heading: "Keep it plain", text: "Short emails with one link and no heavy images look like personal messages, which is exactly what cold email should be." },
+    ],
+  },
   {
     slug: "cold-email-follow-up-sequence",
     title: "How to write a cold email follow-up sequence that gets replies",
