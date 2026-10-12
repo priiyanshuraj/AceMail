@@ -63,6 +63,7 @@ const mcpPrompts = [
 function Landing() {
   const navigate = useNavigate();
   const [accessEmail, setAccessEmail] = useState("");
+  const [referral, setReferral] = useState("");
   const [requesting, setRequesting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [dark, setDark] = useState(false);
@@ -89,7 +90,7 @@ function Landing() {
     try {
       const { error } = await supabase
         .from("access_requests")
-        .insert({ email: accessEmail.trim().toLowerCase() });
+        .insert({ email: accessEmail.trim().toLowerCase(), referral: referral.trim() || null });
       if (error && error.code !== "23505") throw error;
       setRequested(true);
     } catch (err) {
@@ -259,7 +260,7 @@ function Landing() {
                 You're on the list. We'll be in touch soon.
               </p>
             ) : (
-              <form onSubmit={handleRequestAccess} className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <form onSubmit={handleRequestAccess} className="mt-5 space-y-2">
                 <Input
                   type="email"
                   required
@@ -267,11 +268,20 @@ function Landing() {
                   value={accessEmail}
                   onChange={(e) => setAccessEmail(e.target.value)}
                   placeholder="you@company.com"
-                  className="h-11 flex-1 rounded-full bg-background/60 px-5"
+                  className="h-11 rounded-full bg-background/60 px-5"
                 />
-                <Button type="submit" disabled={requesting} className="h-11 rounded-full px-6">
-                  {requesting ? "Sending..." : "Request access"}
-                </Button>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    aria-label="Referral"
+                    value={referral}
+                    onChange={(e) => setReferral(e.target.value)}
+                    placeholder="Referred by? (name or code, optional)"
+                    className="h-11 flex-1 rounded-full bg-background/60 px-5"
+                  />
+                  <Button type="submit" disabled={requesting} className="h-11 rounded-full px-6">
+                    {requesting ? "Sending..." : "Request access"}
+                  </Button>
+                </div>
               </form>
             )}
           </div>
