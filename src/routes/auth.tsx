@@ -41,6 +41,27 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [dark, setDark] = useState(false);
+  const [showAccess, setShowAccess] = useState(false);
+  const [accessEmail, setAccessEmail] = useState("");
+  const [accessReferral, setAccessReferral] = useState("");
+  const [accessLoading, setAccessLoading] = useState(false);
+  const [accessRequested, setAccessRequested] = useState(false);
+
+  const handleRequestAccess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAccessLoading(true);
+    try {
+      const { error } = await supabase
+        .from("access_requests")
+        .insert({ email: accessEmail.trim().toLowerCase(), referral: accessReferral.trim() || null });
+      if (error && error.code !== "23505") throw error;
+      setAccessRequested(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't submit your request");
+    } finally {
+      setAccessLoading(false);
+    }
+  };
 
   useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
   const toggleTheme = () => {
@@ -199,17 +220,52 @@ function AuthPage() {
             </button>
           </p>
           <div className="border-t border-border/60 pt-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              type="button"
-              onClick={() => navigate({ to: "/", hash: "early-access" })}
-            >
-              Request access with your email
-            </Button>
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              Not on the list yet? Enter your email on the home page to ask for access.
-            </p>
+            {accessRequested ? (
+              <p className="rounded-md border border-border/60 p-3 text-center text-sm">
+                You're on the list. We'll email your invite soon.
+              </p>
+            ) : showAccess ? (
+              <form onSubmit={handleRequestAccess} className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="access-email">Your email</Label>
+                  <Input
+                    id="access-email"
+                    type="email"
+                    required
+                    autoFocus
+                    placeholder="you@company.com"
+                    value={accessEmail}
+                    onChange={(e) => setAccessEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="access-referral">Referred by? (optional)</Label>
+                  <Input
+                    id="access-referral"
+                    placeholder="Name or code"
+                    value={accessReferral}
+                    onChange={(e) => setAccessReferral(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="button" variant="ghost" className="flex-1" onClick={() => setShowAccess(false)}>
+                    Back
+                  </Button>
+                  <Button type="submit" className="flex-1" disabled={accessLoading}>
+                    {accessLoading ? "Sending..." : "Request access"}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <Button variant="outline" className="w-full" type="button" onClick={() => setShowAccess(true)}>
+                  Request access with your email
+                </Button>
+                <p className="mt-2 text-center text-xs text-muted-foreground">
+                  Not on the list yet? Leave your email and we'll send your invite.
+                </p>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
