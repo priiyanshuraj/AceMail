@@ -126,7 +126,7 @@ export const listMailboxes = createServerFn({ method: "GET" })
       const delivered = mine.filter((l) => l.sent_at);
       const sentToday = delivered.filter((l) => l.sent_at! >= dayStart.toISOString()).length;
       const sentHour = delivered.filter((l) => l.sent_at! >= hourAgo).length;
-      const failed = mine.filter((l) => l.status === "failed").length;
+      const failed = mine.filter((l) => l.status === "failed" || l.status === "bounced").length;
       const replied = mine.filter((l) => l.status === "replied").length;
       const opened = mine.filter((l) => l.status === "opened").length;
       const attempted = delivered.length + failed;
