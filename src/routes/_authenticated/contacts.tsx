@@ -11,8 +11,13 @@ import {
   deleteContact,
   deleteContacts,
   listCustomFieldKeys,
+  verifyEmails,
+  verifyListContacts,
+  listRiskyContactIds,
 } from "@/lib/acemail.functions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, ShieldCheck, ShieldAlert } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -213,6 +218,38 @@ function ContactsPage() {
     refresh();
   };
 
+  const [verifying, setVerifying] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [verifyOnImport, setVerifyOnImport] = useState(true);
+
+  const handleSelectRisky = async () => {
+    if (!selectedList) return;
+    const ids = await listRiskyContactIds({ data: { listId: selectedList } });
+    if (ids.length === 0) {
+      toast.info("No risky or invalid emails flagged. Run Verify emails first if you haven't.");
+      return;
+    }
+    setSelectedIds(new Set(ids));
+    setSelectAllAcross(false);
+    setConfirmRemove(true);
+  };
+
+  const handleVerifyList = async () => {
+    if (!selectedList) return;
+    setVerifying(true);
+    try {
+      const r = await verifyListContacts({ data: { listId: selectedList } });
+      await loadContacts(selectedList, page, pageSize);
+      const bad = r.risky + r.invalid;
+      toast.success(`Checked ${r.checked}: ${r.valid} valid, ${r.risky} risky, ${r.invalid} invalid`);
+      if (bad > 0) await handleSelectRisky();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Verification failed");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const [customKeys, setCustomKeys] = useState<string[]>([]);
   const [mapping, setMapping] = useState<string[]>([]);
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
@@ -313,12 +350,27 @@ function ContactsPage() {
       toast.error("No valid emails found");
       return;
     }
+    setImporting(true);
     try {
-      const result = await importContacts({ data: { listId: selectedList, contacts: parsed } });
-      toast.success(`Imported ${result.imported} contacts`);
+      let toImport: typeof parsed & { email_status?: "valid" | "risky" | "invalid"; email_check_reason?: string }[] = parsed;
+      let skipped = 0;
+      if (verifyOnImport) {
+        const checks = await verifyEmails({ data: { emails: parsed.map((p) => p.email) } });
+        const withStatus = parsed.map((p, i) => ({ ...p, email_status: checks[i].status, email_check_reason: checks[i].reason || undefined }));
+        toImport = withStatus.filter((p) => p.email_status === "valid");
+        skipped = withStatus.length - toImport.length;
+      }
+      if (toImport.length === 0) {
+        toast.error(`All ${skipped} emails were risky or invalid — nothing imported`);
+        return;
+      }
+      const result = await importContacts({ data: { listId: selectedList, contacts: toImport } });
+      toast.success(`Imported ${result.imported} contacts${skipped ? ` · skipped ${skipped} risky/invalid` : ""}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Import failed");
       return;
+    } finally {
+      setImporting(false);
     }
     setCsvText("");
     setMapping([]);
@@ -429,6 +481,13 @@ function ContactsPage() {
                       Remove selected ({selectedIds.size})
                     </Button>
                   )}
+                  <Button variant="outline" size="sm" onClick={() => void handleVerifyList()} disabled={verifying || total === 0}>
+                    {verifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                    {verifying ? "Checking…" : "Verify emails"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => void handleSelectRisky()} disabled={verifying || total === 0}>
+                    <ShieldAlert className="mr-2 h-4 w-4" /> Select risky
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
                     <Upload className="mr-2 h-4 w-4" /> Import CSV
                   </Button>
@@ -524,8 +583,20 @@ function ContactsPage() {
                         )))}
                       </div>
                     )}
-                    <Button onClick={handleImport} className="w-full" disabled={headers.length === 0}>
-                      Import {dataRows.length > 0 ? `${dataRows.length} contacts` : ""}
+                    {headers.length > 0 && (
+                      <label className="flex items-start gap-2 rounded-md border p-3 text-sm">
+                        <Checkbox checked={verifyOnImport} onCheckedChange={(v) => setVerifyOnImport(v === true)} className="mt-0.5" />
+                        <span>
+                          <span className="font-medium">Verify emails and skip risky ones</span>
+                          <span className="block text-xs text-muted-foreground">
+                            Free check: format, domain mail servers, disposable and role addresses (info@, sales@…). Invalid and risky emails won't be imported.
+                          </span>
+                        </span>
+                      </label>
+                    )}
+                    <Button onClick={handleImport} className="w-full" disabled={headers.length === 0 || importing}>
+                      {importing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {importing ? (verifyOnImport ? "Verifying & importing…" : "Importing…") : `Import ${dataRows.length > 0 ? `${dataRows.length} contacts` : ""}`}
                     </Button>
                   </DialogContent>
                 </Dialog>
@@ -577,7 +648,23 @@ function ContactsPage() {
                             onCheckedChange={() => toggleOne(c.id)}
                           />
                         </TableCell>
-                        <TableCell className="font-medium">{c.email}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="break-all">{c.email}</span>
+                            {c.email_status && (
+                              <Badge
+                                variant={c.email_status === "valid" ? "secondary" : c.email_status === "invalid" ? "destructive" : "outline"}
+                                title={c.email_check_reason ?? undefined}
+                                className="text-[10px] capitalize"
+                              >
+                                {c.email_status}
+                              </Badge>
+                            )}
+                          </div>
+                          {c.email_status !== "valid" && c.email_check_reason && (
+                            <p className="text-xs font-normal text-muted-foreground">{c.email_check_reason}</p>
+                          )}
+                        </TableCell>
                         <TableCell>{[c.first_name, c.last_name].filter(Boolean).join(" ") || "—"}</TableCell>
                         <TableCell>{c.company || "—"}</TableCell>
                         <TableCell>
