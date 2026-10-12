@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 import logoUrl from "@/assets/acemail-logo.png";
+import { SakuraScene } from "@/components/SakuraScene";
+import { PetalField } from "@/components/PetalField";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -37,6 +40,18 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try {
+      localStorage.setItem("acemail-theme", next ? "dark" : "light");
+    } catch {}
+  };
+
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
