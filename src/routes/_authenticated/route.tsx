@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon } from "lucide-react";
 import logoUrl from "@/assets/acemail-logo.png";
-import hillsAsset from "@/assets/kiarostami-hills.jpg.asset.json";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -63,19 +62,20 @@ function AuthenticatedLayout() {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <Sidebar>
-          <SidebarHeader className="border-b border-sidebar-border px-4 py-4">
+          <SidebarHeader className="px-4 pb-2 pt-5">
             <Link to="/" className="flex items-center gap-2">
               <img src={logoUrl} alt="AceMail logo" className="h-8 w-8 rounded-lg" width={32} height={32} />
-              <span className="text-lg font-semibold text-sidebar-foreground">AceMail</span>
+              <span className="text-[1.05rem] font-semibold tracking-tight text-sidebar-foreground">AceMail</span>
             </Link>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
+              <p className="eyebrow px-2 pb-2">Workspace</p>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {navItems.map((item) => (
                     <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton asChild isActive={pathname.startsWith(item.to)}>
+                      <SidebarMenuButton asChild isActive={pathname.startsWith(item.to)} className="relative h-9 font-medium data-[active=true]:before:absolute data-[active=true]:before:-left-2 data-[active=true]:before:top-2 data-[active=true]:before:h-5 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-primary">
                         <Link to={item.to}>
                           <item.icon className="h-4 w-4" />
                           <span>{item.label}</span>
@@ -88,9 +88,6 @@ function AuthenticatedLayout() {
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter className="border-t border-sidebar-border p-3">
-            <p className="px-2 pb-1 font-serif text-xs italic leading-snug text-amber">
-              "Life goes on." — Abbas Kiarostami
-            </p>
             <Button
               variant="ghost"
               className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -102,18 +99,12 @@ function AuthenticatedLayout() {
           </SidebarFooter>
         </Sidebar>
         <main className="relative min-w-0 flex-1 overflow-x-hidden">
-          <img
-            src={hillsAsset.url}
-            alt=""
-            aria-hidden
-            className="pointer-events-none fixed inset-0 h-full w-full object-cover opacity-[0.14]"
-          />
-          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/70 px-3 py-3 backdrop-blur-md sm:px-6 sm:py-4">
+          <div className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/80 px-3 py-2.5 backdrop-blur-xl sm:px-8">
             <SidebarTrigger className="shrink-0" />
             <img src={logoUrl} alt="" className="h-7 w-7 shrink-0 rounded-md md:hidden" width={28} height={28} />
             <span className="font-semibold md:hidden">AceMail</span>
-            <p className="hidden min-w-0 flex-1 font-serif text-lg italic tracking-wide text-muted-foreground md:block">
-              Every message, <span className="neon-text not-italic font-semibold">a road through the hills</span> — send, track, repeat.
+            <p className="eyebrow hidden min-w-0 flex-1 truncate md:block">
+              {navItems.find((n) => pathname.startsWith(n.to))?.label ?? "AceMail"}
             </p>
             <Button
               variant="ghost"
@@ -126,7 +117,7 @@ function AuthenticatedLayout() {
               {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
           </div>
-          <div className="relative p-3 sm:p-6">
+          <div className="relative mx-auto w-full max-w-[1400px] p-3 sm:p-8">
             <Outlet />
           </div>
         </main>

@@ -19,3 +19,8 @@
 - [x] Out-of-office handling
 - [x] Recipient time zone sending
 - [ ] WhatsApp reply alerts — blocked: needs a WhatsApp Business connection and an approved message template
+
+## Redesign ("Ember" design system)
+- [x] Design system, fonts, light/dark tokens, system-preference theme, app shell, dashboard
+- [ ] Per-page layout polish: campaign builder, email editor, templates, analytics, contacts, inbox/outbox, mailboxes, settings
+- [ ] Marketing site (landing still uses old film photos)
