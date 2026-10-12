@@ -29,3 +29,4 @@
 - Free deliverability helpers (spintax, spam check, unsubscribe footer, contact timezone, auto-reply detection) live in `src/lib/deliverability.ts`; spintax runs before variable rendering everywhere. Why: preview, test and queue must behave the same with no AI cost.
 - Mailbox limits/gaps are counted per `email_logs.config_id` (set on every send); campaigns may rotate across extra mailboxes and a contact's follow-ups stay on its first mailbox. Why: rotation needs per-mailbox caps and same-thread follow-ups.
 - Do-not-contact lives in `suppressions` (owner RLS) and is enforced at campaign start and send time; the public `/api/public/unsubscribe/$logId` route requires a POST to unsubscribe. Why: link scanners must not unsubscribe people.
+- Visual styling comes only from semantic tokens in `src/styles.css` (light + dark defined together); pages must not hardcode colors. Why: both themes stay consistent from one source.
