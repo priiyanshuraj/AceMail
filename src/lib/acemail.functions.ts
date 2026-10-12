@@ -411,7 +411,8 @@ export const sendTemplateTest = createServerFn({ method: "POST" })
         company: contact.company || "Acme Inc", email: contact.email || "jane@acme.com" };
     }
     const { renderEmailVariables, signatureHtml, appendSignature } = await import("@/lib/email-content");
-    const render = (text: string, html = false) => renderEmailVariables(text, values, html, (key) => `[${key}]`);
+    const { spin } = await import("@/lib/deliverability");
+    const render = (text: string, html = false) => renderEmailVariables(spin(text), values, html, (key) => `[${key}]`);
     const { prepareEmail } = await import("@/server/email-content.server");
     const body = signature ? appendSignature(render(data.body, true), render(signatureHtml(signature), true)) : render(data.body, true);
     const prepared = await prepareEmail(body, userId, supabase);
