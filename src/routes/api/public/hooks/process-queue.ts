@@ -36,6 +36,18 @@ async function processQueue() {
   const { getMailboxKey, gmailSend, effectiveDailyLimit, syncMailboxReplies, ReconnectRequiredError } =
     await import("@/server/gmail.server");
 
+  // Cheap early-exit: the queue runs every minute, but outside campaign time
+  // (or once everything due is sent / daily limits are reached and nothing new
+  // is due yet) there is nothing to do. One tiny indexed count keeps idle
+  // minutes nearly free instead of running reply syncs and heavy joins.
+  const { count: dueCount } = await supabaseAdmin
+    .from("email_logs")
+    .select("id, campaigns!inner(id)", { count: "exact", head: true })
+    .eq("status", "queued")
+    .eq("campaigns.status", "running")
+    .lte("scheduled_at", new Date().toISOString());
+  if ((dueCount ?? 0) === 0) return { processed: 0, sent: 0, failed: 0, replies: 0, idle: true };
+
   // Reply detection first, so replied contacts' follow-ups are cancelled before sending
   // The queue runs every minute; inbox checks only every ~5 minutes per mailbox.
   const syncCutoff = new Date(Date.now() - 4.5 * 60_000).toISOString();
