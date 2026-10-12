@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 import logoUrl from "@/assets/acemail-logo.png";
+import { SakuraScene } from "@/components/SakuraScene";
+import { PetalField } from "@/components/PetalField";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -37,6 +40,18 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    try {
+      localStorage.setItem("acemail-theme", next ? "dark" : "light");
+    } catch {}
+  };
+
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,8 +98,21 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+      <SakuraScene />
+      <PetalField />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute right-3 top-3 z-20"
+        onClick={toggleTheme}
+        aria-label={dark ? "Switch to day mode" : "Switch to night mode"}
+        title={dark ? "Day mode" : "Night mode"}
+      >
+        {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </Button>
+      <Card className="relative z-10 w-full max-w-md">
+
         <CardHeader className="text-center">
           <img src={logoUrl} alt="AceMail logo" className="mx-auto mb-2 h-14 w-14 rounded-xl" width={56} height={56} />
           <CardTitle className="text-2xl">AceMail</CardTitle>
