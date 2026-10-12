@@ -85,8 +85,8 @@ function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold">7. Contact</h2>
             <p className="mt-2 text-muted-foreground">
-              Support: <a className="underline" href="mailto:priyanshu@acemail.com">priyanshu@acemail.com</a>
-              {" · "}Developer: <a className="underline" href="mailto:hi@priyanshuraj.online">hi@priyanshuraj.online</a>
+              Support: <a className="underline" href="mailto:mepriyanshuonline@gmail.com">mepriyanshuonline@gmail.com</a>
+              {" · "}Developer: <a className="underline" href="mailto:priyanshu@acemail.online">priyanshu@acemail.online</a>
             </p>
           </section>
         </div>

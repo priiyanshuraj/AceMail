@@ -364,9 +364,9 @@ function Landing() {
             <Link to="/terms" className="hover:text-foreground">Terms of Service</Link>
           </p>
           <p className="mt-3">
-            Support: <a href="mailto:priyanshu@acemail.com" className="hover:text-foreground">priyanshu@acemail.com</a>
+            Support: <a href="mailto:mepriyanshuonline@gmail.com" className="hover:text-foreground">mepriyanshuonline@gmail.com</a>
             {" · "}
-            Developer: <a href="mailto:hi@priyanshuraj.online" className="hover:text-foreground">hi@priyanshuraj.online</a>
+            Developer: <a href="mailto:priyanshu@acemail.online" className="hover:text-foreground">priyanshu@acemail.online</a>
           </p>
         </footer>
       </div>
