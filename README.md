@@ -169,15 +169,3 @@ The quickest way to contribute is the [Lovable editor](https://lovable.dev/proje
 ## License
 
 Released under the [Apache License 2.0](LICENSE).
-
-## Built with Lovable
-
-This project was built with [Lovable](https://lovable.dev) — every change made in the Lovable editor commits straight to this repository, and pushes back to `main` sync into Lovable.
-
----
-
-<div align="center">
-
-*Rebuilt from the original [AceMail](https://github.com/priiyanshuraj/AceMail) project.*
-
-</div>
