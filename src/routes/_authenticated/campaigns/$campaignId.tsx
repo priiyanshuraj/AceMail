@@ -128,7 +128,7 @@ function CampaignDetail() {
             const st = stepStats(s.id);
             const tpl = s.email_templates as { name: string; subject: string } | null;
             return (
-              <div key={s.id} className="flex items-center justify-between rounded-lg border p-3">
+              <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
                 <div>
                   <p className="font-medium">
                     Step {s.step_order}: {tpl?.name}
@@ -144,6 +144,15 @@ function CampaignDetail() {
                   <span>Bounced {st.bounced}</span>
                   <span>Failed {st.failed}</span>
                 </div>
+                {data.variantStats[s.id] && (
+                  <div className="mt-2 flex w-full flex-wrap gap-3 text-xs">
+                    {Object.entries(data.variantStats[s.id] ?? {}).sort().map(([v, vs]) => (
+                      <span key={v} className="rounded border px-2 py-1">
+                        Version {v}: {vs.sent} sent · {vs.sent ? Math.round((vs.opened / vs.sent) * 100) : 0}% opened · {vs.sent ? Math.round((vs.replied / vs.sent) * 100) : 0}% replied
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}

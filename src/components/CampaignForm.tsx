@@ -12,13 +12,16 @@ export type CampaignFormValues = {
   name: string;
   list_id: string;
   config_id: string;
-  steps: { id?: string; template_id: string; delay_days: number; step_order: number }[];
+  steps: { id?: string; template_id: string; delay_days: number; step_order: number; variant_template_id?: string | null }[];
   send_window_start: string;
   send_window_end: string;
   send_days: number[];
   timezone: string;
   prioritize_followups: boolean;
   breakup_day_exclusive: boolean;
+  rotation_config_ids: string[];
+  recipient_timezone: boolean;
+  include_unsubscribe: boolean;
 };
 
 type Option = { id: string; name: string };
@@ -65,7 +68,7 @@ export function CampaignForm({
   const [name, setName] = useState(initial?.name ?? "");
   const [listId, setListId] = useState(initial?.list_id ?? "");
   const [configId, setConfigId] = useState(initial?.config_id ?? "");
-  const [steps, setSteps] = useState<{ id?: string; template_id: string; delay_days: number }[]>(
+  const [steps, setSteps] = useState<{ id?: string; template_id: string; delay_days: number; variant_template_id?: string | null }[]>(
     initial?.steps?.length ? initial.steps : [{ template_id: "", delay_days: 0 }]
   );
   const [sendDays, setSendDays] = useState<number[]>(initial?.send_days ?? [1, 2, 3, 4, 5]);
@@ -78,6 +81,9 @@ export function CampaignForm({
   });
   const [prioritize, setPrioritize] = useState(initial?.prioritize_followups ?? true);
   const [breakupOnly, setBreakupOnly] = useState(initial?.breakup_day_exclusive ?? false);
+  const [rotation, setRotation] = useState<string[]>(initial?.rotation_config_ids ?? []);
+  const [recipientTz, setRecipientTz] = useState(initial?.recipient_timezone ?? false);
+  const [unsub, setUnsub] = useState(initial?.include_unsubscribe ?? false);
   const [saving, setSaving] = useState(false);
 
   const canNext =
@@ -94,13 +100,16 @@ export function CampaignForm({
         name: name.trim(),
         list_id: listId,
         config_id: configId,
-        steps: steps.map((s, i) => ({ ...s, step_order: i + 1 })),
+        steps: steps.map((s, i) => ({ ...s, variant_template_id: s.variant_template_id || null, step_order: i + 1 })),
         send_window_start: windowStart,
         send_window_end: windowEnd,
         send_days: sendDays,
         timezone,
         prioritize_followups: prioritize,
         breakup_day_exclusive: prioritize && breakupOnly,
+        rotation_config_ids: rotation.filter((id) => id !== configId),
+        recipient_timezone: recipientTz,
+        include_unsubscribe: unsub,
       });
     } finally {
       setSaving(false);
@@ -165,6 +174,25 @@ export function CampaignForm({
                 <p className="text-xs text-destructive">Connect a Gmail mailbox first (Mailboxes page).</p>
               )}
             </div>
+            {data.configs.length > 1 && configId && (
+              <div className="space-y-2 rounded-lg border p-3">
+                <Label>Mailbox rotation (optional)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Also send from these mailboxes. New contacts are spread across them; each contact's follow-ups stay on the mailbox that emailed them first. Each mailbox keeps its own daily limit.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {data.configs.filter((c) => c.id !== configId).map((c) => (
+                    <label key={c.id} className="flex items-center gap-2 text-sm">
+                      <Checkbox
+                        checked={rotation.includes(c.id)}
+                        onCheckedChange={(v) => setRotation(v ? [...rotation, c.id] : rotation.filter((x) => x !== c.id))}
+                      />
+                      {c.name} — {c.from_email}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -192,6 +220,20 @@ export function CampaignForm({
                         <SelectItem key={t.id} value={t.id}>
                           {t.name}
                         </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={s.variant_template_id ?? "none"}
+                    onValueChange={(v) => setSteps(steps.map((x, j) => (j === i ? { ...x, variant_template_id: v === "none" ? null : v } : x)))}
+                  >
+                    <SelectTrigger aria-label="A/B test version" className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No A/B test</SelectItem>
+                      {data.templates.filter((t) => t.id !== s.template_id).map((t) => (
+                        <SelectItem key={t.id} value={t.id}>A/B test vs: {t.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -274,6 +316,24 @@ export function CampaignForm({
               </Select>
               <p className="text-xs text-muted-foreground">Send days and window follow this time zone.</p>
             </div>
+            <label className="flex items-start justify-between gap-4 rounded-lg border p-3">
+              <span>
+                <span className="block text-sm font-medium">Send in each contact's own time zone</span>
+                <span className="block text-xs text-muted-foreground">
+                  Uses a contact column named "timezone" (e.g. America/New_York). Contacts without one use the time zone above.
+                </span>
+              </span>
+              <Switch checked={recipientTz} onCheckedChange={setRecipientTz} />
+            </label>
+            <label className="flex items-start justify-between gap-4 rounded-lg border p-3">
+              <span>
+                <span className="block text-sm font-medium">Add unsubscribe link</span>
+                <span className="block text-xs text-muted-foreground">
+                  Adds a small unsubscribe line and Gmail's one-click unsubscribe. People who unsubscribe go on your do-not-contact list.
+                </span>
+              </span>
+              <Switch checked={unsub} onCheckedChange={setUnsub} />
+            </label>
             <div className="flex gap-4">
               <div className="flex-1 space-y-1">
                 <Label>Window start</Label>
