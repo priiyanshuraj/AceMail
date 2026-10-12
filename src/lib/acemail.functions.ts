@@ -619,7 +619,7 @@ export const getCampaign = createServerFn({ method: "GET" })
       supabase.from("inbox_messages").select("log_id, received_at").eq("campaign_id", data.id).order("received_at", { ascending: false }).limit(1000),
     ]);
     if (analyticsError || clickError || replyError) throw new Error("Could not load campaign analytics");
-    return { campaign, steps: steps ?? [], logs: logs ?? [], analytics: analytics as unknown as CampaignAnalytics, clicks: clicks ?? [], replies: replies ?? [] };
+    return { campaign, steps: steps ?? [], logs: logs ?? [], stepStats, analytics: analytics as unknown as CampaignAnalytics, clicks: clicks ?? [], replies: replies ?? [] };
   });
 
 const stepInput = z.object({
