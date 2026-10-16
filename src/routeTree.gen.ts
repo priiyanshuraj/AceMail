@@ -20,6 +20,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticated/contacts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
+import { Route as AuthenticatedLinkedinRouteImport } from './routes/_authenticated/linkedin'
 import { Route as AuthenticatedMailboxesRouteImport } from './routes/_authenticated/mailboxes'
 import { Route as AuthenticatedOpensRouteImport } from './routes/_authenticated/opens'
 import { Route as AuthenticatedOutboxRouteImport } from './routes/_authenticated/outbox'
@@ -31,10 +32,12 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as AuthenticatedCampaignsIndexRouteImport } from './routes/_authenticated/campaigns/index'
 import { Route as AuthenticatedCampaignsCampaignIdRouteImport } from './routes/_authenticated/campaigns/$campaignId'
 import { Route as AuthenticatedCampaignsNewRouteImport } from './routes/_authenticated/campaigns/new'
+import { Route as AuthenticatedContactsContactIdRouteImport } from './routes/_authenticated/contacts_.$contactId'
 import { Route as AuthenticatedCampaignsEditCampaignIdRouteImport } from './routes/_authenticated/campaigns/edit.$campaignId'
 import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/google/return'
 import { Route as ApiPublicClickLinkIdRouteImport } from './routes/api/public/click/$linkId'
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
+import { Route as ApiPublicLinkedinTasksRouteImport } from './routes/api/public/linkedin/tasks'
 import { Route as ApiPublicTrackLogIdDotpngRouteImport } from './routes/api/public/track/$logId[.]png'
 import { Route as ApiPublicUnsubscribeLogIdRouteImport } from './routes/api/public/unsubscribe/$logId'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -92,6 +95,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedInboxRoute = AuthenticatedInboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLinkedinRoute = AuthenticatedLinkedinRouteImport.update({
+  id: '/linkedin',
+  path: '/linkedin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMailboxesRoute = AuthenticatedMailboxesRouteImport.update({
@@ -152,6 +160,12 @@ const AuthenticatedCampaignsNewRoute =
     path: '/campaigns/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedContactsContactIdRoute =
+  AuthenticatedContactsContactIdRouteImport.update({
+    id: '/contacts_/$contactId',
+    path: '/contacts/$contactId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCampaignsEditCampaignIdRoute =
   AuthenticatedCampaignsEditCampaignIdRouteImport.update({
     id: '/campaigns/edit/$campaignId',
@@ -174,6 +188,11 @@ const ApiPublicHooksProcessQueueRoute =
     path: '/api/public/hooks/process-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicLinkedinTasksRoute = ApiPublicLinkedinTasksRouteImport.update({
+  id: '/api/public/linkedin/tasks',
+  path: '/api/public/linkedin/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTrackLogIdDotpngRoute =
   ApiPublicTrackLogIdDotpngRouteImport.update({
     id: '/api/public/track/$logId.png',
@@ -204,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/contacts': typeof AuthenticatedContactsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
+  '/linkedin': typeof AuthenticatedLinkedinRoute
   '/mailboxes': typeof AuthenticatedMailboxesRoute
   '/opens': typeof AuthenticatedOpensRoute
   '/outbox': typeof AuthenticatedOutboxRoute
@@ -214,11 +234,13 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
+  '/contacts/$contactId': typeof AuthenticatedContactsContactIdRoute
   '/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/linkedin/tasks': typeof ApiPublicLinkedinTasksRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -234,6 +256,7 @@ export interface FileRoutesByTo {
   '/contacts': typeof AuthenticatedContactsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
+  '/linkedin': typeof AuthenticatedLinkedinRoute
   '/mailboxes': typeof AuthenticatedMailboxesRoute
   '/opens': typeof AuthenticatedOpensRoute
   '/outbox': typeof AuthenticatedOutboxRoute
@@ -244,11 +267,13 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
+  '/contacts/$contactId': typeof AuthenticatedContactsContactIdRoute
   '/campaigns': typeof AuthenticatedCampaignsIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/linkedin/tasks': typeof ApiPublicLinkedinTasksRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -266,6 +291,7 @@ export interface FileRoutesById {
   '/_authenticated/contacts': typeof AuthenticatedContactsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
+  '/_authenticated/linkedin': typeof AuthenticatedLinkedinRoute
   '/_authenticated/mailboxes': typeof AuthenticatedMailboxesRoute
   '/_authenticated/opens': typeof AuthenticatedOpensRoute
   '/_authenticated/outbox': typeof AuthenticatedOutboxRoute
@@ -276,11 +302,13 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/_authenticated/campaigns/new': typeof AuthenticatedCampaignsNewRoute
+  '/_authenticated/contacts_/$contactId': typeof AuthenticatedContactsContactIdRoute
   '/_authenticated/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/_authenticated/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/linkedin/tasks': typeof ApiPublicLinkedinTasksRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -298,6 +326,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/dashboard'
     | '/inbox'
+    | '/linkedin'
     | '/mailboxes'
     | '/opens'
     | '/outbox'
@@ -308,11 +337,13 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/campaigns/$campaignId'
     | '/campaigns/new'
+    | '/contacts/$contactId'
     | '/campaigns/'
     | '/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
+    | '/api/public/linkedin/tasks'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
     | '/lovable/email/transactional/preview'
@@ -328,6 +359,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/dashboard'
     | '/inbox'
+    | '/linkedin'
     | '/mailboxes'
     | '/opens'
     | '/outbox'
@@ -338,11 +370,13 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/campaigns/$campaignId'
     | '/campaigns/new'
+    | '/contacts/$contactId'
     | '/campaigns'
     | '/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
+    | '/api/public/linkedin/tasks'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
     | '/lovable/email/transactional/preview'
@@ -359,6 +393,7 @@ export interface FileRouteTypes {
     | '/_authenticated/contacts'
     | '/_authenticated/dashboard'
     | '/_authenticated/inbox'
+    | '/_authenticated/linkedin'
     | '/_authenticated/mailboxes'
     | '/_authenticated/opens'
     | '/_authenticated/outbox'
@@ -369,11 +404,13 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/_authenticated/campaigns/$campaignId'
     | '/_authenticated/campaigns/new'
+    | '/_authenticated/contacts_/$contactId'
     | '/_authenticated/campaigns/'
     | '/_authenticated/campaigns/edit/$campaignId'
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
+    | '/api/public/linkedin/tasks'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
     | '/lovable/email/transactional/preview'
@@ -394,6 +431,7 @@ export interface RootRouteChildren {
   ApiOauthGoogleReturnRoute: typeof ApiOauthGoogleReturnRoute
   ApiPublicClickLinkIdRoute: typeof ApiPublicClickLinkIdRoute
   ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
+  ApiPublicLinkedinTasksRoute: typeof ApiPublicLinkedinTasksRoute
   ApiPublicTrackLogIdDotpngRoute: typeof ApiPublicTrackLogIdDotpngRoute
   ApiPublicUnsubscribeLogIdRoute: typeof ApiPublicUnsubscribeLogIdRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -478,6 +516,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInboxRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/linkedin': {
+      id: '/_authenticated/linkedin'
+      path: '/linkedin'
+      fullPath: '/linkedin'
+      preLoaderRoute: typeof AuthenticatedLinkedinRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/mailboxes': {
       id: '/_authenticated/mailboxes'
       path: '/mailboxes'
@@ -555,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCampaignsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/contacts_/$contactId': {
+      id: '/_authenticated/contacts_/$contactId'
+      path: '/contacts/$contactId'
+      fullPath: '/contacts/$contactId'
+      preLoaderRoute: typeof AuthenticatedContactsContactIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/campaigns/edit/$campaignId': {
       id: '/_authenticated/campaigns/edit/$campaignId'
       path: '/campaigns/edit/$campaignId'
@@ -581,6 +633,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/process-queue'
       fullPath: '/api/public/hooks/process-queue'
       preLoaderRoute: typeof ApiPublicHooksProcessQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/linkedin/tasks': {
+      id: '/api/public/linkedin/tasks'
+      path: '/api/public/linkedin/tasks'
+      fullPath: '/api/public/linkedin/tasks'
+      preLoaderRoute: typeof ApiPublicLinkedinTasksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/track/$logId.png': {
@@ -611,6 +670,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContactsRoute: typeof AuthenticatedContactsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
+  AuthenticatedLinkedinRoute: typeof AuthenticatedLinkedinRoute
   AuthenticatedMailboxesRoute: typeof AuthenticatedMailboxesRoute
   AuthenticatedOpensRoute: typeof AuthenticatedOpensRoute
   AuthenticatedOutboxRoute: typeof AuthenticatedOutboxRoute
@@ -618,6 +678,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedCampaignsCampaignIdRoute: typeof AuthenticatedCampaignsCampaignIdRoute
   AuthenticatedCampaignsNewRoute: typeof AuthenticatedCampaignsNewRoute
+  AuthenticatedContactsContactIdRoute: typeof AuthenticatedContactsContactIdRoute
   AuthenticatedCampaignsIndexRoute: typeof AuthenticatedCampaignsIndexRoute
   AuthenticatedCampaignsEditCampaignIdRoute: typeof AuthenticatedCampaignsEditCampaignIdRoute
 }
@@ -626,6 +687,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContactsRoute: AuthenticatedContactsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
+  AuthenticatedLinkedinRoute: AuthenticatedLinkedinRoute,
   AuthenticatedMailboxesRoute: AuthenticatedMailboxesRoute,
   AuthenticatedOpensRoute: AuthenticatedOpensRoute,
   AuthenticatedOutboxRoute: AuthenticatedOutboxRoute,
@@ -633,6 +695,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedCampaignsCampaignIdRoute: AuthenticatedCampaignsCampaignIdRoute,
   AuthenticatedCampaignsNewRoute: AuthenticatedCampaignsNewRoute,
+  AuthenticatedContactsContactIdRoute: AuthenticatedContactsContactIdRoute,
   AuthenticatedCampaignsIndexRoute: AuthenticatedCampaignsIndexRoute,
   AuthenticatedCampaignsEditCampaignIdRoute:
     AuthenticatedCampaignsEditCampaignIdRoute,
@@ -657,6 +720,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOauthGoogleReturnRoute: ApiOauthGoogleReturnRoute,
   ApiPublicClickLinkIdRoute: ApiPublicClickLinkIdRoute,
   ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
+  ApiPublicLinkedinTasksRoute: ApiPublicLinkedinTasksRoute,
   ApiPublicTrackLogIdDotpngRoute: ApiPublicTrackLogIdDotpngRoute,
   ApiPublicUnsubscribeLogIdRoute: ApiPublicUnsubscribeLogIdRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,

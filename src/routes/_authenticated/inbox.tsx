@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { listInbox, listMailboxes, markInboxRead, sendDirectEmail, syncInboxNow } from "@/lib/mailbox.functions";
+import { getInboxThread, replyToInbox } from "@/lib/outreach.functions";
+import { inboxDocument } from "@/lib/email-content";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +47,7 @@ function InboxPage() {
   const [composeBox, setComposeBox] = useState("");
   const [composeSig, setComposeSig] = useState(true);
   const [sending, setSending] = useState(false);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const rows = filter === "unread" ? data.filter((m) => !m.is_read) : data;
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["inbox"] });
   const gmailBoxes = mailboxes.filter((b) => b.provider === "gmail" && b.status === "active");
@@ -152,6 +155,8 @@ function InboxPage() {
         </DialogContent>
       </Dialog>
 
+      <ThreadDialog id={threadId} onClose={() => { setThreadId(null); refresh(); }} />
+
       <div className="flex gap-2">
         <Button size="sm" variant={filter === "all" ? "default" : "outline"} onClick={() => setFilter("all")}>
           All ({data.length})
@@ -192,6 +197,18 @@ function InboxPage() {
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <span className="text-xs text-muted-foreground">{new Date(m.received_at).toLocaleString()}</span>
+                  {m.gmail_thread_id && (
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-primary hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setThreadId(m.id);
+                      }}
+                    >
+                      Open & reply
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="text-xs text-primary hover:underline"
@@ -200,7 +217,7 @@ function InboxPage() {
                       openCompose(m.from_email);
                     }}
                   >
-                    Reply here
+                    New email
                   </button>
                   {m.gmail_thread_id && (
                     <a
