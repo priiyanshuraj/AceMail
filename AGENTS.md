@@ -11,7 +11,7 @@
 
 # AGENTS.md
 
-- AceMail is a rebuild of the Django repo github.com/priiyanshuraj/AceMail on TanStack Start + Lovable Cloud; use the repo only as a feature reference, never port Python code. Why: Lovable only runs this stack.
+- AceMail is a rebuild of the Django repo github.com/priiyanshuraj/AceMail on TanStack Start + Lovable Cloud; use the repo only as a feature reference, never port Python code. Why: only stack Lovable runs.
 - App server logic lives in `src/lib/acemail.functions.ts` behind `requireSupabaseAuth`; all tables are owner-scoped via RLS on `user_id`. Why: single place for data access, per-user isolation.
 - Email sending runs in the scheduled `/api/public/hooks/process-queue` route over the `email_logs` queue (replaces Celery). Why: no background workers on the edge runtime.
 - Open tracking uses the public `/api/public/track/$logId.png` pixel, which only flips a row to "opened". Why: email clients load it unauthenticated.
@@ -30,5 +30,5 @@
 - Mailbox limits/gaps are counted per `email_logs.config_id` (set on every send); campaigns may rotate across extra mailboxes and a contact's follow-ups stay on its first mailbox. Why: rotation needs per-mailbox caps and same-thread follow-ups.
 - Do-not-contact lives in `suppressions` (owner RLS) and is enforced at campaign start and send time; the public `/api/public/unsubscribe/$logId` route requires a POST to unsubscribe. Why: link scanners must not unsubscribe people.
 - Visual styling comes only from semantic tokens in `src/styles.css` (light + dark defined together); pages must not hardcode colors. Why: both themes stay consistent from one source.
-- LinkedIn sequences (`linkedin_sequences`/`linkedin_tasks`, helpers in `src/server/linkedin.server.ts`) never log into LinkedIn: assisted mode shows a daily task list, automated mode hands tasks to a user-hosted runner via the token-authenticated `/api/public/linkedin/tasks` route (only token hashes stored). Why: edge runtime can't drive browsers and LinkedIn bans automation.
-- Apollo enrichment uses each user's own Apollo key, encrypted in server-only `user_api_keys` (`src/server/apollo.server.ts`). Why: per-user credits in an open-source multi-user app.
+- LinkedIn sequences (`src/server/linkedin.server.ts`) never log into LinkedIn: assisted task list, or a user-hosted runner via token-auth `/api/public/linkedin/tasks` (hashes only). Why: no browsers on edge; LinkedIn bans automation.
+- Apollo uses each user's own key, encrypted in server-only `user_api_keys`. Why: per-user credits.
