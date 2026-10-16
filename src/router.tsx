@@ -9,7 +9,7 @@ function DefaultError({ error, reset }: ErrorComponentProps) {
     <div className="mx-auto max-w-md space-y-3 p-10 text-center">
       <h2 className="text-xl font-semibold">{offline ? "Connection interrupted" : "Something went wrong"}</h2>
       <p className="text-sm text-muted-foreground">
-        {offline ? "The page couldn't reach the server for a moment. Please try again." : error.message}
+        {offline ? "The page couldn't reach the server for a moment. Please try again." : error instanceof Error ? error.message : "Please try again."}
       </p>
       <button
         type="button"
