@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "AceMail LinkedIn Runner",
+  "version": "1.0.0",
+  "description": "Runs your AceMail LinkedIn sequences in your own browser, where you're already signed in.",
+  "permissions": ["storage", "alarms", "tabs", "scripting"],
+  "host_permissions": ["https://www.linkedin.com/*", "https://acemail.online/*", "https://*.lovable.app/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_icon": "icon.png" },
+  "icons": { "48": "icon.png", "128": "icon.png" }
+}
