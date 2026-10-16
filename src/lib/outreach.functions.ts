@@ -248,7 +248,6 @@ export const getInboxThread = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { msg, key } = await loadInboxBox(context.supabase, data.id);
     const { gmailCall } = await import("@/server/gmail.server");
-    const { sanitizeEmailHtml } = await import("@/server/email-sanitize.server");
     const thread = await gmailCall(key, `/gmail/v1/users/me/threads/${msg.gmail_thread_id}?format=full`);
     await context.supabase.from("inbox_messages").update({ is_read: true }).eq("id", data.id);
     return (thread.messages ?? []).map((m: { id: string; internalDate?: string; payload?: Part; snippet?: string }) => {
@@ -256,7 +255,7 @@ export const getInboxThread = createServerFn({ method: "GET" })
       const get = (n: string) => h.find((x) => x.name.toLowerCase() === n)?.value ?? "";
       const html = findBody(m.payload, "text/html");
       const text = findBody(m.payload, "text/plain") || m.snippet || "";
-      return { id: m.id, from: get("from"), date: m.internalDate ? new Date(Number(m.internalDate)).toISOString() : "", subject: get("subject"), html: sanitizeEmailHtml(html), text };
+      return { id: m.id, from: get("from"), date: m.internalDate ? new Date(Number(m.internalDate)).toISOString() : "", subject: get("subject"), html, text };
     });
   });
 
