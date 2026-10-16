@@ -847,6 +847,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_api_keys: {
+        Row: {
+          hint: string
+          key_ciphertext: string
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          hint?: string
+          key_ciphertext: string
+          provider: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          hint?: string
+          key_ciphertext?: string
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_signatures: {
         Row: {
           signature: string
