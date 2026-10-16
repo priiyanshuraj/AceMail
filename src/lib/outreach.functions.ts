@@ -357,3 +357,42 @@ export const getLinkedinTracker = createServerFn({ method: "GET" })
       recent: (tasks ?? []).slice(0, 50),
     };
   });
+
+// ---------- Cloud worker session (li_at cookie) ----------
+
+export const getCloudSession = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.from("linkedin_cloud_sessions").select("cookie_hint, status, status_note, updated_at, proxy_enc").eq("user_id", context.userId).maybeSingle();
+    return data ? { hint: data.cookie_hint, status: data.status, note: data.status_note, updated_at: data.updated_at, hasProxy: !!data.proxy_enc } : null;
+  });
+
+export const saveCloudSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { cookie: string; proxy?: string }) => {
+    const cookie = String(i.cookie ?? "").trim().replace(/^li_at=/, "").replace(/;.*$/, "");
+    if (!/^[A-Za-z0-9_\-%.=]{40,1000}$/.test(cookie)) throw new Error("That doesn't look like a LinkedIn li_at cookie");
+    const proxy = String(i.proxy ?? "").trim();
+    if (proxy && !/^(https?|socks5):\/\/\S+$/i.test(proxy)) throw new Error("Proxy must look like http://user:pass@host:port");
+    return { cookie, proxy };
+  })
+  .handler(async ({ data, context }) => {
+    const { encryptConnectionKey } = await import("@/server/connectionKeyCrypto");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("linkedin_cloud_sessions").upsert({
+      user_id: context.userId, cookie_enc: encryptConnectionKey(data.cookie),
+      proxy_enc: data.proxy ? encryptConnectionKey(data.proxy) : null,
+      cookie_hint: "…" + data.cookie.slice(-4), status: "connected", status_note: null, updated_at: new Date().toISOString(),
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteCloudSession = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("linkedin_cloud_sessions").delete().eq("user_id", context.userId);
+    return { ok: true };
+  });
