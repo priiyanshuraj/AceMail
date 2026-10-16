@@ -242,10 +242,14 @@ export type Database = {
           email_check_reason: string | null
           email_checked_at: string | null
           email_status: string | null
+          enriched_at: string | null
           first_name: string
           id: string
           last_name: string
+          linkedin_url: string
           list_id: string
+          phone: string
+          title: string
           unsubscribed: boolean
           user_id: string
         }
@@ -257,10 +261,14 @@ export type Database = {
           email_check_reason?: string | null
           email_checked_at?: string | null
           email_status?: string | null
+          enriched_at?: string | null
           first_name?: string
           id?: string
           last_name?: string
+          linkedin_url?: string
           list_id: string
+          phone?: string
+          title?: string
           unsubscribed?: boolean
           user_id: string
         }
@@ -272,10 +280,14 @@ export type Database = {
           email_check_reason?: string | null
           email_checked_at?: string | null
           email_status?: string | null
+          enriched_at?: string | null
           first_name?: string
           id?: string
           last_name?: string
+          linkedin_url?: string
           list_id?: string
+          phone?: string
+          title?: string
           unsubscribed?: boolean
           user_id?: string
         }
@@ -647,6 +659,134 @@ export type Database = {
             columns: ["log_id"]
             isOneToOne: false
             referencedRelation: "email_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_runner_tokens: {
+        Row: {
+          created_at: string
+          last_used_at: string | null
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_used_at?: string | null
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_used_at?: string | null
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linkedin_sequences: {
+        Row: {
+          created_at: string
+          daily_connect_limit: number
+          daily_message_limit: number
+          id: string
+          list_id: string
+          mode: string
+          name: string
+          status: string
+          steps: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_connect_limit?: number
+          daily_message_limit?: number
+          id?: string
+          list_id: string
+          mode?: string
+          name: string
+          status?: string
+          steps?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_connect_limit?: number
+          daily_message_limit?: number
+          id?: string
+          list_id?: string
+          mode?: string
+          name?: string
+          status?: string
+          steps?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_sequences_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "contact_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_tasks: {
+        Row: {
+          action: string
+          completed_at: string | null
+          contact_id: string
+          created_at: string
+          due_at: string
+          id: string
+          message: string
+          note: string | null
+          sequence_id: string
+          status: string
+          step_index: number
+          user_id: string
+        }
+        Insert: {
+          action: string
+          completed_at?: string | null
+          contact_id: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          message?: string
+          note?: string | null
+          sequence_id: string
+          status?: string
+          step_index: number
+          user_id: string
+        }
+        Update: {
+          action?: string
+          completed_at?: string | null
+          contact_id?: string
+          created_at?: string
+          due_at?: string
+          id?: string
+          message?: string
+          note?: string | null
+          sequence_id?: string
+          status?: string
+          step_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "linkedin_tasks_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_sequences"
             referencedColumns: ["id"]
           },
         ]
