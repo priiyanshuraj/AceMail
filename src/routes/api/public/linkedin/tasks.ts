@@ -40,7 +40,7 @@ export const Route = createFileRoute("/api/public/linkedin/tasks")({
       const { finishTask } = await import("@/server/linkedin.server");
       await finishTask(auth.db, task.id, body.status as "done", typeof body.note === "string" ? body.note : undefined);
       if (body.replied) {
-        await auth.db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn" }).eq("contact_id", task.contact_id).eq("status", "pending");
+        await auth.db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn", completed_at: new Date().toISOString() }).eq("contact_id", task.contact_id).eq("status", "pending");
         await auth.db.from("email_logs").update({ status: "skipped", error: "Replied on LinkedIn" }).eq("contact_id", task.contact_id).eq("status", "queued");
       }
       return json({ ok: true });

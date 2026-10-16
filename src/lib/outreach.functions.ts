@@ -188,7 +188,7 @@ export const markLinkedinReplied = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ contactId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const db = context.supabase;
-    await db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn" }).eq("contact_id", data.contactId).eq("status", "pending");
+    await db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn", completed_at: new Date().toISOString() }).eq("contact_id", data.contactId).eq("status", "pending");
     await db.from("email_logs").update({ status: "skipped", error: "Replied on LinkedIn" }).eq("contact_id", data.contactId).eq("status", "queued");
     return { ok: true };
   });
