@@ -3,7 +3,7 @@ import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanst
 import { useState } from "react";
 import {
   listLinkedinSequences, saveLinkedinSequence, setLinkedinSequenceStatus, deleteLinkedinSequence,
-  listLinkedinTasks, completeLinkedinTask, markLinkedinReplied, getRunnerToken, createRunnerToken, revokeRunnerToken,
+  listLinkedinTasks, completeLinkedinTask, markLinkedinReplied, getRunnerToken, createRunnerToken, revokeRunnerToken, getLinkedinTracker,
 } from "@/lib/outreach.functions";
 import { listContactLists } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Copy, ExternalLink, Pause, Play, Plus, Trash2, Check, SkipForward, MessageSquareReply, Pencil } from "lucide-react";
+import { Copy, ExternalLink, Download, Hand, Bot, Pause, Play, Plus, Trash2, Check, SkipForward, MessageSquareReply, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 type Action = "visit" | "connect" | "message" | "follow" | "endorse";
@@ -52,14 +52,17 @@ function LinkedinPage() {
           Build sequences of profile visits, connection requests and messages. Do them yourself from a daily task list, or hand them to your own automation runner.
         </p>
       </div>
+      <RunnerStatus />
       <Tabs defaultValue="today">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="today">Today</TabsTrigger>
           <TabsTrigger value="sequences">Sequences</TabsTrigger>
-          <TabsTrigger value="runner">Automation</TabsTrigger>
+          <TabsTrigger value="tracker">Tracker</TabsTrigger>
+          <TabsTrigger value="runner">Connect LinkedIn</TabsTrigger>
         </TabsList>
         <TabsContent value="today"><TodayTasks /></TabsContent>
         <TabsContent value="sequences"><Sequences /></TabsContent>
+        <TabsContent value="tracker"><Tracker /></TabsContent>
         <TabsContent value="runner"><Runner /></TabsContent>
       </Tabs>
     </div>
@@ -204,18 +207,20 @@ function Sequences() {
                     <SelectContent>{(lists ?? []).map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1"><Label>How steps run</Label>
-                  <Select value={form.mode} onValueChange={(v) => setForm({ ...form, mode: v as "assisted" })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="assisted">Assisted: I do them from my task list</SelectItem>
-                      <SelectItem value="runner">Automated: my own runner does them</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1"><Label>Connects/day</Label><Input type="number" min={1} max={100} value={form.daily_connect_limit} onChange={(e) => setForm({ ...form, daily_connect_limit: Number(e.target.value) || 1 })} /></div>
                   <div className="space-y-1"><Label>Messages/day</Label><Input type="number" min={1} max={150} value={form.daily_message_limit} onChange={(e) => setForm({ ...form, daily_message_limit: Number(e.target.value) || 1 })} /></div>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label>How should this sequence run?</Label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {([["assisted", Hand, "Manual", "AceMail lists today's steps with the message ready. You click on LinkedIn. No account risk."], ["runner", Bot, "Automated", "Your connected LinkedIn runner visits, connects and messages for you, within your daily limits."]] as const).map(([m, Icon, title, desc]) => (
+                    <button key={m} type="button" onClick={() => setForm({ ...form, mode: m })} className={`rounded-lg border p-3 text-left transition-colors hover:bg-muted/40 ${form.mode === m ? "border-primary ring-1 ring-primary" : ""}`}>
+                      <p className="flex items-center gap-2 font-medium"><Icon className="h-4 w-4" /> {title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className="space-y-3">
@@ -246,44 +251,118 @@ function Sequences() {
   );
 }
 
+function RunnerStatus() {
+  const { data } = useQuery({ queryKey: ["linkedin-tracker"], queryFn: () => getLinkedinTracker(), refetchInterval: 60000 });
+  if (!data) return null;
+  const r = data.runner;
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3 text-sm glass">
+      <span className={`h-2.5 w-2.5 rounded-full ${r.online ? "bg-primary" : "bg-muted-foreground/40"}`} />
+      <span className="font-medium">{r.online ? "LinkedIn connected: runner online" : r.hasKey ? "LinkedIn runner offline" : "LinkedIn not connected for automation"}</span>
+      <span className="text-muted-foreground">{r.lastSeen ? `Last seen ${new Date(r.lastSeen).toLocaleString()}` : "Manual sequences work without connecting."}</span>
+      <span className="ml-auto text-muted-foreground">{data.waiting} steps waiting</span>
+    </div>
+  );
+}
+
+function Tracker() {
+  const { data } = useQuery({ queryKey: ["linkedin-tracker"], queryFn: () => getLinkedinTracker(), refetchInterval: 60000 });
+  if (!data) return <p className="text-sm text-muted-foreground">Loading…</p>;
+  const t = data.totals;
+  const sent = t.connect;
+  const stats = [["Profile visits", t.visit], ["Connection requests", t.connect], ["Messages sent", t.message], ["Follows", t.follow], ["Replies", t.replied], ["Failed", t.failed]] as const;
+  const max = Math.max(1, ...data.days.map((d) => d.n));
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Last 14 days across manual and automated sequences.</p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {stats.map(([label, n]) => (
+          <Card key={label}><CardContent className="p-4"><p className="eyebrow">{label}</p><p className="mt-1 text-2xl font-semibold">{n}</p></CardContent></Card>
+        ))}
+      </div>
+      <Card>
+        <CardHeader><CardTitle>Daily activity</CardTitle><CardDescription>{sent ? `Reply rate ${Math.round((t.replied / Math.max(1, t.message + t.connect)) * 100)}%` : "Steps completed per day"}</CardDescription></CardHeader>
+        <CardContent>
+          <div className="flex h-32 items-end gap-1">
+            {data.days.map((d) => (
+              <div key={d.day} className="flex flex-1 flex-col items-center gap-1" title={`${d.day}: ${d.n}`}>
+                <div className="w-full rounded-t bg-primary/80" style={{ height: `${(d.n / max) * 100}%`, minHeight: d.n ? 4 : 1 }} />
+                <span className="text-[10px] text-muted-foreground">{d.day.slice(8)}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle>Recent activity</CardTitle></CardHeader>
+        <CardContent className="divide-y p-0">
+          {data.recent.length === 0 && <p className="p-6 text-sm text-muted-foreground">Nothing yet.</p>}
+          {data.recent.map((r) => {
+            const c = r.contacts as unknown as { first_name: string; last_name: string; company: string } | null;
+            const seq = r.linkedin_sequences as unknown as { name: string; mode: string } | null;
+            return (
+              <div key={r.id} className="flex flex-wrap items-center gap-3 px-6 py-2.5 text-sm">
+                <Badge variant={r.status === "failed" ? "destructive" : r.status === "done" ? "secondary" : "outline"}>{r.status === "done" ? ACTIONS[r.action as Action] ?? r.action : r.note?.startsWith("Replied") ? "Replied" : r.status}</Badge>
+                <Link to="/contacts/$contactId" params={{ contactId: r.contact_id }} className="hover:underline">{`${c?.first_name ?? ""} ${c?.last_name ?? ""}`.trim() || "Contact"}</Link>
+                <span className="text-xs text-muted-foreground">{seq?.name} · {seq?.mode === "runner" ? "Automated" : "Manual"}{r.note ? ` · ${r.note}` : ""}</span>
+                <span className="ml-auto text-xs text-muted-foreground">{r.completed_at ? new Date(r.completed_at).toLocaleString() : ""}</span>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function Runner() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["runner-token"], queryFn: () => getRunnerToken() });
   const [token, setToken] = useState<string | null>(null);
-  const endpoint = typeof window !== "undefined" ? `${window.location.origin}/api/public/linkedin/tasks` : "/api/public/linkedin/tasks";
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://acemail.online";
+  const cmd = `ACEMAIL_URL=${origin} ACEMAIL_KEY=${token ?? "<your key>"} node acemail-linkedin-runner.mjs`;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Automated mode (advanced)</CardTitle>
-        <CardDescription>
-          AceMail doesn't log into LinkedIn for you. If you run your own automation tool on your own computer or server, it can pick up "Automated" sequence steps here and report back.
-          LinkedIn's rules forbid automation and can restrict accounts that use it, so keep daily limits low. Assisted mode carries no such risk.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 text-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          {data ? <span>Runner key active{data.last_used_at ? `, last used ${new Date(data.last_used_at).toLocaleString()}` : ", not used yet"}.</span> : <span>No runner key yet.</span>}
-          <Button size="sm" onClick={async () => { const r = await createRunnerToken(); setToken(r.token); qc.invalidateQueries({ queryKey: ["runner-token"] }); }}>{data ? "Replace key" : "Create key"}</Button>
-          {data && <Button size="sm" variant="outline" onClick={async () => { await revokeRunnerToken(); setToken(null); qc.invalidateQueries({ queryKey: ["runner-token"] }); }}>Turn off</Button>}
-        </div>
-        {token && (
-          <div className="space-y-1 rounded-md border bg-muted/40 p-3">
-            <p className="font-medium">Copy this key now. It won't be shown again.</p>
-            <div className="flex gap-2"><code className="min-w-0 flex-1 break-all text-xs">{token}</code><Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(token); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button></div>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Connect your LinkedIn for automation</CardTitle>
+          <CardDescription>
+            LinkedIn doesn't let apps send connection requests or messages through a sign-in button, so automation runs in the AceMail runner on your own computer.
+            It opens a normal browser window where you sign in to LinkedIn yourself (codes and app approvals work). Your password never reaches AceMail.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5 text-sm">
+          <div className="space-y-2">
+            <p className="font-medium">1. Create your runner key</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {data ? <span className="text-muted-foreground">Key active{data.last_used_at ? `, last used ${new Date(data.last_used_at).toLocaleString()}` : ", not used yet"}.</span> : null}
+              <Button size="sm" onClick={async () => { const r = await createRunnerToken(); setToken(r.token); qc.invalidateQueries({ queryKey: ["runner-token"] }); qc.invalidateQueries({ queryKey: ["linkedin-tracker"] }); }}>{data ? "Replace key" : "Create key"}</Button>
+              {data && <Button size="sm" variant="outline" onClick={async () => { await revokeRunnerToken(); setToken(null); qc.invalidateQueries({ queryKey: ["runner-token"] }); qc.invalidateQueries({ queryKey: ["linkedin-tracker"] }); }}>Disconnect</Button>}
+            </div>
+            {token && (
+              <div className="flex gap-2 rounded-md border bg-muted/40 p-3"><code className="min-w-0 flex-1 break-all text-xs">{token}</code><Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(token); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button></div>
+            )}
+            {token && <p className="text-xs text-muted-foreground">Copy it now. It won't be shown again.</p>}
           </div>
-        )}
-        <div className="space-y-1">
-          <p className="font-medium">For your runner</p>
-          <pre className="overflow-x-auto rounded-md border bg-muted/40 p-3 text-xs">{`GET  ${endpoint}
-     Authorization: Bearer <key>
-     -> { tasks: [{ id, action, message, profile_url, sequence }] }
-
-POST ${endpoint}
-     Authorization: Bearer <key>
-     { "taskId": "...", "status": "done" | "skipped" | "failed", "note": "...", "replied": false }`}</pre>
-          <p className="text-xs text-muted-foreground">Daily limits are applied before tasks are handed out. Marking a step done schedules the next one; "replied": true stops all LinkedIn steps and queued emails for that person.</p>
-        </div>
-      </CardContent>
-    </Card>
+          <div className="space-y-2">
+            <p className="font-medium">2. Download the runner</p>
+            <Button size="sm" variant="outline" asChild><a href="/acemail-linkedin-runner.mjs" download><Download className="mr-2 h-4 w-4" /> acemail-linkedin-runner.mjs</a></Button>
+            <p className="text-xs text-muted-foreground">Needs Node.js 20+. One-time setup: <code>npm i -g playwright && npx playwright install chromium</code></p>
+          </div>
+          <div className="space-y-2">
+            <p className="font-medium">3. Start it and sign in to LinkedIn in the window that opens</p>
+            <div className="flex gap-2 rounded-md border bg-muted/40 p-3"><code className="min-w-0 flex-1 break-all text-xs">{cmd}</code><Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(cmd); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button></div>
+            <p className="text-xs text-muted-foreground">Once it's running, the status bar above turns to "runner online" and every sequence set to Automated is worked through with human-like pauses and your daily limits. Messages wait until the connection is accepted, and anyone who replies is stopped automatically.</p>
+          </div>
+          <p className="rounded-md border border-destructive/30 p-3 text-xs text-muted-foreground">LinkedIn's terms forbid automation and can restrict accounts that use it. Start with low daily limits (10 to 20 connection requests). Manual sequences carry no such risk.</p>
+        </CardContent>
+      </Card>
+      <details className="rounded-lg border p-4 text-sm">
+        <summary className="cursor-pointer font-medium">Using your own automation tool instead</summary>
+        <pre className="mt-3 overflow-x-auto rounded-md border bg-muted/40 p-3 text-xs">{`GET  ${origin}/api/public/linkedin/tasks   (Authorization: Bearer <key>)
+POST ${origin}/api/public/linkedin/tasks
+     { "taskId": "...", "status": "done" | "skipped" | "failed" | "later", "note": "...", "replied": false }`}</pre>
+      </details>
+    </div>
   );
 }
