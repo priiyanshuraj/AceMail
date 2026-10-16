@@ -33,3 +33,4 @@
 - [x] Contact detail page with phone, LinkedIn, title and full activity
 - [x] Campaign pipeline view with click-through
 - [x] Apollo enrichment with the user's own key (Settings)
+- [x] LinkedIn: manual/automated choice per sequence, downloadable runner that signs in to LinkedIn locally, runner status, 14-day tracker

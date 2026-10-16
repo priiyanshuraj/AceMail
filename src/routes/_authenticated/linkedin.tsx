@@ -319,7 +319,8 @@ function Runner() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["runner-token"], queryFn: () => getRunnerToken() });
   const [token, setToken] = useState<string | null>(null);
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://acemail.online";
+  const here = typeof window !== "undefined" ? window.location.origin : "";
+  const origin = !here || /localhost|id-preview--|lovableproject/.test(here) ? "https://acemail.online" : here;
   const cmd = `ACEMAIL_URL=${origin} ACEMAIL_KEY=${token ?? "<your key>"} node acemail-linkedin-runner.mjs`;
   return (
     <div className="space-y-4">
