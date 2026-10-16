@@ -322,58 +322,77 @@ function Runner() {
   const here = typeof window !== "undefined" ? window.location.origin : "";
   const origin = !here || /localhost|id-preview--|lovableproject/.test(here) ? "https://acemail.online" : here;
   const cmd = `ACEMAIL_URL=${origin} ACEMAIL_KEY=${token ?? "<your key>"} node acemail-linkedin-runner.mjs`;
+  const downloadExt = () => {
+    fetch("/acemail-linkedin-extension.zip").then((r) => { if (!r.ok) throw new Error(`Download failed: ${r.status}`); return r.blob(); })
+      .then((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "acemail-linkedin-extension.zip"; a.click(); URL.revokeObjectURL(a.href); })
+      .catch((e) => toast.error(e.message));
+  };
   return (
     <div className="space-y-4">
-      <CloudWorker origin={origin} />
       <Card>
         <CardHeader>
-          <CardTitle>Connect your LinkedIn for automation</CardTitle>
-          <CardDescription>
-            LinkedIn doesn't let apps send connection requests or messages through a sign-in button, so automation runs in the AceMail runner on your own computer.
-            It opens a normal browser window where you sign in to LinkedIn yourself (codes and app approvals work). Your password never reaches AceMail.
-          </CardDescription>
+          <CardTitle>Step 1. Create your runner key</CardTitle>
+          <CardDescription>Both the extension and the server use this key.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-5 text-sm">
-          <div className="space-y-2">
-            <p className="font-medium">1. Create your runner key</p>
-            <div className="flex flex-wrap items-center gap-2">
-              {data ? <span className="text-muted-foreground">Key active{data.last_used_at ? `, last used ${new Date(data.last_used_at).toLocaleString()}` : ", not used yet"}.</span> : null}
-              <Button size="sm" onClick={async () => { const r = await createRunnerToken(); setToken(r.token); qc.invalidateQueries({ queryKey: ["runner-token"] }); qc.invalidateQueries({ queryKey: ["linkedin-tracker"] }); }}>{data ? "Replace key" : "Create key"}</Button>
-              {data && <Button size="sm" variant="outline" onClick={async () => { await revokeRunnerToken(); setToken(null); qc.invalidateQueries({ queryKey: ["runner-token"] }); qc.invalidateQueries({ queryKey: ["linkedin-tracker"] }); }}>Disconnect</Button>}
-            </div>
-            {token && (
-              <div className="flex gap-2 rounded-md border bg-muted/40 p-3"><code className="min-w-0 flex-1 break-all text-xs">{token}</code><Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(token); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button></div>
-            )}
-            {token && <p className="text-xs text-muted-foreground">Copy it now. It won't be shown again.</p>}
+        <CardContent className="space-y-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            {data ? <span className="text-muted-foreground">Key active{data.last_used_at ? `, last used ${new Date(data.last_used_at).toLocaleString()}` : ", not used yet"}.</span> : null}
+            <Button size="sm" onClick={async () => { const r = await createRunnerToken(); setToken(r.token); qc.invalidateQueries({ queryKey: ["runner-token"] }); qc.invalidateQueries({ queryKey: ["linkedin-tracker"] }); }}>{data ? "Replace key" : "Create key"}</Button>
+            {data && <Button size="sm" variant="outline" onClick={async () => { await revokeRunnerToken(); setToken(null); qc.invalidateQueries({ queryKey: ["runner-token"] }); qc.invalidateQueries({ queryKey: ["linkedin-tracker"] }); }}>Disconnect</Button>}
           </div>
-          <div className="space-y-2 rounded-md border border-primary/30 p-3">
-            <p className="font-medium">2. Easiest: install the Chrome extension</p>
-            <Button size="sm" onClick={() => {
-              fetch("/acemail-linkedin-extension.zip").then((r) => { if (!r.ok) throw new Error(`Download failed: ${r.status}`); return r.blob(); })
-                .then((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "acemail-linkedin-extension.zip"; a.click(); URL.revokeObjectURL(a.href); })
-                .catch((e) => toast.error(e.message));
-            }}><Download className="mr-2 h-4 w-4" /> Download extension</Button>
-            <ol className="list-decimal space-y-0.5 pl-5 text-xs text-muted-foreground">
-              <li>Unzip the file.</li>
-              <li>Open <code>chrome://extensions</code> and turn on Developer mode (top right).</li>
-              <li>Click Load unpacked and pick the unzipped folder.</li>
-              <li>Click the AceMail icon, paste your key, press Start. Stay signed in to LinkedIn in that browser.</li>
-            </ol>
-            <p className="text-xs text-muted-foreground">Works in Chrome, Edge, Brave and Arc. Steps run in a pinned background tab while the browser is open. No new server or Node.js needed.</p>
-          </div>
-          <div className="space-y-2">
-            <p className="font-medium">Or: run it on a computer or server with Node.js</p>
-            <Button size="sm" variant="outline" asChild><a href="/acemail-linkedin-runner.mjs" download><Download className="mr-2 h-4 w-4" /> acemail-linkedin-runner.mjs</a></Button>
-            <p className="text-xs text-muted-foreground">Needs Node.js 20+. One-time setup: <code>npm i -g playwright && npx playwright install chromium</code></p>
-          </div>
-          <div className="space-y-2">
-            <p className="font-medium">3. Start it and sign in to LinkedIn in the window that opens</p>
-            <div className="flex gap-2 rounded-md border bg-muted/40 p-3"><code className="min-w-0 flex-1 break-all text-xs">{cmd}</code><Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(cmd); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button></div>
-            <p className="text-xs text-muted-foreground">Once it's running, the status bar above turns to "runner online" and every sequence set to Automated is worked through with human-like pauses and your daily limits. Messages wait until the connection is accepted, and anyone who replies is stopped automatically.</p>
-          </div>
-          <p className="rounded-md border border-destructive/30 p-3 text-xs text-muted-foreground">LinkedIn's terms forbid automation and can restrict accounts that use it. Start with low daily limits (10 to 20 connection requests). Manual sequences carry no such risk.</p>
+          {token && (
+            <div className="flex gap-2 rounded-md border bg-muted/40 p-3"><code className="min-w-0 flex-1 break-all text-xs">{token}</code><Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(token); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button></div>
+          )}
+          {token && <p className="text-xs text-muted-foreground">Copy it now. It won't be shown again.</p>}
         </CardContent>
       </Card>
+
+      <div>
+        <p className="mb-2 text-sm font-medium">Step 2. Choose where it runs</p>
+        <Tabs defaultValue="extension">
+          <TabsList>
+            <TabsTrigger value="extension">Chrome extension</TabsTrigger>
+            <TabsTrigger value="server">Cloud server (24/7)</TabsTrigger>
+            <TabsTrigger value="computer">My computer</TabsTrigger>
+          </TabsList>
+          <TabsContent value="extension">
+            <Card>
+              <CardHeader>
+                <CardTitle>Chrome extension</CardTitle>
+                <CardDescription>Easiest. Runs in your browser while it's open.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <Button size="sm" onClick={downloadExt}><Download className="mr-2 h-4 w-4" /> Download extension</Button>
+                <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
+                  <li>Unzip the file.</li>
+                  <li>Open <code>chrome://extensions</code>.</li>
+                  <li>Turn on Developer mode (top right).</li>
+                  <li>Click Load unpacked, pick the folder.</li>
+                  <li>Click the AceMail icon, paste your key, press Start.</li>
+                  <li>Stay signed in to LinkedIn. Keep Chrome open.</li>
+                </ol>
+                <p className="text-xs text-muted-foreground">No tab to watch. It works in a pinned background tab. Chrome, Edge, Brave, Arc.</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="server"><CloudWorker origin={origin} /></TabsContent>
+          <TabsContent value="computer">
+            <Card>
+              <CardHeader>
+                <CardTitle>Run on my computer</CardTitle>
+                <CardDescription>For Node.js users. Opens a browser window you sign in to.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <Button size="sm" variant="outline" asChild><a href="/acemail-linkedin-runner.mjs" download><Download className="mr-2 h-4 w-4" /> Download runner</a></Button>
+                <p className="text-xs text-muted-foreground">One-time: <code>npm i -g playwright && npx playwright install chromium</code></p>
+                <div className="flex gap-2 rounded-md border bg-muted/40 p-3"><code className="min-w-0 flex-1 break-all text-xs">{cmd}</code><Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(cmd); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button></div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <p className="rounded-md border border-destructive/30 p-3 text-xs text-muted-foreground">LinkedIn forbids automation and can restrict accounts. Start with 10 to 20 connection requests a day.</p>
       <details className="rounded-lg border p-4 text-sm">
         <summary className="cursor-pointer font-medium">Using your own automation tool instead</summary>
         <pre className="mt-3 overflow-x-auto rounded-md border bg-muted/40 p-3 text-xs">{`GET  ${origin}/api/public/linkedin/tasks   (Authorization: Bearer <key>)
@@ -424,14 +443,28 @@ function CloudWorker({ origin }: { origin: string }) {
           </ol>
         </details>
         <div className="space-y-1">
-          <p className="font-medium">Deploy the worker (Railway, Render, Fly.io or any Docker host)</p>
-          <pre className="overflow-x-auto rounded-md border bg-muted/40 p-3 text-xs">{`docker run -d --restart=always \\
+          <p className="font-medium">Add your server</p>
+          <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
+            <li>Save your cookie above.</li>
+            <li>Get a Docker server (Railway, Render, Fly.io or a VPS).</li>
+            <li>Copy the command below, add your runner key, run it.</li>
+            <li>The status bar turns "runner online".</li>
+          </ol>
+          {(() => {
+            const dockerCmd = `docker run -d --restart=always \\
   -e ACEMAIL_URL=${origin} \\
   -e ACEMAIL_KEY=<your runner key> \\
   -e CLOUD=1 -e HEADLESS=1 \\
   mcr.microsoft.com/playwright:v1.48.0-jammy \\
-  sh -c "npm i playwright@1.48.0 && curl -fsSL ${origin}/acemail-linkedin-runner.mjs -o r.mjs && node r.mjs"`}</pre>
-          <p className="text-xs text-muted-foreground">The worker loads your cookie and proxy from AceMail, so you only change them here. If LinkedIn signs the session out, this card shows "Cookie expired".</p>
+  sh -c "npm i playwright@1.48.0 && curl -fsSL ${origin}/acemail-linkedin-runner.mjs -o r.mjs && node r.mjs"`;
+            return (
+              <div className="relative">
+                <pre className="overflow-x-auto rounded-md border bg-muted/40 p-3 pr-12 text-xs">{dockerCmd}</pre>
+                <Button size="sm" variant="outline" className="absolute right-2 top-2" onClick={() => { navigator.clipboard.writeText(dockerCmd); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button>
+              </div>
+            );
+          })()}
+          <p className="text-xs text-muted-foreground">Change your cookie here anytime. If it expires, this card says so.</p>
         </div>
       </CardContent>
     </Card>
