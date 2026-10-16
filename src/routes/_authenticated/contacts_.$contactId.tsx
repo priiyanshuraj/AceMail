@@ -38,7 +38,7 @@ function ContactPage() {
   const custom = Object.entries((c.custom_fields ?? {}) as Record<string, unknown>).filter(([, v]) => v !== "" && v != null);
 
   const timeline = [
-    ...data.logs.map((l) => ({ at: l.sent_at ?? l.scheduled_at, kind: "Email", text: `${(l.email_templates as { subject: string } | null)?.subject ?? "Email"}${(l.campaigns as { name: string } | null) ? ` · ${(l.campaigns as { name: string }).name}` : ""}`, status: l.status })),
+    ...data.logs.map((l) => ({ at: l.sent_at ?? l.scheduled_at, kind: "Email", text: `${(l.campaign_steps as unknown as { email_templates: { subject: string } | null } | null)?.email_templates?.subject ?? "Email"}${(l.campaigns as { name: string } | null) ? ` · ${(l.campaigns as { name: string }).name}` : ""}`, status: l.status })),
     ...data.replies.map((r) => ({ at: r.received_at, kind: r.is_auto_reply ? "Out of office" : "Reply", text: `${r.subject} · ${r.snippet}`, status: "received" })),
     ...data.tasks.map((t) => ({ at: t.completed_at ?? t.due_at, kind: "LinkedIn", text: `${t.action}${(t.linkedin_sequences as { name: string } | null) ? ` · ${(t.linkedin_sequences as { name: string }).name}` : ""}`, status: t.status })),
   ].sort((a, b) => b.at.localeCompare(a.at));

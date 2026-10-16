@@ -12,7 +12,7 @@ export const getContactDetail = createServerFn({ method: "GET" })
     const { data: contact, error } = await db.from("contacts").select("*, contact_lists(name)").eq("id", data.id).single();
     if (error || !contact) throw new Error("Contact not found");
     const [logs, replies, tasks] = await Promise.all([
-      db.from("email_logs").select("id, status, scheduled_at, sent_at, opened_at, replied_at, bounced_at, error, campaigns(name), email_templates(subject)")
+      db.from("email_logs").select("id, status, scheduled_at, sent_at, opened_at, replied_at, bounced_at, error, campaigns(name), campaign_steps(email_templates(subject))")
         .eq("contact_id", data.id).order("scheduled_at", { ascending: false }).limit(200),
       db.from("inbox_messages").select("id, subject, snippet, received_at, is_auto_reply").eq("contact_id", data.id).order("received_at", { ascending: false }).limit(100),
       db.from("linkedin_tasks").select("id, action, status, due_at, completed_at, message, linkedin_sequences(name)").eq("contact_id", data.id).order("due_at", { ascending: false }).limit(100),
@@ -64,15 +64,15 @@ async function enrichContacts(db: typeof import("@/integrations/supabase/client"
     const matches = await apolloBulkMatch(userId, chunk.map((c) => ({ ...c, linkedin_url: contactLinkedinUrl(c) })));
     for (let j = 0; j < chunk.length; j++) {
       const c = chunk[j]!, m = matches[j];
-      const patch: Record<string, string> = { enriched_at: new Date().toISOString() };
+      const patch: { [k in "enriched_at" | "title" | "linkedin_url" | "company" | "first_name" | "last_name" | "email"]?: string } = { enriched_at: new Date().toISOString() };
       if (m) {
         matched++;
-        if (m.title && !c.title) patch["title"] = m.title;
-        if (m.linkedin_url && !contactLinkedinUrl(c)) patch["linkedin_url"] = m.linkedin_url;
-        if (m.organization?.name && !c.company) patch["company"] = m.organization.name;
-        if (m.first_name && !c.first_name) patch["first_name"] = m.first_name;
-        if (m.last_name && !c.last_name) patch["last_name"] = m.last_name;
-        if (m.email && !m.email.includes("email_not_unlocked") && (!c.email || c.email.endsWith(".invalid"))) patch["email"] = m.email.toLowerCase();
+        if (m.title && !c.title) patch.title = m.title;
+        if (m.linkedin_url && !contactLinkedinUrl(c)) patch.linkedin_url = m.linkedin_url;
+        if (m.organization?.name && !c.company) patch.company = m.organization.name;
+        if (m.first_name && !c.first_name) patch.first_name = m.first_name;
+        if (m.last_name && !c.last_name) patch.last_name = m.last_name;
+        if (m.email && !m.email.includes("email_not_unlocked") && (!c.email || c.email.endsWith(".invalid"))) patch.email = m.email.toLowerCase();
       }
       await db.from("contacts").update(patch).eq("id", c.id);
     }
@@ -115,7 +115,7 @@ export const listLinkedinSequences = createServerFn({ method: "GET" })
     const stats: Record<string, { pending: number; done: number; skipped: number; failed: number; byStep: Record<number, number> }> = {};
     for (const s of seqs ?? []) {
       const { data: t } = await db.from("linkedin_tasks").select("status, step_index").eq("sequence_id", s.id).limit(10000);
-      const st = (stats[s.id] = { pending: 0, done: 0, skipped: 0, failed: 0, byStep: {} });
+      const st = (stats[s.id] = { pending: 0, done: 0, skipped: 0, failed: 0, byStep: {} as Record<number, number> });
       for (const r of t ?? []) {
         st[r.status as "pending"]++;
         if (r.status === "done") st.byStep[r.step_index] = (st.byStep[r.step_index] ?? 0) + 1;
@@ -237,7 +237,7 @@ async function loadInboxBox(db: typeof import("@/integrations/supabase/client").
   const { data: msg } = await db.from("inbox_messages").select("id, gmail_thread_id, subject, from_email, config_id, email_configurations(from_email, from_name)").eq("id", id).single();
   if (!msg?.gmail_thread_id) throw new Error("Conversation not found");
   const { getMailboxKey } = await import("@/server/gmail.server");
-  const key = await getMailboxKey(msg.config_id);
+  const key = msg.config_id ? await getMailboxKey(msg.config_id) : null;
   if (!key) throw new Error("Mailbox needs to be reconnected");
   return { msg, key };
 }
