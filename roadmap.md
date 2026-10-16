@@ -26,3 +26,10 @@
 - [x] Marketing site: landing rewritten with the sakura scene, MCP section, blog and early-access form; old film photos removed
 - [x] Landing nav bar stays pinned while scrolling so Sign in / Get started are always one click away; browser verified in day and night
 - [x] Sign-in page: sakura scene, falling petals, frosted card, day/night toggle; browser verified in both themes
+
+# LinkedIn + extras (from linki reference)
+- [x] LinkedIn sequences: assisted daily task list + automated runner API with daily limits
+- [x] Reply from Inbox inside the Gmail thread
+- [x] Contact detail page with phone, LinkedIn, title and full activity
+- [x] Campaign pipeline view with click-through
+- [x] Apollo enrichment with the user's own key (Settings)
