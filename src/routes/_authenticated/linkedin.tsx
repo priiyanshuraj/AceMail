@@ -345,8 +345,23 @@ function Runner() {
             )}
             {token && <p className="text-xs text-muted-foreground">Copy it now. It won't be shown again.</p>}
           </div>
+          <div className="space-y-2 rounded-md border border-primary/30 p-3">
+            <p className="font-medium">2. Easiest: install the Chrome extension</p>
+            <Button size="sm" onClick={() => {
+              fetch("/acemail-linkedin-extension.zip").then((r) => { if (!r.ok) throw new Error(`Download failed: ${r.status}`); return r.blob(); })
+                .then((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "acemail-linkedin-extension.zip"; a.click(); URL.revokeObjectURL(a.href); })
+                .catch((e) => toast.error(e.message));
+            }}><Download className="mr-2 h-4 w-4" /> Download extension</Button>
+            <ol className="list-decimal space-y-0.5 pl-5 text-xs text-muted-foreground">
+              <li>Unzip the file.</li>
+              <li>Open <code>chrome://extensions</code> and turn on Developer mode (top right).</li>
+              <li>Click Load unpacked and pick the unzipped folder.</li>
+              <li>Click the AceMail icon, paste your key, press Start. Stay signed in to LinkedIn in that browser.</li>
+            </ol>
+            <p className="text-xs text-muted-foreground">Works in Chrome, Edge, Brave and Arc. Steps run in a pinned background tab while the browser is open. No new server or Node.js needed.</p>
+          </div>
           <div className="space-y-2">
-            <p className="font-medium">2. Download the runner</p>
+            <p className="font-medium">Or: run it on a computer or server with Node.js</p>
             <Button size="sm" variant="outline" asChild><a href="/acemail-linkedin-runner.mjs" download><Download className="mr-2 h-4 w-4" /> acemail-linkedin-runner.mjs</a></Button>
             <p className="text-xs text-muted-foreground">Needs Node.js 20+. One-time setup: <code>npm i -g playwright && npx playwright install chromium</code></p>
           </div>
