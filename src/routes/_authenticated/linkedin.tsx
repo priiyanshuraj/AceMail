@@ -443,14 +443,28 @@ function CloudWorker({ origin }: { origin: string }) {
           </ol>
         </details>
         <div className="space-y-1">
-          <p className="font-medium">Deploy the worker (Railway, Render, Fly.io or any Docker host)</p>
-          <pre className="overflow-x-auto rounded-md border bg-muted/40 p-3 text-xs">{`docker run -d --restart=always \\
+          <p className="font-medium">Add your server</p>
+          <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
+            <li>Save your cookie above.</li>
+            <li>Get a Docker server (Railway, Render, Fly.io or a VPS).</li>
+            <li>Copy the command below, add your runner key, run it.</li>
+            <li>The status bar turns "runner online".</li>
+          </ol>
+          {(() => {
+            const dockerCmd = `docker run -d --restart=always \\
   -e ACEMAIL_URL=${origin} \\
   -e ACEMAIL_KEY=<your runner key> \\
   -e CLOUD=1 -e HEADLESS=1 \\
   mcr.microsoft.com/playwright:v1.48.0-jammy \\
-  sh -c "npm i playwright@1.48.0 && curl -fsSL ${origin}/acemail-linkedin-runner.mjs -o r.mjs && node r.mjs"`}</pre>
-          <p className="text-xs text-muted-foreground">The worker loads your cookie and proxy from AceMail, so you only change them here. If LinkedIn signs the session out, this card shows "Cookie expired".</p>
+  sh -c "npm i playwright@1.48.0 && curl -fsSL ${origin}/acemail-linkedin-runner.mjs -o r.mjs && node r.mjs"`;
+            return (
+              <div className="relative">
+                <pre className="overflow-x-auto rounded-md border bg-muted/40 p-3 pr-12 text-xs">{dockerCmd}</pre>
+                <Button size="sm" variant="outline" className="absolute right-2 top-2" onClick={() => { navigator.clipboard.writeText(dockerCmd); toast.success("Copied"); }}><Copy className="h-4 w-4" /></Button>
+              </div>
+            );
+          })()}
+          <p className="text-xs text-muted-foreground">Change your cookie here anytime. If it expires, this card says so.</p>
         </div>
       </CardContent>
     </Card>
