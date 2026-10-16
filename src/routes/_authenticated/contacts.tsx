@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -650,7 +650,7 @@ function ContactsPage() {
                         </TableCell>
                         <TableCell className="font-medium">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="break-all">{c.email}</span>
+                            <Link to="/contacts/$contactId" params={{ contactId: c.id }} className="break-all hover:text-primary hover:underline">{c.email}</Link>
                             {c.email_status && (
                               <Badge
                                 variant={c.email_status === "valid" ? "secondary" : c.email_status === "invalid" ? "destructive" : "outline"}
