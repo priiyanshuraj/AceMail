@@ -29,13 +29,18 @@ export const Route = createFileRoute("/api/public/linkedin/tasks")({
       const auth = await authUser(request);
       if (!auth) return json({ error: "Invalid runner token" }, 401);
       const body = (await request.json().catch(() => null)) as { taskId?: string; status?: string; note?: string; replied?: boolean } | null;
-      if (!body?.taskId || !/^[0-9a-f-]{36}$/i.test(body.taskId) || !["done", "skipped", "failed"].includes(body.status ?? "")) return json({ error: "Expected taskId and status (done|skipped|failed)" }, 400);
+      if (!body?.taskId || !/^[0-9a-f-]{36}$/i.test(body.taskId) || !["done", "skipped", "failed", "later"].includes(body.status ?? "")) return json({ error: "Expected taskId and status (done|skipped|failed|later)" }, 400);
       const { data: task } = await auth.db.from("linkedin_tasks").select("id, contact_id").eq("id", body.taskId).eq("user_id", auth.userId).maybeSingle();
       if (!task) return json({ error: "Task not found" }, 404);
+      if (body.status === "later") {
+        // e.g. message step but the connection isn't accepted yet: try again tomorrow
+        await auth.db.from("linkedin_tasks").update({ due_at: new Date(Date.now() + 86400_000).toISOString(), note: typeof body.note === "string" ? body.note.slice(0, 500) : "Retry tomorrow" }).eq("id", task.id);
+        return json({ ok: true });
+      }
       const { finishTask } = await import("@/server/linkedin.server");
       await finishTask(auth.db, task.id, body.status as "done", typeof body.note === "string" ? body.note : undefined);
       if (body.replied) {
-        await auth.db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn" }).eq("contact_id", task.contact_id).eq("status", "pending");
+        await auth.db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn", completed_at: new Date().toISOString() }).eq("contact_id", task.contact_id).eq("status", "pending");
         await auth.db.from("email_logs").update({ status: "skipped", error: "Replied on LinkedIn" }).eq("contact_id", task.contact_id).eq("status", "queued");
       }
       return json({ ok: true });

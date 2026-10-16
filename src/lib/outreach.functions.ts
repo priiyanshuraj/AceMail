@@ -188,7 +188,7 @@ export const markLinkedinReplied = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ contactId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const db = context.supabase;
-    await db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn" }).eq("contact_id", data.contactId).eq("status", "pending");
+    await db.from("linkedin_tasks").update({ status: "skipped", note: "Replied on LinkedIn", completed_at: new Date().toISOString() }).eq("contact_id", data.contactId).eq("status", "pending");
     await db.from("email_logs").update({ status: "skipped", error: "Replied on LinkedIn" }).eq("contact_id", data.contactId).eq("status", "queued");
     return { ok: true };
   });
@@ -326,4 +326,34 @@ export const getCampaignFunnel = createServerFn({ method: "GET" })
       return { step: s.step_order, total: people.length, counts, people: people.slice(0, 500) };
     });
     return { funnel, contacts: per.size };
+  });
+
+// ---------- LinkedIn tracker ----------
+
+export const getLinkedinTracker = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const db = context.supabase;
+    const since = new Date(Date.now() - 13 * 86400_000); since.setUTCHours(0, 0, 0, 0);
+    const [{ data: tasks }, { data: token }] = await Promise.all([
+      db.from("linkedin_tasks").select("id, action, status, note, completed_at, due_at, contact_id, contacts(first_name, last_name, company), linkedin_sequences(name, mode)")
+        .neq("status", "pending").gte("completed_at", since.toISOString()).order("completed_at", { ascending: false }).limit(2000),
+      db.from("linkedin_runner_tokens").select("last_used_at").eq("user_id", context.userId).maybeSingle(),
+    ]);
+    const { count: waiting } = await db.from("linkedin_tasks").select("id", { count: "exact", head: true }).eq("status", "pending");
+    const totals = { visit: 0, connect: 0, message: 0, follow: 0, endorse: 0, replied: 0, failed: 0, skipped: 0 };
+    const days: Record<string, number> = {};
+    for (let i = 0; i < 14; i++) days[new Date(since.getTime() + i * 86400_000).toISOString().slice(0, 10)] = 0;
+    for (const t of tasks ?? []) {
+      if (t.status === "done") { totals[t.action as "visit"]++; const d = (t.completed_at ?? "").slice(0, 10); if (d in days) days[d] = (days[d] ?? 0) + 1; }
+      else if (t.note?.startsWith("Replied")) totals.replied++;
+      else if (t.status === "failed") totals.failed++;
+      else totals.skipped++;
+    }
+    const lastSeen = token?.last_used_at ?? null;
+    return {
+      totals, waiting: waiting ?? 0, days: Object.entries(days).map(([day, n]) => ({ day, n })),
+      runner: { hasKey: !!token, lastSeen, online: !!lastSeen && Date.now() - new Date(lastSeen).getTime() < 10 * 60_000 },
+      recent: (tasks ?? []).slice(0, 50),
+    };
   });
