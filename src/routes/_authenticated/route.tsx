@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin } from "lucide-react";
 import { PetalField } from "@/components/PetalField";
 import { SakuraScene } from "@/components/SakuraScene";
 import logoUrl from "@/assets/acemail-logo.png";
@@ -39,6 +39,7 @@ const navItems = [
   { to: "/contacts", label: "Contacts", icon: Users },
   { to: "/templates", label: "Templates", icon: Mail },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone },
+  { to: "/linkedin", label: "LinkedIn", icon: Linkedin },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 

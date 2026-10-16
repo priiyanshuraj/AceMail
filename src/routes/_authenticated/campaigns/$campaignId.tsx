@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { CampaignAnalytics } from "@/components/CampaignAnalytics";
+import { CampaignFunnel } from "@/components/CampaignFunnel";
 import { getCampaign, setCampaignStatus, setLogStatus, deleteLog } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,6 +119,8 @@ function CampaignDetail() {
       </div>
 
       <CampaignAnalytics analytics={data.analytics} refresh={refresh} refreshing={isFetching} />
+
+      <CampaignFunnel campaignId={campaignId} />
 
       <Card>
         <CardHeader>
