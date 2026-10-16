@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { inboxDocument, signatureHtml } from "@/lib/email-content";
+import { ApolloKeyCard } from "@/components/ApolloKeyCard";
 
 function SignatureCard() {
   const queryClient = useQueryClient();
@@ -126,6 +127,7 @@ function SettingsPage() {
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-sm text-muted-foreground">Sending accounts and safeguards</p>
       </div>
+      <ApolloKeyCard />
 
       <Card>
         <CardHeader>

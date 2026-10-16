@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { listInbox, listMailboxes, markInboxRead, sendDirectEmail, syncInboxNow } from "@/lib/mailbox.functions";
+import { getInboxThread, replyToInbox } from "@/lib/outreach.functions";
+import { inboxDocument } from "@/lib/email-content";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +47,7 @@ function InboxPage() {
   const [composeBox, setComposeBox] = useState("");
   const [composeSig, setComposeSig] = useState(true);
   const [sending, setSending] = useState(false);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const rows = filter === "unread" ? data.filter((m) => !m.is_read) : data;
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["inbox"] });
   const gmailBoxes = mailboxes.filter((b) => b.provider === "gmail" && b.status === "active");
@@ -152,6 +155,8 @@ function InboxPage() {
         </DialogContent>
       </Dialog>
 
+      <ThreadDialog id={threadId} onClose={() => { setThreadId(null); refresh(); }} />
+
       <div className="flex gap-2">
         <Button size="sm" variant={filter === "all" ? "default" : "outline"} onClick={() => setFilter("all")}>
           All ({data.length})
@@ -192,6 +197,18 @@ function InboxPage() {
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <span className="text-xs text-muted-foreground">{new Date(m.received_at).toLocaleString()}</span>
+                  {m.gmail_thread_id && (
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-primary hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setThreadId(m.id);
+                      }}
+                    >
+                      Open & reply
+                    </button>
+                  )}
                   <button
                     type="button"
                     className="text-xs text-primary hover:underline"
@@ -200,7 +217,7 @@ function InboxPage() {
                       openCompose(m.from_email);
                     }}
                   >
-                    Reply here
+                    New email
                   </button>
                   {m.gmail_thread_id && (
                     <a
@@ -220,5 +237,52 @@ function InboxPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function ThreadDialog({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["inbox-thread", id], queryFn: () => getInboxThread({ data: { id: id! } }), enabled: !!id });
+  const [body, setBody] = useState("");
+  const [sig, setSig] = useState(true);
+  const [sending, setSending] = useState(false);
+  return (
+    <Dialog open={!!id} onOpenChange={(o) => { if (!o) { setBody(""); onClose(); } }}>
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{data?.[0]?.subject || "Conversation"}</DialogTitle>
+          <DialogDescription>The full thread from Gmail. Your reply is sent in the same thread.</DialogDescription>
+        </DialogHeader>
+        {isLoading && <p className="text-sm text-muted-foreground">Loading conversation…</p>}
+        {error && <p className="text-sm text-destructive">{error instanceof Error ? error.message : "Could not load"}</p>}
+        <div className="space-y-3">
+          {(data ?? []).map((m: { id: string; from: string; date: string; html: string; text: string }) => (
+            <div key={m.id} className="overflow-hidden rounded-lg border">
+              <div className="flex flex-wrap justify-between gap-2 border-b bg-muted/40 px-3 py-2 text-xs">
+                <span className="font-medium">{m.from}</span>
+                <span className="text-muted-foreground">{m.date ? new Date(m.date).toLocaleString() : ""}</span>
+              </div>
+              <iframe title="Message" sandbox="" className="h-64 w-full bg-background" srcDoc={inboxDocument(m.html || m.text)} />
+            </div>
+          ))}
+        </div>
+        {data && (
+          <div className="space-y-2">
+            <Label>Your reply</Label>
+            <TemplateBodyEditor value={body} onChange={setBody} onFocus={() => {}} templates={[]} />
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox checked={sig} onCheckedChange={(v) => setSig(v === true)} /> Include my signature
+            </label>
+          </div>
+        )}
+        <DialogFooter>
+          <Button disabled={!data || sending || !body.trim()} onClick={async () => {
+            setSending(true);
+            try { await replyToInbox({ data: { id: id!, body, includeSignature: sig } }); toast.success("Reply sent"); setBody(""); refetch(); }
+            catch (e) { toast.error(e instanceof Error ? e.message : "Could not send reply"); }
+            finally { setSending(false); }
+          }}>{sending ? "Sending…" : "Send reply"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
