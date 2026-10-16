@@ -663,6 +663,36 @@ export type Database = {
           },
         ]
       }
+      linkedin_cloud_sessions: {
+        Row: {
+          cookie_enc: string
+          cookie_hint: string | null
+          proxy_enc: string | null
+          status: string
+          status_note: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cookie_enc: string
+          cookie_hint?: string | null
+          proxy_enc?: string | null
+          status?: string
+          status_note?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cookie_enc?: string
+          cookie_hint?: string | null
+          proxy_enc?: string | null
+          status?: string
+          status_note?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       linkedin_runner_tokens: {
         Row: {
           created_at: string

@@ -37,6 +37,7 @@ import { Route as AuthenticatedCampaignsEditCampaignIdRouteImport } from './rout
 import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/google/return'
 import { Route as ApiPublicClickLinkIdRouteImport } from './routes/api/public/click/$linkId'
 import { Route as ApiPublicHooksProcessQueueRouteImport } from './routes/api/public/hooks/process-queue'
+import { Route as ApiPublicLinkedinSessionRouteImport } from './routes/api/public/linkedin/session'
 import { Route as ApiPublicLinkedinTasksRouteImport } from './routes/api/public/linkedin/tasks'
 import { Route as ApiPublicTrackLogIdDotpngRouteImport } from './routes/api/public/track/$logId[.]png'
 import { Route as ApiPublicUnsubscribeLogIdRouteImport } from './routes/api/public/unsubscribe/$logId'
@@ -188,6 +189,12 @@ const ApiPublicHooksProcessQueueRoute =
     path: '/api/public/hooks/process-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicLinkedinSessionRoute =
+  ApiPublicLinkedinSessionRouteImport.update({
+    id: '/api/public/linkedin/session',
+    path: '/api/public/linkedin/session',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicLinkedinTasksRoute = ApiPublicLinkedinTasksRouteImport.update({
   id: '/api/public/linkedin/tasks',
   path: '/api/public/linkedin/tasks',
@@ -240,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/linkedin/session': typeof ApiPublicLinkedinSessionRoute
   '/api/public/linkedin/tasks': typeof ApiPublicLinkedinTasksRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
@@ -273,6 +281,7 @@ export interface FileRoutesByTo {
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/linkedin/session': typeof ApiPublicLinkedinSessionRoute
   '/api/public/linkedin/tasks': typeof ApiPublicLinkedinTasksRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
@@ -308,6 +317,7 @@ export interface FileRoutesById {
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
   '/api/public/click/$linkId': typeof ApiPublicClickLinkIdRoute
   '/api/public/hooks/process-queue': typeof ApiPublicHooksProcessQueueRoute
+  '/api/public/linkedin/session': typeof ApiPublicLinkedinSessionRoute
   '/api/public/linkedin/tasks': typeof ApiPublicLinkedinTasksRoute
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
+    | '/api/public/linkedin/session'
     | '/api/public/linkedin/tasks'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
+    | '/api/public/linkedin/session'
     | '/api/public/linkedin/tasks'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
@@ -410,6 +422,7 @@ export interface FileRouteTypes {
     | '/api/oauth/google/return'
     | '/api/public/click/$linkId'
     | '/api/public/hooks/process-queue'
+    | '/api/public/linkedin/session'
     | '/api/public/linkedin/tasks'
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
@@ -431,6 +444,7 @@ export interface RootRouteChildren {
   ApiOauthGoogleReturnRoute: typeof ApiOauthGoogleReturnRoute
   ApiPublicClickLinkIdRoute: typeof ApiPublicClickLinkIdRoute
   ApiPublicHooksProcessQueueRoute: typeof ApiPublicHooksProcessQueueRoute
+  ApiPublicLinkedinSessionRoute: typeof ApiPublicLinkedinSessionRoute
   ApiPublicLinkedinTasksRoute: typeof ApiPublicLinkedinTasksRoute
   ApiPublicTrackLogIdDotpngRoute: typeof ApiPublicTrackLogIdDotpngRoute
   ApiPublicUnsubscribeLogIdRoute: typeof ApiPublicUnsubscribeLogIdRoute
@@ -635,6 +649,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/linkedin/session': {
+      id: '/api/public/linkedin/session'
+      path: '/api/public/linkedin/session'
+      fullPath: '/api/public/linkedin/session'
+      preLoaderRoute: typeof ApiPublicLinkedinSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/linkedin/tasks': {
       id: '/api/public/linkedin/tasks'
       path: '/api/public/linkedin/tasks'
@@ -720,6 +741,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOauthGoogleReturnRoute: ApiOauthGoogleReturnRoute,
   ApiPublicClickLinkIdRoute: ApiPublicClickLinkIdRoute,
   ApiPublicHooksProcessQueueRoute: ApiPublicHooksProcessQueueRoute,
+  ApiPublicLinkedinSessionRoute: ApiPublicLinkedinSessionRoute,
   ApiPublicLinkedinTasksRoute: ApiPublicLinkedinTasksRoute,
   ApiPublicTrackLogIdDotpngRoute: ApiPublicTrackLogIdDotpngRoute,
   ApiPublicUnsubscribeLogIdRoute: ApiPublicUnsubscribeLogIdRoute,

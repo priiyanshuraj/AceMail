@@ -3,7 +3,7 @@ import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanst
 import { useState } from "react";
 import {
   listLinkedinSequences, saveLinkedinSequence, setLinkedinSequenceStatus, deleteLinkedinSequence,
-  listLinkedinTasks, completeLinkedinTask, markLinkedinReplied, getRunnerToken, createRunnerToken, revokeRunnerToken, getLinkedinTracker,
+  listLinkedinTasks, completeLinkedinTask, markLinkedinReplied, getRunnerToken, createRunnerToken, revokeRunnerToken, getLinkedinTracker, getCloudSession, saveCloudSession, deleteCloudSession,
 } from "@/lib/outreach.functions";
 import { listContactLists } from "@/lib/acemail.functions";
 import { Button } from "@/components/ui/button";
@@ -324,6 +324,7 @@ function Runner() {
   const cmd = `ACEMAIL_URL=${origin} ACEMAIL_KEY=${token ?? "<your key>"} node acemail-linkedin-runner.mjs`;
   return (
     <div className="space-y-4">
+      <CloudWorker origin={origin} />
       <Card>
         <CardHeader>
           <CardTitle>Connect your LinkedIn for automation</CardTitle>
@@ -380,5 +381,59 @@ POST ${origin}/api/public/linkedin/tasks
      { "taskId": "...", "status": "done" | "skipped" | "failed" | "later", "note": "...", "replied": false }`}</pre>
       </details>
     </div>
+  );
+}
+
+function CloudWorker({ origin }: { origin: string }) {
+  const qc = useQueryClient();
+  const { data } = useQuery({ queryKey: ["li-cloud"], queryFn: () => getCloudSession() });
+  const [cookie, setCookie] = useState("");
+  const [proxy, setProxy] = useState("");
+  const [busy, setBusy] = useState(false);
+  const refresh = () => qc.invalidateQueries({ queryKey: ["li-cloud"] });
+  return (
+    <Card className="border-primary/40">
+      <CardHeader>
+        <CardTitle className="flex flex-wrap items-center gap-2">Cloud worker (24/7, no PC needed)
+          {data && <Badge variant={data.status === "expired" ? "destructive" : "secondary"}>{data.status === "expired" ? "Cookie expired" : `Connected ${data.hint ?? ""}`}</Badge>}
+        </CardTitle>
+        <CardDescription>Paste your LinkedIn session cookie (li_at). It is stored encrypted and only handed to your own worker, which uses your runner key below.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm">
+        <div className="space-y-2">
+          <Label htmlFor="li-at">LinkedIn li_at cookie</Label>
+          <Input id="li-at" type="password" autoComplete="off" value={cookie} onChange={(e) => setCookie(e.target.value)} placeholder={data ? "Paste a new cookie to replace" : "AQEDAR..."} />
+          <Label htmlFor="li-proxy">Residential proxy (recommended)</Label>
+          <Input id="li-proxy" autoComplete="off" value={proxy} onChange={(e) => setProxy(e.target.value)} placeholder="http://user:pass@host:port" />
+          {data?.note && <p className="text-xs text-destructive">{data.note}</p>}
+          <div className="flex gap-2">
+            <Button size="sm" disabled={busy || !cookie.trim()} onClick={async () => {
+              setBusy(true);
+              try { await saveCloudSession({ data: { cookie, proxy } }); setCookie(""); setProxy(""); toast.success("LinkedIn cookie saved"); refresh(); }
+              catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+            }}>{data ? "Update cookie" : "Save cookie"}</Button>
+            {data && <Button size="sm" variant="outline" onClick={async () => { await deleteCloudSession(); refresh(); }}>Remove</Button>}
+          </div>
+        </div>
+        <details className="text-xs text-muted-foreground">
+          <summary className="cursor-pointer font-medium text-foreground">How to find your li_at cookie</summary>
+          <ol className="mt-1 list-decimal space-y-0.5 pl-5">
+            <li>Open linkedin.com in Chrome while signed in.</li>
+            <li>Press F12, open Application, then Cookies, then https://www.linkedin.com.</li>
+            <li>Copy the value of <code>li_at</code>. Signing out of LinkedIn makes it stop working.</li>
+          </ol>
+        </details>
+        <div className="space-y-1">
+          <p className="font-medium">Deploy the worker (Railway, Render, Fly.io or any Docker host)</p>
+          <pre className="overflow-x-auto rounded-md border bg-muted/40 p-3 text-xs">{`docker run -d --restart=always \\
+  -e ACEMAIL_URL=${origin} \\
+  -e ACEMAIL_KEY=<your runner key> \\
+  -e CLOUD=1 -e HEADLESS=1 \\
+  mcr.microsoft.com/playwright:v1.48.0-jammy \\
+  sh -c "npm i playwright@1.48.0 && curl -fsSL ${origin}/acemail-linkedin-runner.mjs -o r.mjs && node r.mjs"`}</pre>
+          <p className="text-xs text-muted-foreground">The worker loads your cookie and proxy from AceMail, so you only change them here. If LinkedIn signs the session out, this card shows "Cookie expired".</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
