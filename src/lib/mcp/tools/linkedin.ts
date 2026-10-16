@@ -112,9 +112,9 @@ export const getLinkedinActivity = defineTool({
     const since = new Date(Date.now() - days * 864e5).toISOString();
     const { data, error } = await db.from("linkedin_tasks").select("action, status, note").neq("status", "pending").gte("completed_at", since).limit(5000);
     if (error) throw new ToolError(error.message);
-    const totals: Record<string, number> = { visit: 0, connect: 0, message: 0, follow: 0, replied: 0, failed: 0, skipped: 0 };
+    const totals = { visit: 0, connect: 0, message: 0, follow: 0, replied: 0, failed: 0, skipped: 0 };
     for (const t of data ?? []) {
-      if (t.status === "done") totals[t.action] = (totals[t.action] ?? 0) + 1;
+      if (t.status === "done") { const k = t.action as keyof typeof totals; if (k in totals) totals[k]++; }
       else if (t.status === "failed") totals.failed++;
       else totals.skipped++;
       if (t.note && /replied/i.test(t.note)) totals.replied++;
@@ -156,7 +156,8 @@ export const updateContactProfile = defineTool({
   annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   handler: async ({ contact_id, ...patch }, ctx) => {
     const db = typed(supabaseForUser(ctx));
-    const { error } = await db.from("contacts").update(patch).eq("id", contact_id);
+    const clean = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)) as { title?: string; phone?: string; linkedin_url?: string };
+    const { error } = await db.from("contacts").update(clean).eq("id", contact_id);
     if (error) throw new ToolError(error.message);
     return out({ ok: true });
   },
