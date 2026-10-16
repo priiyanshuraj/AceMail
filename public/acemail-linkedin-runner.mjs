@@ -103,11 +103,26 @@ async function doTask(page, t) {
   return ["skipped", `Unknown action ${t.action}`];
 }
 
+// CLOUD=1: load the li_at cookie + proxy saved in AceMail (24/7 cloud worker mode).
+let cloud = null;
+if (process.env.CLOUD === "1") {
+  const r = await fetch(`${BASE}/api/public/linkedin/session`, { headers });
+  if (!r.ok) { console.error("Could not load LinkedIn cookie from AceMail:", r.status, await r.text()); process.exit(1); }
+  cloud = await r.json();
+}
+let proxy;
+if (cloud?.proxy) { const u = new URL(cloud.proxy); proxy = { server: `${u.protocol}//${u.host}`, username: decodeURIComponent(u.username) || undefined, password: decodeURIComponent(u.password) || undefined }; }
 const ctx = await chromium.launchPersistentContext(path.join(os.homedir(), ".acemail-linkedin"), {
-  headless: process.env.HEADLESS === "1", viewport: { width: 1280, height: 900 },
+  headless: process.env.HEADLESS === "1", viewport: { width: 1280, height: 900 }, proxy,
 });
+if (cloud) await ctx.addCookies([{ name: "li_at", value: cloud.li_at, domain: ".linkedin.com", path: "/", secure: true, httpOnly: true, sameSite: "None" }]);
 const page = ctx.pages()[0] ?? (await ctx.newPage());
-await ensureLogin(page);
+if (cloud) {
+  await page.goto("https://www.linkedin.com/feed/", { waitUntil: "domcontentloaded" });
+  const expired = /\/(login|checkpoint|authwall|uas)/.test(page.url());
+  await fetch(`${BASE}/api/public/linkedin/session`, { method: "POST", headers, body: JSON.stringify(expired ? { status: "expired", note: "LinkedIn signed this session out. Paste a fresh li_at cookie." } : { status: "connected" }) });
+  if (expired) { console.error("li_at cookie expired. Update it in AceMail."); process.exit(1); }
+} else await ensureLogin(page);
 console.log("Runner connected to", BASE);
 
 for (;;) {
