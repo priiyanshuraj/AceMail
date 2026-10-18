@@ -1,8 +1,43 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getDashboardStats, listCampaigns } from "@/lib/acemail.functions";
+import { getLinkedinTracker } from "@/lib/outreach.functions";
 import { Button } from "@/components/ui/button";
-import { Megaphone, Users, Inbox, AtSign, Mail, ArrowUpRight, Plus, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Megaphone, Users, Inbox, AtSign, Mail, ArrowUpRight, Plus, AlertTriangle, CheckCircle2, Send, Linkedin } from "lucide-react";
+
+function LinkedinCard() {
+  const { data } = useQuery({ queryKey: ["linkedin-tracker"], queryFn: () => getLinkedinTracker(), retry: false });
+  if (!data) return null;
+  const t = data.totals;
+  const items = [
+    { label: "To do", n: data.waiting },
+    { label: "Connects", n: t.connect },
+    { label: "Messages", n: t.message },
+    { label: "Replies", n: t.replied },
+  ];
+  return (
+    <section>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg">LinkedIn, last 14 days</h2>
+        <Link to="/linkedin" className="text-sm text-muted-foreground hover:text-foreground">Open →</Link>
+      </div>
+      <div className="rounded-xl border bg-card p-4">
+        <div className="grid grid-cols-4 gap-2 text-center">
+          {items.map((i) => (
+            <div key={i.label}>
+              <p className="text-xl font-semibold">{i.n}</p>
+              <p className="text-xs text-muted-foreground">{i.label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
+          <span className={`h-2 w-2 rounded-full ${data.runner.online ? "bg-success" : "bg-muted-foreground/40"}`} />
+          {data.runner.online ? "Automation online" : data.runner.hasKey ? "Automation offline" : "Automation not set up"}
+        </p>
+      </div>
+    </section>
+  );
+}
 
 const statsQuery = queryOptions({
   queryKey: ["dashboard-stats"],
@@ -188,14 +223,17 @@ function Dashboard() {
               </ul>
             )}
           </section>
+          <LinkedinCard />
           <section>
             <h2 className="mb-3 text-lg">Jump to</h2>
             <div className="grid grid-cols-2 gap-2">
               {([
                 { to: "/inbox", label: "Inbox", icon: Inbox },
+                { to: "/outbox", label: "Outbox", icon: Send },
                 { to: "/templates", label: "Templates", icon: Mail },
                 { to: "/mailboxes", label: "Mailboxes", icon: AtSign },
                 { to: "/contacts", label: "Contacts", icon: Users },
+                { to: "/linkedin", label: "LinkedIn", icon: Linkedin },
               ] as const).map((a) => (
                 <Link key={a.to} to={a.to} className="group flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 text-sm font-medium transition-colors hover:border-signal/50">
                   <a.icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-signal" />
