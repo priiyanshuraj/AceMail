@@ -17,6 +17,9 @@ import {
   ArrowRight,
   Check,
   Github,
+  Linkedin,
+  Cloud,
+  UserSearch,
 } from "lucide-react";
 import { toast } from "sonner";
 import logoUrl from "@/assets/acemail-logo.png";
@@ -88,9 +91,13 @@ const features = [
   { icon: Shuffle, title: "Mailbox rotation", text: "Spread sends across Gmail accounts with per-mailbox limits, gaps and health." },
   { icon: ShieldCheck, title: "Deliverability built in", text: "Spam check, email verification, one-click unsubscribe and a do-not-contact list." },
   { icon: BarChart3, title: "Analytics that matter", text: "Opens, clicks, replies and bounces per campaign, per step, per variant." },
+  { icon: Linkedin, title: "LinkedIn sequences", text: "Visits, connection requests, messages and follows. Manual task list or fully automated, with a live tracker." },
+  { icon: Cloud, title: "Runs your way", text: "Chrome extension in your browser, a 24/7 cloud worker, or your own computer. Daily limits and human pacing built in." },
+  { icon: UserSearch, title: "Full contact profiles", text: "Every email, reply and LinkedIn step per person. Fill missing titles and emails with your own Apollo key." },
 ];
 
 const mcpPrompts = [
+  "Show my LinkedIn tasks for today and start the Founders sequence",
   "Find a LinkedIn hook for every contact in my Q4 list",
   "Write a template for founders and save it",
   "How did my last campaign perform?",
@@ -228,7 +235,7 @@ function Landing() {
             </Button>
           </div>
           <div className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            {["One-click Gmail connect", "No SMTP setup", "Free deliverability tools", "Unlimited sends", "Open source"].map((t) => (
+            {["One-click Gmail connect", "No SMTP setup", "LinkedIn sequences", "Free deliverability tools", "Unlimited sends", "Open source"].map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5">
                 <Check className="h-4 w-4 text-primary" /> {t}
               </span>
@@ -245,13 +252,13 @@ function Landing() {
               </h2>
               <p className="mt-4 text-muted-foreground">
                 Connect AceMail as an MCP server and talk to your data. Enrich contacts with new
-                columns, draft and save templates, add leads, check campaign stats and manage your
-                do-not-contact list, all from the chat you already use.
+                columns, draft and save templates, add leads, check campaign stats, run your LinkedIn
+                sequences and manage your do-not-contact list, all from the chat you already use.
               </p>
               <ul className="mt-6 space-y-2 text-sm">
                 {[
                   "Secure sign-in: the assistant only sees your own data",
-                  "13 tools across contacts, templates, campaigns and inbox",
+                  "21 tools across contacts, templates, campaigns, inbox and LinkedIn",
                   "Uses your existing AI plan, zero extra credits",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-2">
