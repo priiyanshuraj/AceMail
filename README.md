@@ -43,21 +43,19 @@ AceMail is an outreach platform for sales and security teams: import contacts, w
 
 ## Run it yourself (self-hosting guide)
 
-AceMail is open source (Apache 2.0), so you can run your own copy. It needs three things: this code, a Postgres backend with auth (Supabase), and a Google Cloud project for Gmail sign-in. Plan for about 30 to 45 minutes the first time.
+AceMail is fully open source (Apache 2.0) and ships with a Dockerfile, so you can run it anywhere Docker runs — a VPS, a home server, Railway, Render, Fly.io, or your laptop. It needs three things: this code, a Postgres backend with auth (Supabase), and a Google Cloud project for Gmail sign-in. Plan for about 30 to 45 minutes the first time.
 
 ### What you need before starting
 
-- **Node.js 20 or newer** — check with `node -v`. Install via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) if needed.
+- **Docker** (recommended) — or Node.js 20+ if you prefer running without containers.
 - **A free Supabase project** — sign up at [supabase.com](https://supabase.com) and create a new project. This is your database, auth, and file storage.
 - **A Google Cloud project** — at [console.cloud.google.com](https://console.cloud.google.com). This powers the "Connect Gmail" button.
-- **A server or hosting account** for the final step — anything that runs Node works (a VPS, Railway, Render, Fly.io, or a home server).
 
 ### Step 1: Get the code
 
 ```sh
 git clone <this-repository-url>
 cd <repository-name>
-npm install
 ```
 
 ### Step 2: Create your database tables
