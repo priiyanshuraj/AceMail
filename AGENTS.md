@@ -32,3 +32,4 @@
 - Visual styling comes only from semantic tokens in `src/styles.css` (light + dark defined together); pages must not hardcode colors. Why: both themes stay consistent from one source.
 - LinkedIn sequences (`src/server/linkedin.server.ts`) never log into LinkedIn: assisted task list, or a user-hosted runner via token-auth `/api/public/linkedin/tasks` (hashes only). Why: no browsers on edge; LinkedIn bans automation.
 - Apollo uses each user's own key, encrypted in server-only `user_api_keys`. Why: per-user credits.
+- Self-hosting ships via the root `Dockerfile` + `.env.example`; the Docker build sets `ACEMAIL_TARGET=node-server` so vite.config.ts switches nitro from the sandbox-forced cloudflare-module preset to a plain Node bundle (`.output/server/index.mjs`). Why: open-source users run it anywhere Docker runs.

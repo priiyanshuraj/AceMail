@@ -1,0 +1,22 @@
+# AceMail — one-command self-hosting.
+#
+# 1. cp .env.example .env   (fill in your Supabase + secret values)
+# 2. docker compose up --build
+# 3. open http://localhost:3000
+#
+# The database is NOT included here — AceMail uses Supabase (hosted
+# free tier works fine). See README → "Run it yourself" for setup.
+
+services:
+  acemail:
+    build:
+      context: .
+      args:
+        # Baked into the browser bundle at build time
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
+    env_file: .env
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
