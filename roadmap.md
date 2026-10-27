@@ -34,3 +34,7 @@
 - [x] Campaign pipeline view with click-through
 - [x] Apollo enrichment with the user's own key (Settings)
 - [x] LinkedIn: manual/automated choice per sequence, downloadable runner that signs in to LinkedIn locally, runner status, 14-day tracker
+
+# Open-source packaging
+- [x] Dockerfile + docker-compose + .dockerignore for one-command self-hosting; node-server build verified booting and serving HTTP 200
+- [x] .env.example documenting every variable; README rewritten Docker-first with build args, cron queue setup, domain/HTTPS steps

@@ -173,9 +173,8 @@ Everything else — campaigns, tracking, templates, inbox, analytics, deliverabi
 
 ```sh
 git pull
-npm install
 # run any new files in drizzle/migrations/ in the Supabase SQL editor
-npm run build
+docker compose up --build   # or: npm install && ACEMAIL_TARGET=node-server npm run build
 ```
 
 ## Development
