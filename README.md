@@ -83,61 +83,79 @@ While your Google OAuth app is in "Testing" mode, only Google accounts you list 
 
 ### Step 4: Configure environment variables
 
-Create a file named `.env` in the project root:
+Copy the template and fill it in:
 
 ```sh
-# From Supabase → Project Settings → API
-VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<your-anon-public-key>
-VITE_SUPABASE_PROJECT_ID=<your-project-ref>
-
-# Same values, used by server-side code
-SUPABASE_URL=https://<your-project-ref>.supabase.co
-SUPABASE_PUBLISHABLE_KEY=<your-anon-public-key>
-SUPABASE_PROJECT_ID=<your-project-ref>
-
-# The public URL where your app will live (used for tracking links and pixels)
-APP_URL=http://localhost:3000
-
-# A random string you invent — protects the sending queue endpoint
-QUEUE_HOOK_SECRET=<make-up-a-long-random-string>
-
-# A random 32+ character string — encrypts stored mailbox connection keys
-APP_USER_CONNECTION_KEY_SECRET=<make-up-another-long-random-string>
+cp .env.example .env
 ```
+
+Open `.env` and set every value. Each variable is documented inline in `.env.example`; the short version:
+
+| Variable | Where to get it |
+| --- | --- |
+| `VITE_SUPABASE_URL` / `SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | Same page → anon public key |
+| `VITE_SUPABASE_PROJECT_ID` / `SUPABASE_PROJECT_ID` | The ref in your project URL (`<ref>.supabase.co`) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Same page → service_role key (keep secret) |
+| `APP_URL` | Where the app will be reachable, e.g. `http://localhost:3000` or `https://mail.yourdomain.com` |
+| `QUEUE_HOOK_SECRET` | Invent a long random string: `openssl rand -hex 32` |
+| `APP_USER_CONNECTION_KEY_SECRET` | Another long random string: `openssl rand -hex 32` |
 
 Never commit this file — it is already in `.gitignore`.
 
-### Step 5: Run it locally
+### Step 5: Run it with Docker
 
 ```sh
-npm run dev
+docker compose up --build
 ```
 
-Open the URL it prints (usually `http://localhost:3000`). Create your account with Google sign-in, connect a Gmail mailbox, import a few contacts, and send yourself a test campaign.
+Open `http://localhost:3000`. Create your account with Google sign-in, connect a Gmail mailbox, import a few contacts, and send yourself a test campaign.
+
+Prefer plain Docker without compose:
+
+```sh
+docker build \
+  --build-arg VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co \
+  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=<your-anon-public-key> \
+  --build-arg VITE_SUPABASE_PROJECT_ID=<your-project-ref> \
+  -t acemail .
+docker run -d --name acemail --env-file .env -p 3000:3000 acemail
+```
+
+> The three `VITE_*` values are baked into the browser bundle at **build** time, which is why they are build args. Everything else is read at runtime from `--env-file .env`, so you can change secrets without rebuilding.
+
+**Without Docker** (Node.js 20+):
+
+```sh
+npm install
+ACEMAIL_TARGET=node-server npm run build   # production build
+node .output/server/index.mjs              # serves on port 3000
+```
+
+For development with hot reload, `npm run dev` works as usual.
 
 ### Step 6: Keep the sending queue alive
 
 AceMail sends scheduled follow-ups through a queue processor at `/api/public/hooks/process-queue`. It runs every time that URL is called with a **POST** request that carries an `Authorization: Bearer <token>` header, so you need something to call it every minute or two:
 
 - Easiest: a free cron service like [cron-job.org](https://cron-job.org) — create a job that sends a **POST** to `https://your-domain/api/public/hooks/process-queue` every minute, with the header `Authorization: Bearer <your QUEUE_HOOK_SECRET>`.
-- On a VPS: a crontab entry like `* * * * * curl -s -X POST -H "Authorization: Bearer <secret>" https://your-domain/api/public/hooks/process-queue`.
+- On the same server: a crontab entry like `* * * * * curl -s -X POST -H "Authorization: Bearer <secret>" http://localhost:3000/api/public/hooks/process-queue`.
 
 Without this, emails stay queued and never send.
 
-### Step 7: Deploy it for real
+### Step 7: Put it on a real domain
 
-Build the production bundle:
+1. Point your domain's DNS at your server (an A record to its IP).
+2. Put nginx or Caddy in front of the container for HTTPS — with Caddy it is three lines:
+   ```
+   mail.yourdomain.com {
+       reverse_proxy localhost:3000
+   }
+   ```
+3. Update `APP_URL` in `.env` to `https://mail.yourdomain.com` and restart the container.
+4. Add your domain to the Google OAuth consent screen's authorized domains.
 
-```sh
-npm run build
-```
-
-Then host it anywhere that runs a Node server:
-
-- **VPS (full control):** copy the project to your server, set the same `.env` values (with `APP_URL` set to your real domain), run `npm run build`, then serve with `npm run preview` behind a process manager like `pm2` (`pm2 start "npm run preview" --name acemail`) and put nginx or Caddy in front for HTTPS.
-- **Railway / Render / Fly.io:** create a new service from your GitHub repo, set the build command to `npm run build`, the start command to `npm run preview`, and add every variable from Step 4 in the service's environment settings.
-- **Your domain:** point your domain's DNS at your host (your host's docs show the exact records), then update `APP_URL` to match and add your domain to the Google OAuth consent screen's authorized domains.
+On hosted platforms (Railway, Render, Fly.io), deploy straight from the Dockerfile — set the same environment variables in the platform's dashboard, including the three `VITE_*` ones as build variables.
 
 After deploying, sign in, connect a mailbox, and send one test email to yourself to confirm the whole chain works: sign-in, queue, sending, open tracking, and reply detection.
 
