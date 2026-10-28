@@ -80,7 +80,7 @@ cd <repository-name>
 AceMail's schema lives in numbered SQL migration files. You will run them by hand once:
 
 1. In your Supabase dashboard, open **SQL Editor** in the left sidebar and click **New query**.
-2. In this repo, open the `drizzle/migrations/` folder. The files are numbered `0000_...sql` through `0018_...sql`.
+2. In this repo, open the `drizzle/migrations/` folder. The files are numbered `0000_...sql` through `0021_...sql`.
 3. Run them **in ascending order**: open `0000_...sql`, copy its entire contents, paste into the SQL editor, click **Run**. Wait for "Success", then repeat for `0001`, `0002`, and so on. Each file must succeed before you run the next — later files reference tables created by earlier ones.
 4. When finished, open **Table Editor** in the sidebar. You should see tables such as `contacts`, `templates`, `campaigns`, `email_logs`, `mailboxes`, `inbox_messages`, and `suppressions`.
 
