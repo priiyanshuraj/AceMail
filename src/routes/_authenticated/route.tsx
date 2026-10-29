@@ -19,11 +19,13 @@ import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send,
 import { PetalField } from "@/components/PetalField";
 import { SakuraScene } from "@/components/SakuraScene";
 import logoUrl from "@/assets/acemail-logo.png";
+import { isDevPreview, setDevPreview } from "@/lib/dev-preview";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
+    if (isDevPreview()) return;
+    const { data } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
     if (!data.user) {
       throw redirect({ to: "/auth" });
     }
@@ -57,7 +59,8 @@ function AuthenticatedLayout() {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setDevPreview(false);
+    await supabase.auth.signOut().catch(() => {});
     navigate({ to: "/auth" });
   };
 
