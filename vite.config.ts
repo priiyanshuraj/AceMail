@@ -15,8 +15,8 @@ export default defineConfig({
   },
   // Self-hosting (Docker/VPS): build with ACEMAIL_TARGET=node-server for a plain
   // Node server bundle instead of the default Cloudflare Workers target.
-  ...(process.env.ACEMAIL_TARGET
-    ? { nitro: { preset: process.env.ACEMAIL_TARGET } }
+  ...(process.env["ACEMAIL_TARGET"]
+    ? { nitro: { preset: process.env["ACEMAIL_TARGET"] } }
     : {}),
   vite: { plugins: [mcpPlugin()] },
 });

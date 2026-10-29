@@ -14,6 +14,7 @@ import { oauthReturnPath } from "@/lib/oauth-return-path";
 import logoUrl from "@/assets/acemail-logo.png";
 import { SakuraScene } from "@/components/SakuraScene";
 import { PetalField } from "@/components/PetalField";
+import { devPreviewAllowed, setDevPreview } from "@/lib/dev-preview";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -47,6 +48,8 @@ function AuthPage() {
   const [accessReferral, setAccessReferral] = useState("");
   const [accessLoading, setAccessLoading] = useState(false);
   const [accessRequested, setAccessRequested] = useState(false);
+  const [previewOk, setPreviewOk] = useState(false);
+  useEffect(() => setPreviewOk(devPreviewAllowed()), []);
 
   const handleRequestAccess = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,6 +152,19 @@ function AuthPage() {
               <Button variant="outline" className="w-full" onClick={handleGoogle} type="button">
                 Continue with Google
               </Button>
+              {previewOk && (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  type="button"
+                  onClick={() => {
+                    setDevPreview(true);
+                    navigate({ to: "/dashboard" });
+                  }}
+                >
+                  Open in preview mode (no sign-in)
+                </Button>
+              )}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
