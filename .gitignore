@@ -15,6 +15,16 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+.env.bak*
+
+# Local agent & tool configs
+.claude/
+.kiro/
+.opencode/
+
+# Supabase local artifacts
+supabase/.branches/
+supabase/.temp/
 
 # Wrangler / Cloudflare
 .wrangler/

@@ -20,7 +20,7 @@ import {
   listLinkedinSequences, setLinkedinSequenceStatus, listLinkedinTasks, completeLinkedinTask,
   markLinkedinReplied, getLinkedinActivity, getContactDetail, updateContactProfile,
 } from "@/lib/mcp/tools/linkedin";
-import { chat, getLlmConfig, personalizeLead, webSearch, type ChatMsg, type ToolSpec, type Lead, type SearchConfig } from "@/server/llm.server";
+import { chat, getLlmConfig, personalizeLead, webSearch, internalSiftdogSearch, type ChatMsg, type ToolSpec, type Lead, type SearchConfig } from "@/server/llm.server";
 
 type AnyTool = { name: string; description: string; inputSchema?: Record<string, z.ZodType>; handler: (args: never, ctx: ToolContext) => unknown };
 
@@ -84,7 +84,7 @@ export async function runAgent(db: Db, userId: string, token: string, history: {
     },
     {
       name: "web_search",
-      description: "Search the web. Requires the user to have added a Tavily or Exa key in Settings.",
+      description: "Search the web using AceMail's built-in Siftdog search engine, or configured search provider.",
       parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
     },
   ];
@@ -103,12 +103,17 @@ export async function runAgent(db: Db, userId: string, token: string, history: {
           const ids = z.array(z.string().uuid()).min(1).max(10).parse(call.args["contact_ids"]);
           result = JSON.stringify(await personalizeWithDb(db, userId, ids, String(call.args["instructions"] ?? "")));
         } else if (call.name === "web_search") {
+          const q = String(call.args["query"] ?? "");
           const { data } = await (await import("@/integrations/supabase/client.server")).supabaseAdmin
             .from("user_api_keys").select("key_ciphertext").eq("user_id", userId).eq("provider", "search").maybeSingle();
-          if (!data) throw new Error("No web search key. Ask the user to add a Tavily or Exa key in Settings.");
-          const { decryptConnectionKey } = await import("@/server/connectionKeyCrypto");
-          const sc = JSON.parse(decryptConnectionKey(data.key_ciphertext)) as SearchConfig;
-          result = (await webSearch(sc, String(call.args["query"] ?? ""))) || "No results.";
+          if (data) {
+            const { decryptConnectionKey } = await import("@/server/connectionKeyCrypto");
+            const sc = JSON.parse(decryptConnectionKey(data.key_ciphertext)) as SearchConfig;
+            result = (await webSearch(sc, q)) || "No results.";
+          } else {
+            const internal = await internalSiftdogSearch(q);
+            result = internal || "No search results found.";
+          }
         } else {
           const tool = byName.get(call.name);
           if (!tool) throw new Error(`Unknown tool ${call.name}`);

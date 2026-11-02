@@ -23,6 +23,7 @@ AceMail is an outreach platform for sales and security teams: import contacts, w
 - **Full tracking** — open pixels, opaque click tracking with per-campaign analytics and CSV export.
 - **Flexible imports** — CSV or Google Sheets with dynamic column mapping, custom fields, and empty-column detection.
 - **Deliverability care** — mailbox health, warmup toggle, and per-hour/per-day sending limits.
+- **Built-in AI & Native Web Search** — connect any LLM (DeepSeek, OpenAI, Claude, or any OpenAI-compatible API). AceMail conducts automated web research on your leads and answers assistant queries natively inside the app with zero extra containers or search API fees.
 - **LinkedIn outreach** — assisted or automated sequences via a Chrome extension or a self-hosted cloud worker.
 - **MCP server** — 21 tools so ChatGPT or Claude can manage contacts, campaigns and sequences for you.
 

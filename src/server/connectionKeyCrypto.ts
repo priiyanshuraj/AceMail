@@ -1,10 +1,26 @@
 // Server-only — never import in the browser.
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 
 function key(): Buffer {
   const raw = process.env["APP_USER_CONNECTION_KEY_SECRET"];
   if (!raw) throw new Error("APP_USER_CONNECTION_KEY_SECRET is not set");
-  return Buffer.from(raw, "base64");
+  const trimmed = raw.trim();
+  // 64-char hex string (e.g. from `openssl rand -hex 32` as documented in .env.example)
+  if (/^[0-9a-fA-F]{64}$/.test(trimmed)) {
+    return Buffer.from(trimmed, "hex");
+  }
+  // 32-byte base64-encoded string
+  const b64 = Buffer.from(trimmed, "base64");
+  if (b64.length === 32) {
+    return b64;
+  }
+  // 32-byte raw utf-8 string
+  const utf8 = Buffer.from(raw, "utf8");
+  if (utf8.length === 32) {
+    return utf8;
+  }
+  // Deterministic 32-byte key for arbitrary-length secret strings
+  return createHash("sha256").update(raw).digest();
 }
 
 export function encryptConnectionKey(plaintext: string): string {

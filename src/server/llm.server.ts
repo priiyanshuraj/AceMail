@@ -57,6 +57,7 @@ export async function aiStatus(userId: string) {
   return {
     llm: llm ? { provider: llm.provider, baseUrl: llm.baseUrl, model: llm.model, hint: llm.key.slice(-4) } : null,
     search: search ? { provider: search.provider, hint: search.key.slice(-4) } : null,
+    internalSearch: true,
   };
 }
 
@@ -151,6 +152,86 @@ async function chatAnthropic(cfg: LlmConfig, messages: ChatMsg[], tools: ToolSpe
   };
 }
 
+// ---------- Built-in search engine ----------
+
+/**
+ * Returns the URL of an external Siftdog instance if explicitly configured.
+ */
+export function internalSiftdogUrl(): string | null {
+  return (process.env["SIFTDOG_INTERNAL_URL"] ?? "").replace(/\/+$/, "") || null;
+}
+
+/**
+ * Built-in search engine running directly inside AceMail.
+ * Does not require external Docker containers or paid API keys.
+ * If SIFTDOG_INTERNAL_URL is reachable, it queries that; otherwise it performs
+ * native search via DuckDuckGo HTML API directly in Node.js.
+ */
+export async function internalSearch(query: string): Promise<string> {
+  const customUrl = internalSiftdogUrl();
+  if (customUrl) {
+    try {
+      const res = await fetch(`${customUrl}/search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, max_results: 5, search_depth: "basic" }),
+      });
+      if (res.ok) {
+        const j = (await res.json()) as { results?: { title: string; url: string; content: string }[] };
+        if (j.results?.length) {
+          return j.results.map((r) => `- ${r.title} (${r.url}): ${r.content}`).join("\n").slice(0, 4000);
+        }
+      }
+    } catch {
+      // Fall through to native search
+    }
+  }
+
+  // Native internal web search running inside AceMail process
+  try {
+    const url = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(query);
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 10000);
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+      },
+    });
+    clearTimeout(t);
+    if (!res.ok) return "";
+    const html = await res.text();
+    const results: { title: string; url: string; content: string }[] = [];
+    const blocks = html.split(/<div[^>]*class="[^"]*result\b[^"]*"[^>]*>/);
+    for (const block of blocks.slice(1)) {
+      const titleMatch = block.match(/<a[^>]*class="[^"]*result__url[^"]*"[^>]*href="([^"]*)"[^>]*>/)
+        || block.match(/<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*href="([^"]*)"[^>]*>/);
+      const snippetMatch = block.match(/<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/);
+      const titleTextMatch = block.match(/<h2[^>]*class="[^"]*result__title[^"]*"[^>]*>[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
+
+      const title = (titleTextMatch?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
+      const snippet = (snippetMatch?.[1] ?? "").replace(/<[^>]+>/g, "").trim();
+      let rawUrl = titleMatch?.[1] ?? "";
+      if (rawUrl && rawUrl.includes("uddg=")) {
+        try {
+          const u = new URL("https:" + (rawUrl.startsWith("//") ? rawUrl : "//" + rawUrl));
+          rawUrl = decodeURIComponent(u.searchParams.get("uddg") || rawUrl);
+        } catch { /* keep rawUrl */ }
+      }
+      if (title && snippet) {
+        results.push({ title, url: rawUrl, content: snippet });
+      }
+      if (results.length >= 5) break;
+    }
+    return results.map((r) => `- ${r.title} (${r.url}): ${r.content}`).join("\n").slice(0, 4000);
+  } catch {
+    return "";
+  }
+}
+
+/** Backwards-compatible alias */
+export const internalSiftdogSearch = internalSearch;
+
 // ---------- Lead research ----------
 
 const FREE_MAIL = new Set(["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com", "proton.me", "protonmail.com", "live.com", "yandex.com", "zoho.com", "gmx.com", "mail.com"]);
@@ -210,9 +291,16 @@ export async function researchLead(userId: string, lead: Lead) {
   const search = await loadJson<SearchConfig>(userId, "search");
   const site = leadWebsite(lead);
   const name = `${lead.first_name} ${lead.last_name}`.trim();
+  const searchQuery = `${name} ${lead.title ?? ""} ${lead.company}`.trim();
   const [siteText, searchText] = await Promise.all([
     site ? readWebsite(site) : Promise.resolve(""),
-    search && (name || lead.company) ? webSearch(search, `${name} ${lead.title ?? ""} ${lead.company}`.trim()) : Promise.resolve(""),
+    // 1. Use the user's configured cloud search (Tavily / Exa / custom Siftdog URL) if set.
+    // 2. Otherwise fall back to AceMail's built-in internal Siftdog instance automatically.
+    (name || lead.company)
+      ? (search
+          ? webSearch(search, searchQuery)
+          : internalSiftdogSearch(searchQuery))
+      : Promise.resolve(""),
   ]);
   return { website: site, siteText, searchText };
 }

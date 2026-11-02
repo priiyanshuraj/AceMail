@@ -28,11 +28,14 @@ export const saveAiModel = createServerFn({ method: "POST" })
 
 export const saveSearchKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ provider: z.enum(["tavily", "exa"]), key: z.string().trim().max(300) }).parse(d))
+  .inputValidator((d) => z.object({
+    provider: z.enum(["tavily", "exa"]),
+    key: z.string().trim().max(300),
+  }).parse(d))
   .handler(async ({ data, context }) => {
     const m = await import("@/server/llm.server");
     if (!data.key) await m.deleteKey(context.userId, "search");
-    else await m.saveSearchConfig(context.userId, data);
+    else await m.saveSearchConfig(context.userId, { provider: data.provider, key: data.key });
     return { ok: true };
   });
 

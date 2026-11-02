@@ -28,7 +28,9 @@ export function AiModelCard() {
 
   useEffect(() => {
     if (data?.llm) { setProvider(data.llm.provider); setBaseUrl(data.llm.baseUrl); setModel(data.llm.model); }
-    if (data?.search) setSearchProvider(data.search.provider);
+    if (data?.search && (data.search.provider === "tavily" || data.search.provider === "exa")) {
+      setSearchProvider(data.search.provider);
+    }
   }, [data]);
 
   const pick = (id: P) => {
@@ -72,9 +74,16 @@ export function AiModelCard() {
         </div>
 
         <div className="border-t border-border pt-4 space-y-2">
-          <p className="text-sm font-medium">Web search for lead research (optional)</p>
-          <p className="text-sm text-muted-foreground">Without a key, the AI reads each lead's company website. Add a Tavily or Exa key for deeper web research.</p>
-          {data?.search && <p className="text-sm">Connected {data.search.provider}, key ending <span className="font-mono">…{data.search.hint}</span></p>}
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Web search for lead research</p>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-medium">
+              Built-in Search Active
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            AceMail has built-in web search for automatic, private lead research without third-party API costs or external containers. You can optionally connect an external Tavily or Exa key below if desired.
+          </p>
+          {data?.search && <p className="text-sm">Active search override: <b>{data.search.provider}</b>{data.search.hint ? ` (key …${data.search.hint})` : ""}</p>}
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="flex gap-2">
               {(["tavily", "exa"] as const).map((s) => (
@@ -82,7 +91,7 @@ export function AiModelCard() {
               ))}
             </div>
             <Input type="password" autoComplete="off" value={searchKey} onChange={(e) => setSearchKey(e.target.value)} placeholder="Search API key" />
-            <Button disabled={busy || !searchKey.trim()} onClick={() => run(async () => { await saveSearchKey({ data: { provider: searchProvider, key: searchKey } }); setSearchKey(""); }, "Search key saved")}>Save</Button>
+            <Button disabled={busy || !searchKey.trim()} onClick={() => run(async () => { await saveSearchKey({ data: { provider: searchProvider, key: searchKey } }); setSearchKey(""); }, "Search provider saved")}>Save</Button>
             {data?.search && <Button variant="outline" disabled={busy} onClick={() => run(() => saveSearchKey({ data: { provider: searchProvider, key: "" } }), "Search key removed")}>Remove</Button>}
           </div>
         </div>
