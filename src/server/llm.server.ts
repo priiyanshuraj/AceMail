@@ -38,7 +38,7 @@ export async function deleteKey(userId: string, provider: "llm" | "search") {
   await db.from("user_api_keys").delete().eq("user_id", userId).eq("provider", provider);
 }
 
-export async function saveLlmConfig(userId: string, cfg: Omit<LlmConfig, "key"> & { key?: string }) {
+export async function saveLlmConfig(userId: string, cfg: Omit<LlmConfig, "key"> & { key?: string | undefined }) {
   const prev = await loadJson<LlmConfig>(userId, "llm");
   const key = cfg.key?.trim() || prev?.key;
   if (!key) throw new Error("Paste your API key");
@@ -99,7 +99,7 @@ async function chatOpenAi(cfg: LlmConfig, messages: ChatMsg[], tools: ToolSpec[]
       return { role: m.role, content: m.content };
     }),
   };
-  if (tools.length) body.tools = tools.map((t) => ({ type: "function", function: t }));
+  if (tools.length) body["tools"] = tools.map((t) => ({ type: "function", function: t }));
   const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
     method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${cfg.key}` }, body: JSON.stringify(body),
   });
@@ -129,11 +129,11 @@ async function chatAnthropic(cfg: LlmConfig, messages: ChatMsg[], tools: ToolSpe
     else if (m.role === "tool") push("user", { type: "tool_result", tool_use_id: m.toolCallId, content: m.content });
     else {
       if (m.content) push("assistant", { type: "text", text: m.content });
-      for (const t of m.toolCalls ?? []) push("assistant", { type: "tool_use", id: t.id, name: t.name, input: t.args });
+      for (const t of (m.role === "assistant" ? m.toolCalls : undefined) ?? []) push("assistant", { type: "tool_use", id: t.id, name: t.name, input: t.args });
     }
   }
   const body: Record<string, unknown> = { model: cfg.model, max_tokens: 4096, system, messages: out };
-  if (tools.length) body.tools = tools.map((t) => ({ name: t.name, description: t.description, input_schema: t.parameters }));
+  if (tools.length) body["tools"] = tools.map((t) => ({ name: t.name, description: t.description, input_schema: t.parameters }));
   const res = await fetch(`${cfg.baseUrl}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": cfg.key, "anthropic-version": "2023-06-01" },

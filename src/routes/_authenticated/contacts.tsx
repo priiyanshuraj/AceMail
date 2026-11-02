@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { AiPersonalizeButton } from "@/components/AiPersonalizeButton";
 import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -481,6 +482,7 @@ function ContactsPage() {
                       Remove selected ({selectedIds.size})
                     </Button>
                   )}
+                  <AiPersonalizeButton ids={[...selectedIds]} onDone={() => { if (selectedList) void loadContacts(selectedList, page, pageSize); }} />
                   <Button variant="outline" size="sm" onClick={() => void handleVerifyList()} disabled={verifying || total === 0}>
                     {verifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
                     {verifying ? "Checking…" : "Verify emails"}
