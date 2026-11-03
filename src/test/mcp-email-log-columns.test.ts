@@ -16,7 +16,7 @@ const EMAIL_LOG_EMBEDS = new Set(["contacts"]);
 function emailLogsSelectColumns(file: string): string[] {
   const source = readFileSync(path.resolve(process.cwd(), file), "utf8");
   const columns: string[] = [];
-  const pattern = /from\("email_logs"\)[\s\S]*?\.select\(\s*"([^"]+)"/g;
+  const pattern = /from\("email_logs"\)\s*\.select\(\s*"([^"]+)"/g;
   for (const match of source.matchAll(pattern)) {
     for (const column of match[1].split(",")) {
       const name = column.trim().split("(")[0].trim();
