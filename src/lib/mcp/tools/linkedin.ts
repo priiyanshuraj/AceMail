@@ -135,10 +135,12 @@ export const getContactDetail = defineTool({
     const { data: c, error } = await db.from("contacts").select("id, email, first_name, last_name, company, title, phone, linkedin_url, list_id, custom_fields, email_status, unsubscribed").eq("id", contact_id).maybeSingle();
     if (error) throw new ToolError(error.message);
     if (!c) throw new ToolError("Contact not found");
-    const [{ data: emails }, { data: li }] = await Promise.all([
-      db.from("email_logs").select("id, status, subject, sent_at, opened_at, campaign_id").eq("contact_id", contact_id).order("created_at", { ascending: false }).limit(100),
+    const [{ data: emails, error: emailErr }, { data: li, error: liErr }] = await Promise.all([
+      db.from("email_logs").select("id, status, direct_subject, recipient_email, sent_at, opened_at, replied_at, bounced_at, campaign_id").eq("contact_id", contact_id).order("created_at", { ascending: false }).limit(100),
       db.from("linkedin_tasks").select("id, action, status, due_at, completed_at, note").eq("contact_id", contact_id).order("due_at", { ascending: false }).limit(100),
     ]);
+    if (emailErr) throw new ToolError(emailErr.message);
+    if (liErr) throw new ToolError(liErr.message);
     return out({ contact: { ...c, custom_fields: JSON.stringify(c.custom_fields ?? {}) }, emails: emails ?? [], linkedin: li ?? [] });
   },
 });
