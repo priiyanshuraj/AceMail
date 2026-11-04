@@ -35,6 +35,27 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_settings: {
+        Row: {
+          default_email_limit: number
+          default_linkedin_limit: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          default_email_limit?: number
+          default_linkedin_limit?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          default_email_limit?: number
+          default_linkedin_limit?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_user_connections: {
         Row: {
           app_user_id: string | null
@@ -877,6 +898,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_ai_limits: {
+        Row: {
+          ai_enabled: boolean
+          daily_email_limit: number | null
+          daily_linkedin_limit: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_enabled?: boolean
+          daily_email_limit?: number | null
+          daily_linkedin_limit?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_enabled?: boolean
+          daily_email_limit?: number | null
+          daily_linkedin_limit?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_ai_usage: {
+        Row: {
+          emails_generated: number
+          linkedin_generated: number
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          emails_generated?: number
+          linkedin_generated?: number
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          emails_generated?: number
+          linkedin_generated?: number
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_api_keys: {
         Row: {
           hint: string
@@ -897,6 +963,24 @@ export type Database = {
           key_ciphertext?: string
           provider?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -925,9 +1009,20 @@ export type Database = {
     }
     Functions: {
       campaign_analytics: { Args: { _campaign_id: string }; Returns: Json }
+      consume_ai_credit: {
+        Args: { _kind: string; _limit: number; _user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1054,6 +1149,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

@@ -44,8 +44,10 @@ function asFields(v: unknown): Record<string, string> {
     ? Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, x == null ? "" : String(x)])) : {};
 }
 
-export async function personalizeWithDb(db: Db, userId: string, ids: string[], instructions: string) {
-  const cfg = await getLlmConfig(userId);
+export async function personalizeWithDb(db: Db, userId: string, ids: string[], instructions: string, kind: "email" | "linkedin" = "email") {
+  const { generationModel, consumeCredit } = await import("@/server/ai-quota.server");
+  const { personalizeLinkedin } = await import("@/server/llm.server");
+  const { cfg, hosted } = await generationModel(userId);
   const { data, error } = await db.from("contacts").select("id, email, first_name, last_name, company, title, linkedin_url, custom_fields").in("id", ids);
   if (error) throw new Error(error.message);
   const results: { id: string; email: string; ok: boolean; opener?: string; error?: string }[] = [];
@@ -53,13 +55,25 @@ export async function personalizeWithDb(db: Db, userId: string, ids: string[], i
     try {
       const fields = asFields(c.custom_fields);
       const lead: Lead = { email: c.email, first_name: c.first_name ?? "", last_name: c.last_name ?? "", company: c.company ?? "", title: c.title ?? "", linkedin_url: c.linkedin_url ?? "", custom_fields: fields };
-      const out = await personalizeLead(userId, cfg, lead, instructions);
-      const next = { ...fields, ai_opener: out.opener, ai_subject: out.subject, ai_body: out.body };
+      if (hosted) await consumeCredit(userId, kind);
+      let next: Record<string, string>;
+      let preview: string;
+      if (kind === "linkedin") {
+        const out = await personalizeLinkedin(userId, cfg, lead, instructions);
+        next = { ...fields, ai_linkedin: out.message };
+        preview = out.message;
+      } else {
+        const out = await personalizeLead(userId, cfg, lead, instructions);
+        next = { ...fields, ai_opener: out.opener, ai_subject: out.subject, ai_body: out.body };
+        preview = out.opener;
+      }
       const { error: upErr } = await db.from("contacts").update({ custom_fields: next }).eq("id", c.id);
       if (upErr) throw new Error(upErr.message);
-      results.push({ id: c.id, email: c.email, ok: true, opener: out.opener });
+      results.push({ id: c.id, email: c.email, ok: true, opener: preview });
     } catch (e) {
-      results.push({ id: c.id, email: c.email, ok: false, error: e instanceof Error ? e.message : "Failed" });
+      const msg = e instanceof Error ? e.message : "Failed";
+      results.push({ id: c.id, email: c.email, ok: false, error: msg });
+      if (msg.includes("today's free AI") || msg.includes("turned off")) break;
     }
   }
   return { results };
