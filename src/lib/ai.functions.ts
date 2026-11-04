@@ -52,10 +52,19 @@ export const testAiModel = createServerFn({ method: "POST" })
 
 export const personalizeContacts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ ids: z.array(z.string().uuid()).min(1).max(10), instructions: z.string().max(2000).default("") }).parse(d))
+  .inputValidator((d) => z.object({ ids: z.array(z.string().uuid()).min(1).max(10), instructions: z.string().max(2000).default(""), kind: z.enum(["email", "linkedin"]).default("email") }).parse(d))
   .handler(async ({ data, context }) => {
     const { personalizeWithDb } = await import("@/server/ai-agent.server");
-    return personalizeWithDb(context.supabase, context.userId, data.ids, data.instructions);
+    return personalizeWithDb(context.supabase, context.userId, data.ids, data.instructions, data.kind);
+  });
+
+export const getAiQuota = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { getQuota } = await import("@/server/ai-quota.server");
+    const { aiStatus } = await import("@/server/llm.server");
+    const [q, st] = await Promise.all([getQuota(context.userId), aiStatus(context.userId)]);
+    return { ...q, ownKey: Boolean(st.llm) };
   });
 
 // ---------- In-app assistant ----------
