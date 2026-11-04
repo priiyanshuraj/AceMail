@@ -100,4 +100,4 @@ Before completing any code modification task, verify:
 3. All d=1 (WILL BREAK) dependents were updated
 
 <!-- gitnexus:end -->
-- Free AI generation (Groq fallback) is capped per user per day via admin-controlled limits in ; users with their own key are unlimited; admin role lives in  checked with . Why: protect the shared Groq quota.
+- Free AI generation (shared Groq key) is capped per user per day by admin-controlled limits in `src/server/ai-quota.server.ts`; users with their own key are unlimited; admin role lives in `user_roles` checked via `has_role`. Why: protect the shared Groq quota.
