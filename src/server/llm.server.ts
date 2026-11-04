@@ -305,6 +305,20 @@ export async function researchLead(userId: string, lead: Lead) {
   return { website: site, siteText, searchText };
 }
 
+export async function personalizeLinkedin(userId: string, cfg: LlmConfig, lead: Lead, instructions: string) {
+  const r = await researchLead(userId, lead);
+  const facts = { name: `${lead.first_name} ${lead.last_name}`.trim(), company: lead.company, title: lead.title, linkedin: lead.linkedin_url, other_fields: lead.custom_fields };
+  const { text } = await chat(cfg, [
+    { role: "system", content: "You write short, personal LinkedIn messages. Use only facts from the research; never invent anything. Sound human, no hype, no em dashes. Reply with JSON only: {\"message\": string (under 280 characters, friendly, mentions something specific, ends with a light question)}." },
+    { role: "user", content: `Sender goal and instructions:\n${instructions || "Start a conversation."}\n\nLead:\n${JSON.stringify(facts)}\n\nCompany website (${r.website ?? "none"}):\n${r.siteText || "not available"}\n\nWeb search results:\n${r.searchText || "not available"}` },
+  ]);
+  const m = text.match(/\{[\s\S]*\}/);
+  let parsed: { message?: string } = {};
+  try { parsed = m ? JSON.parse(m[0]) : {}; } catch { /* handled below */ }
+  if (!parsed.message) throw new Error("The AI reply could not be read. Try again.");
+  return { message: parsed.message.slice(0, 300) };
+}
+
 export async function personalizeLead(userId: string, cfg: LlmConfig, lead: Lead, instructions: string) {
   const r = await researchLead(userId, lead);
   const facts = { name: `${lead.first_name} ${lead.last_name}`.trim(), email: lead.email, company: lead.company, title: lead.title, linkedin: lead.linkedin_url, other_fields: lead.custom_fields };
