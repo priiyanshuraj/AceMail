@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot } from "lucide-react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot, ShieldCheck } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getIsAdmin } from "@/lib/admin.functions";
 import { PetalField } from "@/components/PetalField";
 import { SakuraScene } from "@/components/SakuraScene";
 import logoUrl from "@/assets/acemail-logo.png";
@@ -49,6 +51,7 @@ const navItems = [
 function AuthenticatedLayout() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = useQuery({ queryKey: ["is-admin"], queryFn: () => getIsAdmin(), retry: false });
 
   const [dark, setDark] = useState(false);
   useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
@@ -92,6 +95,16 @@ function AuthenticatedLayout() {
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
+                  {isAdmin.data?.admin && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={pathname.startsWith("/admin")} className="h-9 font-medium">
+                        <Link to="/admin">
+                          <ShieldCheck className="h-4 w-4" />
+                          <span>Admin</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
