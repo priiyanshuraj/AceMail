@@ -96,8 +96,13 @@ function AuthPage() {
         toast.success("Account created — check your email to confirm, then sign in.");
         setMode("signin");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+        if (error) {
+          if (error.message.toLowerCase().includes("invalid login")) {
+            throw new Error("Wrong email or password. If you usually use Google, sign in with Google or use Forgot password to set a password.");
+          }
+          throw error;
+        }
         goNext();
       }
     } catch (err) {
