@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/public/linkedin/session")({
       if (!a) return json({ error: "Invalid runner token" }, 401);
       const { data } = await a.db.from("linkedin_cloud_sessions").select("cookie_enc, proxy_enc").eq("user_id", a.userId).maybeSingle();
       if (!data) return json({ error: "No LinkedIn cookie saved" }, 404);
-      const { decryptConnectionKey } = await import("@/server/connectionKeyCrypto");
+      const { decryptConnectionKey } = await import("@/server/connection-crypto.server");
       return json({ li_at: decryptConnectionKey(data.cookie_enc), proxy: data.proxy_enc ? decryptConnectionKey(data.proxy_enc) : null });
     },
     POST: async ({ request }) => {
