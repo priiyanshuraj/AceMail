@@ -378,7 +378,7 @@ export const saveCloudSession = createServerFn({ method: "POST" })
     return { cookie, proxy };
   })
   .handler(async ({ data, context }) => {
-    const { encryptConnectionKey } = await import("@/server/connectionKeyCrypto");
+    const { encryptConnectionKey } = await import("@/server/connection-crypto.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("linkedin_cloud_sessions").upsert({
       user_id: context.userId, cookie_enc: encryptConnectionKey(data.cookie),

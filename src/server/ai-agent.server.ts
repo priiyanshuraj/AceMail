@@ -121,7 +121,7 @@ export async function runAgent(db: Db, userId: string, token: string, history: {
           const { data } = await (await import("@/integrations/supabase/client.server")).supabaseAdmin
             .from("user_api_keys").select("key_ciphertext").eq("user_id", userId).eq("provider", "search").maybeSingle();
           if (data) {
-            const { decryptConnectionKey } = await import("@/server/connectionKeyCrypto");
+            const { decryptConnectionKey } = await import("@/server/connection-crypto.server");
             const sc = JSON.parse(decryptConnectionKey(data.key_ciphertext)) as SearchConfig;
             result = (await webSearch(sc, q)) || "No results.";
           } else {
