@@ -162,6 +162,13 @@
       "when": 1793786675364,
       "tag": "0022_admin_ai_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793866577532,
+      "tag": "0023_set_sole_admin",
+      "breakpoints": true
     }
   ]
 }
