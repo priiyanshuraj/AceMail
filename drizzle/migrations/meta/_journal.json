@@ -169,6 +169,13 @@
       "when": 1793866577532,
       "tag": "0023_set_sole_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793924116611,
+      "tag": "0024_crm_pipeline",
+      "breakpoints": true
     }
   ]
 }

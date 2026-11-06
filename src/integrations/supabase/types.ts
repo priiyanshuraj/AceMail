@@ -322,6 +322,144 @@ export type Database = {
           },
         ]
       }
+      crm_deals: {
+        Row: {
+          contact_id: string
+          created_at: string
+          currency: string
+          expected_close: string | null
+          id: string
+          position: number
+          stage_id: string
+          title: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          currency?: string
+          expected_close?: string | null
+          id?: string
+          position?: number
+          stage_id: string
+          title?: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          currency?: string
+          expected_close?: string | null
+          id?: string
+          position?: number
+          stage_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deals_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_deals_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "crm_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_notes: {
+        Row: {
+          body: string
+          contact_id: string
+          created_at: string
+          deal_id: string | null
+          done: boolean
+          id: string
+          remind_at: string | null
+          user_id: string
+        }
+        Insert: {
+          body: string
+          contact_id: string
+          created_at?: string
+          deal_id?: string | null
+          done?: boolean
+          id?: string
+          remind_at?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string
+          contact_id?: string
+          created_at?: string
+          deal_id?: string | null
+          done?: boolean
+          id?: string
+          remind_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_notes_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_notes_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_stages: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          is_lost: boolean
+          is_won: boolean
+          name: string
+          position: number
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_lost?: boolean
+          is_won?: boolean
+          name: string
+          position?: number
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          is_lost?: boolean
+          is_won?: boolean
+          name?: string
+          position?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_click_events: {
         Row: {
           clicked_at: string
