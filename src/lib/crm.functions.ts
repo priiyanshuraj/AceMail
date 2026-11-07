@@ -81,8 +81,10 @@ export const updateDeal = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { id, ...patch } = data;
-    const { error } = await context.supabase.from("crm_deals").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id);
+    const { id, ...rest } = data;
+    const patch: Record<string, string | number | null> = { updated_at: new Date().toISOString() };
+    for (const [k, v] of Object.entries(rest)) if (v !== undefined) patch[k] = v;
+    const { error } = await context.supabase.from("crm_deals").update(patch).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -210,7 +212,9 @@ export const updateNote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid(), done: z.boolean().optional(), body: z.string().trim().min(1).max(5000).optional() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { id, ...patch } = data;
+    const { id, ...rest } = data;
+    const patch: Record<string, string | boolean> = {};
+    for (const [k, v] of Object.entries(rest)) if (v !== undefined) patch[k] = v;
     const { error } = await context.supabase.from("crm_notes").update(patch).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
