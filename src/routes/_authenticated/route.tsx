@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot, ShieldCheck, KanbanSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getIsAdmin } from "@/lib/admin.functions";
 import { PetalField } from "@/components/PetalField";
@@ -43,6 +43,7 @@ const navItems = [
   { to: "/contacts", label: "Contacts", icon: Users },
   { to: "/templates", label: "Templates", icon: Mail },
   { to: "/campaigns", label: "Campaigns", icon: Megaphone },
+  { to: "/crm", label: "CRM", icon: KanbanSquare },
   { to: "/linkedin", label: "LinkedIn", icon: Linkedin },
   { to: "/assistant", label: "AI Assistant", icon: Bot },
   { to: "/settings", label: "Settings", icon: Settings },

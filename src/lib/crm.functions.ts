@@ -1,3 +1,4 @@
+import type { Database } from "@/integrations/supabase/types";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -82,8 +83,7 @@ export const updateDeal = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const patch: Record<string, string | number | null> = { updated_at: new Date().toISOString() };
-    for (const [k, v] of Object.entries(rest)) if (v !== undefined) patch[k] = v;
+    const patch = { ...Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)), updated_at: new Date().toISOString() } as Database["public"]["Tables"]["crm_deals"]["Update"];
     const { error } = await context.supabase.from("crm_deals").update(patch).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -213,8 +213,7 @@ export const updateNote = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ id: z.string().uuid(), done: z.boolean().optional(), body: z.string().trim().min(1).max(5000).optional() }).parse(d))
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const patch: Record<string, string | boolean> = {};
-    for (const [k, v] of Object.entries(rest)) if (v !== undefined) patch[k] = v;
+    const patch = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)) as Database["public"]["Tables"]["crm_notes"]["Update"];
     const { error } = await context.supabase.from("crm_notes").update(patch).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };

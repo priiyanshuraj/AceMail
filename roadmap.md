@@ -38,3 +38,7 @@
 # Open-source packaging
 - [x] Dockerfile + docker-compose + .dockerignore for one-command self-hosting; node-server build verified booting and serving HTTP 200
 - [x] .env.example documenting every variable; README rewritten Docker-first with build args, cron queue setup, domain/HTTPS steps
+
+# CRM
+- [x] Pipeline board, client board, client detail with deals/notes/reminders
+- [x] CRM in sidebar; deals auto-move to "Replied" when a contact replies

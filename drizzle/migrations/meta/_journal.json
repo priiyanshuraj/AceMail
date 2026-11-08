@@ -176,6 +176,13 @@
       "when": 1793924116611,
       "tag": "0024_crm_pipeline",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794181275802,
+      "tag": "0025_crm_advance_on_reply",
+      "breakpoints": true
     }
   ]
 }
