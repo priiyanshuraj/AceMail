@@ -10,7 +10,7 @@ import { ArrowLeft, Bell, KanbanSquare } from "lucide-react";
 
 const boardQuery = () => queryOptions({ queryKey: ["crm-clients"], queryFn: () => getClientBoard() });
 
-export const Route = createFileRoute("/_authenticated/crm/clients")({
+export const Route = createFileRoute("/_authenticated/crm/clients/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(boardQuery()),
   head: () => ({
     meta: [

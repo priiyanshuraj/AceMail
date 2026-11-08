@@ -19,7 +19,7 @@ async function ensureStages(db: Db, userId: string) {
   const { data: stages, error } = await db.from("crm_stages").select("*").eq("user_id", userId).order("position");
   if (error) throw new Error(error.message);
   if (stages && stages.length > 0) return stages;
-  const { data: created, error: insErr } = await db.from("crm_stages").insert(DEFAULT_STAGES.map((s) => ({ ...s, user_id: userId }))).select();
+  const { data: created, error: insErr } = await db.from("crm_stages").insert(DEFAULT_STAGES.map((s) => ({ is_won: false, is_lost: false, ...s, user_id: userId }))).select();
   if (insErr) throw new Error(insErr.message);
   return (created ?? []).sort((a, b) => a.position - b.position);
 }

@@ -20,7 +20,6 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticated/contacts'
-import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedLinkedinRouteImport } from './routes/_authenticated/linkedin'
@@ -36,8 +35,9 @@ import { Route as AuthenticatedCampaignsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedCampaignsCampaignIdRouteImport } from './routes/_authenticated/campaigns/$campaignId'
 import { Route as AuthenticatedCampaignsNewRouteImport } from './routes/_authenticated/campaigns/new'
 import { Route as AuthenticatedContactsContactIdRouteImport } from './routes/_authenticated/contacts_.$contactId'
-import { Route as AuthenticatedCrmClientsRouteImport } from './routes/_authenticated/crm.clients'
+import { Route as AuthenticatedCrmIndexRouteImport } from './routes/_authenticated/crm.index'
 import { Route as AuthenticatedCampaignsEditCampaignIdRouteImport } from './routes/_authenticated/campaigns/edit.$campaignId'
+import { Route as AuthenticatedCrmClientsIndexRouteImport } from './routes/_authenticated/crm.clients.index'
 import { Route as AuthenticatedCrmClientsContactIdRouteImport } from './routes/_authenticated/crm.clients.$contactId'
 import { Route as ApiOauthGoogleReturnRouteImport } from './routes/api/oauth/google/return'
 import { Route as ApiPublicClickLinkIdRouteImport } from './routes/api/public/click/$linkId'
@@ -101,11 +101,6 @@ const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
 const AuthenticatedContactsRoute = AuthenticatedContactsRouteImport.update({
   id: '/contacts',
   path: '/contacts',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
-  id: '/crm',
-  path: '/crm',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -187,10 +182,10 @@ const AuthenticatedContactsContactIdRoute =
     path: '/contacts/$contactId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCrmClientsRoute = AuthenticatedCrmClientsRouteImport.update({
-  id: '/clients',
-  path: '/clients',
-  getParentRoute: () => AuthenticatedCrmRoute,
+const AuthenticatedCrmIndexRoute = AuthenticatedCrmIndexRouteImport.update({
+  id: '/crm/',
+  path: '/crm/',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCampaignsEditCampaignIdRoute =
   AuthenticatedCampaignsEditCampaignIdRouteImport.update({
@@ -198,11 +193,17 @@ const AuthenticatedCampaignsEditCampaignIdRoute =
     path: '/campaigns/edit/$campaignId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCrmClientsIndexRoute =
+  AuthenticatedCrmClientsIndexRouteImport.update({
+    id: '/crm/clients/',
+    path: '/crm/clients/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCrmClientsContactIdRoute =
   AuthenticatedCrmClientsContactIdRouteImport.update({
-    id: '/$contactId',
-    path: '/$contactId',
-    getParentRoute: () => AuthenticatedCrmClientsRoute,
+    id: '/crm/clients/$contactId',
+    path: '/crm/clients/$contactId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const ApiOauthGoogleReturnRoute = ApiOauthGoogleReturnRouteImport.update({
   id: '/api/oauth/google/return',
@@ -261,7 +262,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/contacts': typeof AuthenticatedContactsRoute
-  '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/linkedin': typeof AuthenticatedLinkedinRoute
@@ -276,8 +276,8 @@ export interface FileRoutesByFullPath {
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/contacts/$contactId': typeof AuthenticatedContactsContactIdRoute
-  '/crm/clients': typeof AuthenticatedCrmClientsRouteWithChildren
   '/campaigns/': typeof AuthenticatedCampaignsIndexRoute
+  '/crm/': typeof AuthenticatedCrmIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/crm/clients/$contactId': typeof AuthenticatedCrmClientsContactIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
@@ -288,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/crm/clients/': typeof AuthenticatedCrmClientsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -300,7 +301,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/contacts': typeof AuthenticatedContactsRoute
-  '/crm': typeof AuthenticatedCrmRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/inbox': typeof AuthenticatedInboxRoute
   '/linkedin': typeof AuthenticatedLinkedinRoute
@@ -315,8 +315,8 @@ export interface FileRoutesByTo {
   '/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/contacts/$contactId': typeof AuthenticatedContactsContactIdRoute
-  '/crm/clients': typeof AuthenticatedCrmClientsRouteWithChildren
   '/campaigns': typeof AuthenticatedCampaignsIndexRoute
+  '/crm': typeof AuthenticatedCrmIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/crm/clients/$contactId': typeof AuthenticatedCrmClientsContactIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
@@ -327,6 +327,7 @@ export interface FileRoutesByTo {
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/crm/clients': typeof AuthenticatedCrmClientsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -341,7 +342,6 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/contacts': typeof AuthenticatedContactsRoute
-  '/_authenticated/crm': typeof AuthenticatedCrmRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/linkedin': typeof AuthenticatedLinkedinRoute
@@ -356,8 +356,8 @@ export interface FileRoutesById {
   '/_authenticated/campaigns/$campaignId': typeof AuthenticatedCampaignsCampaignIdRoute
   '/_authenticated/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/_authenticated/contacts_/$contactId': typeof AuthenticatedContactsContactIdRoute
-  '/_authenticated/crm/clients': typeof AuthenticatedCrmClientsRouteWithChildren
   '/_authenticated/campaigns/': typeof AuthenticatedCampaignsIndexRoute
+  '/_authenticated/crm/': typeof AuthenticatedCrmIndexRoute
   '/_authenticated/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
   '/_authenticated/crm/clients/$contactId': typeof AuthenticatedCrmClientsContactIdRoute
   '/api/oauth/google/return': typeof ApiOauthGoogleReturnRoute
@@ -368,6 +368,7 @@ export interface FileRoutesById {
   '/api/public/track/$logId.png': typeof ApiPublicTrackLogIdDotpngRoute
   '/api/public/unsubscribe/$logId': typeof ApiPublicUnsubscribeLogIdRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/_authenticated/crm/clients/': typeof AuthenticatedCrmClientsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -382,7 +383,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/contacts'
-    | '/crm'
     | '/dashboard'
     | '/inbox'
     | '/linkedin'
@@ -397,8 +397,8 @@ export interface FileRouteTypes {
     | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/contacts/$contactId'
-    | '/crm/clients'
     | '/campaigns/'
+    | '/crm/'
     | '/campaigns/edit/$campaignId'
     | '/crm/clients/$contactId'
     | '/api/oauth/google/return'
@@ -409,6 +409,7 @@ export interface FileRouteTypes {
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
     | '/lovable/email/transactional/preview'
+    | '/crm/clients/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -421,7 +422,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/contacts'
-    | '/crm'
     | '/dashboard'
     | '/inbox'
     | '/linkedin'
@@ -436,8 +436,8 @@ export interface FileRouteTypes {
     | '/campaigns/$campaignId'
     | '/campaigns/new'
     | '/contacts/$contactId'
-    | '/crm/clients'
     | '/campaigns'
+    | '/crm'
     | '/campaigns/edit/$campaignId'
     | '/crm/clients/$contactId'
     | '/api/oauth/google/return'
@@ -448,6 +448,7 @@ export interface FileRouteTypes {
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
     | '/lovable/email/transactional/preview'
+    | '/crm/clients'
   id:
     | '__root__'
     | '/'
@@ -461,7 +462,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/assistant'
     | '/_authenticated/contacts'
-    | '/_authenticated/crm'
     | '/_authenticated/dashboard'
     | '/_authenticated/inbox'
     | '/_authenticated/linkedin'
@@ -476,8 +476,8 @@ export interface FileRouteTypes {
     | '/_authenticated/campaigns/$campaignId'
     | '/_authenticated/campaigns/new'
     | '/_authenticated/contacts_/$contactId'
-    | '/_authenticated/crm/clients'
     | '/_authenticated/campaigns/'
+    | '/_authenticated/crm/'
     | '/_authenticated/campaigns/edit/$campaignId'
     | '/_authenticated/crm/clients/$contactId'
     | '/api/oauth/google/return'
@@ -488,6 +488,7 @@ export interface FileRouteTypes {
     | '/api/public/track/$logId.png'
     | '/api/public/unsubscribe/$logId'
     | '/lovable/email/transactional/preview'
+    | '/_authenticated/crm/clients/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -589,13 +590,6 @@ declare module '@tanstack/react-router' {
       path: '/contacts'
       fullPath: '/contacts'
       preLoaderRoute: typeof AuthenticatedContactsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/crm': {
-      id: '/_authenticated/crm'
-      path: '/crm'
-      fullPath: '/crm'
-      preLoaderRoute: typeof AuthenticatedCrmRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -703,12 +697,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContactsContactIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/crm/clients': {
-      id: '/_authenticated/crm/clients'
-      path: '/clients'
-      fullPath: '/crm/clients'
-      preLoaderRoute: typeof AuthenticatedCrmClientsRouteImport
-      parentRoute: typeof AuthenticatedCrmRoute
+    '/_authenticated/crm/': {
+      id: '/_authenticated/crm/'
+      path: '/crm'
+      fullPath: '/crm/'
+      preLoaderRoute: typeof AuthenticatedCrmIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/campaigns/edit/$campaignId': {
       id: '/_authenticated/campaigns/edit/$campaignId'
@@ -717,12 +711,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCampaignsEditCampaignIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/crm/clients/': {
+      id: '/_authenticated/crm/clients/'
+      path: '/crm/clients'
+      fullPath: '/crm/clients/'
+      preLoaderRoute: typeof AuthenticatedCrmClientsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crm/clients/$contactId': {
       id: '/_authenticated/crm/clients/$contactId'
-      path: '/$contactId'
+      path: '/crm/clients/$contactId'
       fullPath: '/crm/clients/$contactId'
       preLoaderRoute: typeof AuthenticatedCrmClientsContactIdRouteImport
-      parentRoute: typeof AuthenticatedCrmClientsRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/oauth/google/return': {
       id: '/api/oauth/google/return'
@@ -783,37 +784,10 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedCrmClientsRouteChildren {
-  AuthenticatedCrmClientsContactIdRoute: typeof AuthenticatedCrmClientsContactIdRoute
-}
-
-const AuthenticatedCrmClientsRouteChildren: AuthenticatedCrmClientsRouteChildren =
-  {
-    AuthenticatedCrmClientsContactIdRoute:
-      AuthenticatedCrmClientsContactIdRoute,
-  }
-
-const AuthenticatedCrmClientsRouteWithChildren =
-  AuthenticatedCrmClientsRoute._addFileChildren(
-    AuthenticatedCrmClientsRouteChildren,
-  )
-
-interface AuthenticatedCrmRouteChildren {
-  AuthenticatedCrmClientsRoute: typeof AuthenticatedCrmClientsRouteWithChildren
-}
-
-const AuthenticatedCrmRouteChildren: AuthenticatedCrmRouteChildren = {
-  AuthenticatedCrmClientsRoute: AuthenticatedCrmClientsRouteWithChildren,
-}
-
-const AuthenticatedCrmRouteWithChildren =
-  AuthenticatedCrmRoute._addFileChildren(AuthenticatedCrmRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedContactsRoute: typeof AuthenticatedContactsRoute
-  AuthenticatedCrmRoute: typeof AuthenticatedCrmRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedLinkedinRoute: typeof AuthenticatedLinkedinRoute
@@ -826,14 +800,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCampaignsNewRoute: typeof AuthenticatedCampaignsNewRoute
   AuthenticatedContactsContactIdRoute: typeof AuthenticatedContactsContactIdRoute
   AuthenticatedCampaignsIndexRoute: typeof AuthenticatedCampaignsIndexRoute
+  AuthenticatedCrmIndexRoute: typeof AuthenticatedCrmIndexRoute
   AuthenticatedCampaignsEditCampaignIdRoute: typeof AuthenticatedCampaignsEditCampaignIdRoute
+  AuthenticatedCrmClientsContactIdRoute: typeof AuthenticatedCrmClientsContactIdRoute
+  AuthenticatedCrmClientsIndexRoute: typeof AuthenticatedCrmClientsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedContactsRoute: AuthenticatedContactsRoute,
-  AuthenticatedCrmRoute: AuthenticatedCrmRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedLinkedinRoute: AuthenticatedLinkedinRoute,
@@ -846,8 +822,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCampaignsNewRoute: AuthenticatedCampaignsNewRoute,
   AuthenticatedContactsContactIdRoute: AuthenticatedContactsContactIdRoute,
   AuthenticatedCampaignsIndexRoute: AuthenticatedCampaignsIndexRoute,
+  AuthenticatedCrmIndexRoute: AuthenticatedCrmIndexRoute,
   AuthenticatedCampaignsEditCampaignIdRoute:
     AuthenticatedCampaignsEditCampaignIdRoute,
+  AuthenticatedCrmClientsContactIdRoute: AuthenticatedCrmClientsContactIdRoute,
+  AuthenticatedCrmClientsIndexRoute: AuthenticatedCrmClientsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

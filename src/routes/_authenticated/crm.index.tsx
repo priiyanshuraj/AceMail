@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 const pipelineQuery = () => queryOptions({ queryKey: ["crm-pipeline"], queryFn: () => getPipeline() });
 
-export const Route = createFileRoute("/_authenticated/crm")({
+export const Route = createFileRoute("/_authenticated/crm/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(pipelineQuery()),
   head: () => ({
     meta: [
