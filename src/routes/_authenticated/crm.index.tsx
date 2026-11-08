@@ -89,7 +89,7 @@ function CrmPipelinePage() {
         </div>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-4">
+      <div className="scrollbar-slim flex gap-3 overflow-x-auto pb-3">
         {stages.map((stage) => {
           const stageDeals = (deals as Deal[]).filter((d) => d.stage_id === stage.id);
           const total = stageDeals.reduce((s, d) => s + Number(d.value), 0);
@@ -97,7 +97,7 @@ function CrmPipelinePage() {
           return (
             <div
               key={stage.id}
-              className={`flex w-64 shrink-0 flex-col rounded-xl border border-t-4 glass ${c.border} ${dragOver === stage.id ? "ring-2 ring-primary" : ""}`}
+              className={`flex min-w-52 flex-1 basis-0 flex-col rounded-xl border border-t-4 glass ${c.border} ${dragOver === stage.id ? "ring-2 ring-primary" : ""}`}
               onDragOver={(e) => {
                 e.preventDefault();
                 setDragOver(stage.id);
