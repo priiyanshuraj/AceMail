@@ -321,6 +321,48 @@
   }
 }
 
+.crm-workspace h1, .crm-workspace h2, .crm-workspace h3 { letter-spacing: 0; }
+.crm-stage { --stage-accent: var(--muted-foreground); }
+.crm-stage[data-color="blue"] { --stage-accent: var(--chart-3); }
+.crm-stage[data-color="amber"] { --stage-accent: var(--warning); }
+.crm-stage[data-color="violet"] { --stage-accent: var(--petal-shade); }
+.crm-stage[data-color="orange"] { --stage-accent: var(--primary); }
+.crm-stage[data-color="green"] { --stage-accent: var(--success); }
+.crm-stage[data-color="red"] { --stage-accent: var(--destructive); }
+.crm-stage-dot { background: var(--stage-accent); }
+.crm-funnel-segment {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 72px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  isolation: isolate;
+  box-shadow: none;
+}
+.crm-funnel-segment::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  clip-path: polygon(var(--funnel-top) 0, calc(100% - var(--funnel-top)) 0, calc(100% - var(--funnel-bottom)) 100%, var(--funnel-bottom) 100%);
+  background: color-mix(in oklab, var(--stage-accent) 19%, var(--surface));
+  transition: background 180ms ease;
+}
+.crm-funnel-segment:hover { background: transparent; color: var(--foreground); }
+.crm-funnel-segment:hover::before, .crm-funnel-segment[data-selected="true"]::before {
+  background: color-mix(in oklab, var(--stage-accent) 38%, var(--surface));
+}
+.crm-funnel-segment[data-selected="true"] .crm-funnel-content { text-decoration: underline; text-underline-offset: 4px; }
+.crm-funnel-content {
+  display: block;
+  padding: 12px calc(var(--funnel-bottom) + 8px);
+}
+@media (prefers-reduced-motion: reduce) { .crm-funnel-segment::before { transition: none; } }
+
 @keyframes sakura-sway { from { transform: rotate(-0.6deg); } to { transform: rotate(0.6deg); } }
 @media (max-width: 768px) { .sakura-tree { opacity: 0.3; width: 70vmin; } .dark .sakura-tree { opacity: 0.4; } }
 @media (prefers-reduced-motion: reduce) { .sakura-tree { animation: none; } }

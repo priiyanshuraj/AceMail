@@ -42,3 +42,4 @@
 # CRM
 - [x] Pipeline board, client board, client detail with deals/notes/reminders
 - [x] CRM in sidebar; deals auto-move to "Replied" when a contact replies
+- [x] Replace horizontal pipeline with a clickable visual funnel, searchable/sortable deal workspace and stage controls; signed-in deal creation, movement, reload and cleanup verified, with no desktop/mobile horizontal overflow or page errors.
