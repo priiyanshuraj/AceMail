@@ -5,10 +5,10 @@ import { blogPosts, SITE_URL } from "@/lib/blog-posts";
 export const Route = createFileRoute("/blog/")({
   head: () => ({
     meta: [
-      { title: "Blog — Cold email tips & guides | AceMail" },
-      { name: "description", content: "Practical guides on cold email follow-ups, personalization and Gmail deliverability from the AceMail team." },
-      { property: "og:title", content: "AceMail Blog — Cold email tips & guides" },
-      { property: "og:description", content: "Practical guides on follow-ups, personalization and Gmail deliverability." },
+      { title: "Outreach CRM, AI personalization & self-hosting guides | AceMail" },
+      { name: "description", content: "Practical guides to sales funnels, Gmail and LinkedIn outreach, AI personalization, MCP and Docker self-hosting with AceMail." },
+      { property: "og:title", content: "AceMail guides: outreach CRM, AI and self-hosting" },
+      { property: "og:description", content: "Build an outreach workflow with visual CRM funnels, personalized emails, MCP assistants and Docker self-hosting." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: `${SITE_URL}/blog` },
       { name: "twitter:card", content: "summary" },
@@ -30,7 +30,7 @@ function BlogIndex() {
       </header>
       <main className="mx-auto max-w-4xl px-6 pb-24 pt-8">
         <h1 className="text-5xl font-bold">The AceMail blog</h1>
-        <p className="mt-3 text-lg text-muted-foreground">Notes on writing cold emails people actually answer.</p>
+        <p className="mt-3 text-lg text-muted-foreground">From the first personalized message to the next client conversation. Guides to outreach, CRM, AI and running AceMail your way.</p>
         <div className="mt-10 space-y-6">
           {blogPosts.map((p) => (
             <article key={p.slug} className="rounded-xl border bg-card p-6 transition hover:shadow-md">

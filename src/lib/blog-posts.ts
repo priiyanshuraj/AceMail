@@ -11,6 +11,55 @@ export const SITE_URL = "https://acemail.online";
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "open-source-outreach-crm-sales-funnel",
+    title: "An open-source outreach CRM: turn replies into a sales pipeline",
+    description: "A practical AceMail workflow for tracking Gmail and LinkedIn prospects with a visual sales funnel, client history, deal values and reminders.",
+    date: "2026-11-09",
+    readMinutes: 6,
+    body: [
+      { text: "An outreach campaign tells you who received a message. A CRM tells you what happens next. AceMail combines Gmail outreach and LinkedIn tasks with a visual deal pipeline, so a prospect can move from first contact to a conversation, a meeting and a closed deal without losing their history." },
+      { heading: "Start with contacts, then create opportunities", text: "Import your contacts from a CSV or Google Sheet and retain useful company details as custom fields. Open CRM and choose New deal. Search for an existing contact, give the opportunity a descriptive name, enter its value and currency, and choose an expected close date and starting stage. A deal represents a commercial opportunity, not simply another name in your mailing list." },
+      { heading: "Use a funnel you can actually explore", text: "The pipeline shows stages as a vertical, narrowing funnel rather than a sideways board. Each segment displays the number and value of deals currently in that stage. Select a segment to see its deals, search by client or company, and sort by value or expected close date. Move a deal with its stage selector, or drag it onto a funnel segment on a desktop." },
+      { heading: "Let replies reach the right stage", text: "AceMail can advance a contact's opportunity when an email reply is detected. This automation targets a stage named Replied and excludes detected automatic out-of-office replies. Keep that stage name if you use the automation. A reply signals a conversation, not a qualified sale: review the actual message before moving the deal toward Meeting booked or Proposal." },
+      { heading: "Keep the client conversation together", text: "The Client board groups opportunities by contact. Open a client to review their deals, notes, reminders, email history, replies and LinkedIn tasks. Record what was agreed and add the next action while the conversation is fresh. This keeps follow-through connected to the original outreach rather than scattered across a spreadsheet and inbox." },
+      { heading: "Read the metrics without confusing them", text: "Open pipeline value is the sum of deals in stages that are neither won nor lost. Closed won shows the value of won deals. Win rate compares won deals with all closed deals, not all imported contacts. Funnel segments show current stage membership, not historical conversion rates. Keep deal currencies consistent when interpreting combined totals." },
+      { heading: "Customize the process, not the data history", text: "Use Stages to add stages or adjust names and colors. Keep the process short enough that each stage represents a clear next action. AceMail is Apache 2.0 open source and supports Docker self-hosting, but deployment still needs its database, authentication and scheduled queue configured. Start with a few real opportunities and make sure every active deal has an owner action and a realistic close date." },
+    ],
+  },
+  {
+    slug: "ai-personalized-cold-email-own-api-key",
+    title: "AI-personalized cold email with your own API key: a practical workflow",
+    description: "Research leads, save personalized email and LinkedIn drafts, and understand AceMail's free daily allowance, bring-your-own AI and MCP options.",
+    date: "2026-11-09",
+    readMinutes: 6,
+    body: [
+      { text: "Useful AI personalization connects a verified fact about a prospect to a relevant reason to talk. A first-name greeting alone does not do that. AceMail can research a lead, generate outreach copy and save useful fields on the contact, so you can review the result before putting it into an email or LinkedIn sequence." },
+      { heading: "Choose free generation or connect your own AI", text: "AceMail's shared free AI allowance defaults to 20 personalized cold emails and 20 LinkedIn messages per user per day. Administrators can change those allowances or disable shared free access for an account. These credits apply to personalized message generation, not general assistant questions. Availability also depends on the shared service being configured and its provider capacity." },
+      { heading: "Bring a provider you already use", text: "In Settings, configure DeepSeek, OpenAI, Anthropic or an OpenAI-compatible service with your own API key. AceMail does not apply its shared free-generation cap when you use your own key. That does not mean free or unlimited provider usage: your provider's billing, rate limits and account restrictions still apply. Never paste an API key into a contact field, email template or chat message." },
+      { heading: "Give research enough context", text: "Start with the person's company, role and a trustworthy website or relevant public profile. AceMail supports website reading and web research to help collect context. Ask for a specific business connection, such as how your offer relates to the company's product or audience. If the evidence is missing, keep the draft general rather than making up recent funding, hiring or a personal achievement." },
+      { heading: "Save the draft, then verify every claim", text: "Use the contacts personalization action to generate an email or LinkedIn draft and save the resulting fields. Check names, company facts and the actual source material. Remove guesses and intrusive personal details. Preview an email template with the real contact and send a test to yourself before starting a campaign. A saved draft is not proof that its claims are correct." },
+      { heading: "Use the in-app assistant for account work", text: "The AceMail assistant reuses account-scoped tools for contacts, templates, campaign information and LinkedIn tasks. Ask it to review a contact's outreach history or prepare a reusable template. It is not a substitute for the mailbox connection and campaign review screens: do not assume a draft has been sent just because the assistant produced it." },
+      { heading: "Continue through MCP when the shared allowance runs out", text: "Connect ChatGPT or Claude to https://acemail.online/mcp, sign in and approve access to your AceMail account. MCP provides another way to work with your contacts and outreach tools using an external assistant. It is separate from the in-app free-generation allowance; your assistant subscription and tool limits still apply. Compare the resulting drafts on accuracy and relevance, not on how many words the model can generate." },
+    ],
+  },
+  {
+    slug: "self-host-gmail-outreach-crm-docker",
+    title: "Self-host a Gmail outreach app and CRM with Docker",
+    description: "What an AceMail self-hosted deployment needs: Docker, database migrations, Google connections, environment settings and a scheduled sending queue.",
+    date: "2026-11-09",
+    readMinutes: 6,
+    body: [
+      { text: "Self-hosting gives you control of the application deployment, but it does not remove the services an outreach app needs. AceMail ships a Docker setup for its web app and server process. You still need a database, authentication, Google account connections, a public HTTPS address and a scheduler to process queued sends. Use the repository README as the authoritative command-by-command setup guide." },
+      { heading: "Choose a host that can run the container", text: "Use a VPS or a container-capable host for the Docker deployment. The Compose setup runs the AceMail app; it does not automatically supply an entire database stack. Provision the database and authentication service separately, and check your host's pricing, persistence, outbound access and uptime requirements before moving real outreach." },
+      { heading: "Prepare the database before opening the app", text: "Apply the repository's migrations in their documented order. They create application tables, access policies and supporting functions. If you are moving an existing account or multiple users, preserve the original user IDs and ownership relationships while transferring authentication and application records. A fresh schema is not a data migration, and a Docker image does not contain your existing database." },
+      { heading: "Configure environment settings safely", text: "Start with .env.example and follow the README's explanation of browser-visible configuration and server-only secrets. Set your database and auth connection values, public application address and the services you plan to enable. Browser configuration is supplied during the Docker build, so changing it can require rebuilding the image. Keep secrets out of the repository and do not commit your populated environment file." },
+      { heading: "Set up Google sign-in and Gmail access", text: "Configure the correct public redirect addresses for your deployment and arrange Google OAuth access for the accounts that will use it. Connecting a Gmail mailbox is separate from simply signing into AceMail. The hosted build uses per-user Google connectors; a standalone deployment must configure the connector dependencies or replace that integration as described in the README. Do not assume moving the container transfers existing Gmail connections." },
+      { heading: "Schedule sending and reply processing", text: "The queue processor is an authenticated HTTP endpoint at /api/public/hooks/process-queue. Set up the external scheduler and its required authentication according to the README. This scheduled process handles queued email work and reply checks. Opening the dashboard alone is not a substitute for running the queue, and missing queue authentication should not be solved by making the endpoint publicly writable." },
+      { heading: "Treat LinkedIn execution as a separate choice", text: "For LinkedIn, choose the Chrome extension, local runner or a separately hosted browser worker. Chrome must remain running for extension execution; a persistent cloud browser needs its own deployment and configuration. LinkedIn automation can lead to account restrictions. The AceMail app container does not silently start a 24/7 LinkedIn browser for you." },
+      { heading: "Verify a small workflow before migrating everyone", text: "Confirm sign-in, contact import, a template preview, a test email and scheduled queue processing on the new HTTPS address. Check a reply and an unsubscribe flow, then test your CRM and any AI provider you enabled. Back up the database, plan credential rotation and monitor errors. Apache 2.0 licensing allows self-hosting, but compute, database, Google and AI provider costs or usage limits may still apply." },
+    ],
+  },
+  {
     slug: "connect-chatgpt-claude-to-cold-email-mcp",
     title: "How to run cold email from ChatGPT or Claude with MCP",
     description:

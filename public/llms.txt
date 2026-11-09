@@ -7,10 +7,16 @@
 - Features: sequences with follow-ups and A/B tests, CSV and Google Sheets import with custom fields, spintax, spam score, email verification, one-click unsubscribe and do-not-contact list, mailbox rotation with per-mailbox limits, unified inbox, open/click/reply/bounce analytics.
 - MCP endpoint: https://acemail.online/mcp (OAuth sign-in with an AceMail account).
 - Source code: https://github.com/priiyanshuraj/AceMail
+- CRM: interactive vertical sales funnel, deal values and close dates, client board, notes, reminders and email/LinkedIn activity. Email reply advancement requires a stage named Replied and skips detected automatic out-of-office replies.
+- AI: lead research and saved personalized outreach; bring your own DeepSeek, OpenAI, Anthropic or OpenAI-compatible key. Default shared free allowance is 20 cold emails and 20 LinkedIn messages per user/day, adjustable by admin. Own-key and MCP usage remain subject to external provider limits and costs.
+- Self-hosting: Docker app deployment with separately configured database/auth, Google integrations and an authenticated queue scheduler. LinkedIn browser execution needs the extension or a separate runner.
 
 ## Pages
 - [Home](https://acemail.online/)
 - [Blog](https://acemail.online/blog)
+- [Open-source outreach CRM and sales funnel](https://acemail.online/blog/open-source-outreach-crm-sales-funnel)
+- [AI personalized cold email with your own API key](https://acemail.online/blog/ai-personalized-cold-email-own-api-key)
+- [Self-host Gmail outreach and CRM with Docker](https://acemail.online/blog/self-host-gmail-outreach-crm-docker)
 - [How to run cold email from ChatGPT or Claude with MCP](https://acemail.online/blog/connect-chatgpt-claude-to-cold-email-mcp)
 - [Gmail sending limits for cold email: how many emails per day is safe?](https://acemail.online/blog/gmail-cold-email-sending-limits)
 - [How to reduce your cold email bounce rate below 2%](https://acemail.online/blog/reduce-cold-email-bounce-rate)
