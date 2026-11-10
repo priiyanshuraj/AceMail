@@ -25,8 +25,8 @@ function shimFetch(key: string): typeof fetch {
 export function supabaseForUser(ctx: ToolContext) {
   const token = ctx.getToken();
   if (!token) throw new Error("A verified sign-in is required");
-  const url = env(["SUPABASE_URL", "VITE_SUPABASE_URL"]);
-  const key = env(["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_ANON_KEY"]);
+  const url = env(["SUPABASE_URL", "VITE_SUPABASE_URL"]) || "https://owtmpwvjdcvqaukihcrq.supabase.co";
+  const key = env(["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_ANON_KEY"]) || "sb_publishable_dsSO0bbF7ddspBmUs8qooA_ljFIlVWJ";
   if (!url || !key) throw new Error("Backend configuration missing");
   return createClient(url, key, {
     global: { fetch: shimFetch(key), headers: { Authorization: `Bearer ${token}` } },
