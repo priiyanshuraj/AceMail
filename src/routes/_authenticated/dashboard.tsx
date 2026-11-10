@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { queryOptions, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getDashboardStats, listCampaigns } from "@/lib/acemail.functions";
 import { getLinkedinTracker } from "@/lib/outreach.functions";
@@ -50,7 +50,17 @@ const campaignsQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(statsQuery),
+  loader: async ({ context }) => {
+    try {
+      return await context.queryClient.ensureQueryData(statsQuery);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("Unauthorized") || msg.includes("token")) {
+        throw redirect({ to: "/auth" });
+      }
+      throw err;
+    }
+  },
   head: () => ({
     meta: [
       { title: "Dashboard — AceMail" },

@@ -32,6 +32,25 @@ export const Route = createFileRoute("/_authenticated")({
       throw redirect({ to: "/auth" });
     }
   },
+  errorComponent: ({ error, reset }) => {
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("Unauthorized") || msg.includes("token")) {
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth";
+      }
+      return null;
+    }
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-8 text-center">
+        <h2 className="text-xl font-bold">Something went wrong</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{msg}</p>
+        <div className="mt-4 flex gap-2">
+          <Button onClick={() => reset()}>Try again</Button>
+          <Button variant="outline" onClick={() => (window.location.href = "/")}>Go home</Button>
+        </div>
+      </div>
+    );
+  },
   component: AuthenticatedLayout,
 });
 

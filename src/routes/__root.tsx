@@ -38,21 +38,34 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error(error);
+  console.error("Root route error:", error);
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
+  const errorMessage =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+      ? error
+      : (error as { message?: string })?.message || JSON.stringify(error) || "Unknown error";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
+      <div className="max-w-xl text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           This page didn't load
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
+        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-left font-mono text-xs text-destructive overflow-auto max-h-48 whitespace-pre-wrap break-all">
+          <p className="font-semibold">{errorMessage}</p>
+          {error instanceof Error && error.stack && (
+            <p className="mt-2 text-[10px] text-muted-foreground opacity-75">{error.stack}</p>
+          )}
+        </div>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -69,6 +82,18 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           >
             Go home
           </a>
+          <button
+            onClick={() => {
+              try {
+                localStorage.clear();
+                sessionStorage.clear();
+              } catch {}
+              window.location.href = "/auth";
+            }}
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            Clear session & sign in
+          </button>
         </div>
       </div>
     </div>
