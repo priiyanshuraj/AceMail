@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS public.crm_stages (
   is_lost boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_stages ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 0;
+ALTER TABLE public.crm_stages ADD COLUMN IF NOT EXISTS color text NOT NULL DEFAULT 'slate';
+ALTER TABLE public.crm_stages ADD COLUMN IF NOT EXISTS is_won boolean NOT NULL DEFAULT false;
+ALTER TABLE public.crm_stages ADD COLUMN IF NOT EXISTS is_lost boolean NOT NULL DEFAULT false;
 GRANT ALL ON public.crm_stages TO authenticated, service_role;
 ALTER TABLE public.crm_stages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm stages" ON public.crm_stages;
@@ -37,6 +41,14 @@ CREATE TABLE IF NOT EXISTS public.crm_organizations (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS website text;
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS phone text;
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS address text;
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS city text;
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS country text;
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS industry text;
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS description text;
+ALTER TABLE public.crm_organizations ADD COLUMN IF NOT EXISTS employee_count integer;
 GRANT ALL ON public.crm_organizations TO authenticated, service_role;
 ALTER TABLE public.crm_organizations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm organizations" ON public.crm_organizations;
@@ -66,6 +78,15 @@ CREATE TABLE IF NOT EXISTS public.crm_deals (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 0;
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS value numeric NOT NULL DEFAULT 0;
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS currency text NOT NULL DEFAULT 'USD';
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS expected_close date;
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS lost_reason text;
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS won_reason text;
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS priority text DEFAULT 'medium';
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS territory text;
+ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS source text;
 GRANT ALL ON public.crm_deals TO authenticated, service_role;
 ALTER TABLE public.crm_deals ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm deals" ON public.crm_deals;
@@ -73,13 +94,6 @@ CREATE POLICY "Users manage their own crm deals" ON public.crm_deals
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE INDEX IF NOT EXISTS idx_crm_deals_user_stage ON public.crm_deals(user_id, stage_id);
 CREATE INDEX IF NOT EXISTS idx_crm_deals_contact ON public.crm_deals(contact_id);
-
--- Ensure deal columns exist if table was previously partially created
-ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS lost_reason text;
-ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS won_reason text;
-ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS priority text DEFAULT 'medium';
-ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS territory text;
-ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS source text;
 
 -- 4. Notes & Reminders
 CREATE TABLE IF NOT EXISTS public.crm_notes (
@@ -92,6 +106,8 @@ CREATE TABLE IF NOT EXISTS public.crm_notes (
   done boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_notes ADD COLUMN IF NOT EXISTS remind_at timestamptz;
+ALTER TABLE public.crm_notes ADD COLUMN IF NOT EXISTS done boolean NOT NULL DEFAULT false;
 GRANT ALL ON public.crm_notes TO authenticated, service_role;
 ALTER TABLE public.crm_notes ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm notes" ON public.crm_notes;
@@ -99,7 +115,7 @@ CREATE POLICY "Users manage their own crm notes" ON public.crm_notes
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE INDEX IF NOT EXISTS idx_crm_notes_contact ON public.crm_notes(contact_id);
 
--- 5. Products catalog
+-- 5. Products Catalog
 CREATE TABLE IF NOT EXISTS public.crm_products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -112,6 +128,7 @@ CREATE TABLE IF NOT EXISTS public.crm_products (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_products ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'product';
 GRANT ALL ON public.crm_products TO authenticated, service_role;
 ALTER TABLE public.crm_products ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm products" ON public.crm_products;
@@ -130,6 +147,9 @@ CREATE TABLE IF NOT EXISTS public.crm_deal_products (
   discount_pct numeric NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_deal_products ADD COLUMN IF NOT EXISTS qty numeric NOT NULL DEFAULT 1;
+ALTER TABLE public.crm_deal_products ADD COLUMN IF NOT EXISTS unit_price numeric NOT NULL DEFAULT 0;
+ALTER TABLE public.crm_deal_products ADD COLUMN IF NOT EXISTS discount_pct numeric NOT NULL DEFAULT 0;
 GRANT ALL ON public.crm_deal_products TO authenticated, service_role;
 ALTER TABLE public.crm_deal_products ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage crm deal products via deals" ON public.crm_deal_products;
@@ -165,6 +185,15 @@ CREATE TABLE IF NOT EXISTS public.crm_leads (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS priority text DEFAULT 'medium';
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS territory text;
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS source text;
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS type text;
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS status text DEFAULT 'new';
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS lead_value numeric DEFAULT 0;
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS currency text DEFAULT 'USD';
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS expected_close date;
+ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS lost_reason text;
 GRANT ALL ON public.crm_leads TO authenticated, service_role;
 ALTER TABLE public.crm_leads ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm leads" ON public.crm_leads;
@@ -172,9 +201,6 @@ CREATE POLICY "Users manage their own crm leads" ON public.crm_leads
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE INDEX IF NOT EXISTS idx_crm_leads_user ON public.crm_leads(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_crm_leads_contact ON public.crm_leads(contact_id);
-
-ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS priority text DEFAULT 'medium';
-ALTER TABLE public.crm_leads ADD COLUMN IF NOT EXISTS territory text;
 
 -- 8. Activities (Calls, Meetings, Tasks, Lunches)
 CREATE TABLE IF NOT EXISTS public.crm_activities (
@@ -193,6 +219,11 @@ CREATE TABLE IF NOT EXISTS public.crm_activities (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_activities ADD COLUMN IF NOT EXISTS lead_id uuid REFERENCES public.crm_leads(id) ON DELETE SET NULL;
+ALTER TABLE public.crm_activities ADD COLUMN IF NOT EXISTS schedule_from timestamptz;
+ALTER TABLE public.crm_activities ADD COLUMN IF NOT EXISTS schedule_to timestamptz;
+ALTER TABLE public.crm_activities ADD COLUMN IF NOT EXISTS location text;
+ALTER TABLE public.crm_activities ADD COLUMN IF NOT EXISTS done boolean NOT NULL DEFAULT false;
 GRANT ALL ON public.crm_activities TO authenticated, service_role;
 ALTER TABLE public.crm_activities ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm activities" ON public.crm_activities;
@@ -216,6 +247,11 @@ CREATE TABLE IF NOT EXISTS public.crm_quotes (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_quotes ADD COLUMN IF NOT EXISTS title text NOT NULL DEFAULT '';
+ALTER TABLE public.crm_quotes ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'draft';
+ALTER TABLE public.crm_quotes ADD COLUMN IF NOT EXISTS valid_until date;
+ALTER TABLE public.crm_quotes ADD COLUMN IF NOT EXISTS notes text;
+ALTER TABLE public.crm_quotes ADD COLUMN IF NOT EXISTS currency text NOT NULL DEFAULT 'USD';
 GRANT ALL ON public.crm_quotes TO authenticated, service_role;
 ALTER TABLE public.crm_quotes ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm quotes" ON public.crm_quotes;
@@ -237,6 +273,12 @@ CREATE TABLE IF NOT EXISTS public.crm_quote_items (
   position integer NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+-- Ensure missing columns exist in case table was created with an alternate schema
+ALTER TABLE public.crm_quote_items ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 0;
+ALTER TABLE public.crm_quote_items ADD COLUMN IF NOT EXISTS qty numeric NOT NULL DEFAULT 1;
+ALTER TABLE public.crm_quote_items ADD COLUMN IF NOT EXISTS unit_price numeric NOT NULL DEFAULT 0;
+ALTER TABLE public.crm_quote_items ADD COLUMN IF NOT EXISTS discount_pct numeric NOT NULL DEFAULT 0;
+ALTER TABLE public.crm_quote_items ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 GRANT ALL ON public.crm_quote_items TO authenticated, service_role;
 ALTER TABLE public.crm_quote_items ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage crm quote items via quotes" ON public.crm_quote_items;
@@ -263,6 +305,13 @@ CREATE TABLE IF NOT EXISTS public.crm_call_logs (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_call_logs ADD COLUMN IF NOT EXISTS type text DEFAULT 'outbound';
+ALTER TABLE public.crm_call_logs ADD COLUMN IF NOT EXISTS status text DEFAULT 'completed';
+ALTER TABLE public.crm_call_logs ADD COLUMN IF NOT EXISTS duration_seconds integer DEFAULT 0;
+ALTER TABLE public.crm_call_logs ADD COLUMN IF NOT EXISTS phone_number text;
+ALTER TABLE public.crm_call_logs ADD COLUMN IF NOT EXISTS summary text;
+ALTER TABLE public.crm_call_logs ADD COLUMN IF NOT EXISTS recording_url text;
+ALTER TABLE public.crm_call_logs ADD COLUMN IF NOT EXISTS started_at timestamptz DEFAULT now();
 GRANT ALL ON public.crm_call_logs TO authenticated, service_role;
 ALTER TABLE public.crm_call_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own call logs" ON public.crm_call_logs;
@@ -290,6 +339,11 @@ CREATE TABLE IF NOT EXISTS public.crm_tasks (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.crm_tasks ADD COLUMN IF NOT EXISTS priority text DEFAULT 'medium';
+ALTER TABLE public.crm_tasks ADD COLUMN IF NOT EXISTS status text DEFAULT 'todo';
+ALTER TABLE public.crm_tasks ADD COLUMN IF NOT EXISTS due_date date;
+ALTER TABLE public.crm_tasks ADD COLUMN IF NOT EXISTS reminder_at timestamptz;
+ALTER TABLE public.crm_tasks ADD COLUMN IF NOT EXISTS completed_at timestamptz;
 GRANT ALL ON public.crm_tasks TO authenticated, service_role;
 ALTER TABLE public.crm_tasks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage their own crm tasks" ON public.crm_tasks;
@@ -319,7 +373,7 @@ CREATE POLICY "Users manage their own crm settings" ON public.crm_settings
   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE INDEX IF NOT EXISTS idx_crm_settings_user ON public.crm_settings(user_id);
 
--- 14. Auto-advance deal to "Replied" stage when contact replies to an email
+-- 14. Auto-advance deal to "Replied" stage when contact replies
 CREATE OR REPLACE FUNCTION public.crm_advance_on_reply()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE st record;
@@ -348,5 +402,5 @@ DO $$ BEGIN
   END IF;
 END $$;
 
--- Reload Supabase PostgREST schema cache
+-- 15. Reload Supabase PostgREST schema cache
 NOTIFY pgrst, 'reload schema';
