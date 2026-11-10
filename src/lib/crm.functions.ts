@@ -50,6 +50,9 @@ export const createDeal = createServerFn({ method: "POST" })
       currency: z.string().max(8).default("USD"),
       expected_close: z.string().nullable().default(null),
       stage_id: z.string().uuid().optional(),
+      priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+      territory: z.string().max(100).nullable().default(null),
+      source: z.string().max(100).nullable().default(null),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -64,6 +67,9 @@ export const createDeal = createServerFn({ method: "POST" })
       value: data.value,
       currency: data.currency,
       expected_close: data.expected_close,
+      priority: data.priority,
+      territory: data.territory,
+      source: data.source,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -81,6 +87,9 @@ export const updateDeal = createServerFn({ method: "POST" })
       stage_id: z.string().uuid().optional(),
       lost_reason: z.string().max(500).nullable().optional(),
       won_reason: z.string().max(500).nullable().optional(),
+      priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
+      territory: z.string().max(100).nullable().optional(),
+      source: z.string().max(100).nullable().optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -937,4 +946,193 @@ export const getCrmDashboard = createServerFn({ method: "GET" })
       pendingQuotes: (quotesRes.data ?? []).filter((q) => q.status === "draft" || q.status === "sent").length,
       currency: deals[0]?.currency ?? "USD",
     };
+  });
+
+// ---------- Frappe CRM: Call Logs ----------
+
+export const getCallLogs = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ contact_id: z.string().uuid().optional(), deal_id: z.string().uuid().optional(), lead_id: z.string().uuid().optional() }).parse(d))
+  .handler(async ({ data, context }) => {
+    let q = context.supabase
+      .from("crm_call_logs")
+      .select("*, contacts(id, email, first_name, last_name, company), crm_deals(id, title), crm_leads(id, title)")
+      .eq("user_id", context.userId)
+      .order("started_at", { ascending: false });
+    if (data.contact_id) q = q.eq("contact_id", data.contact_id);
+    if (data.deal_id) q = q.eq("deal_id", data.deal_id);
+    if (data.lead_id) q = q.eq("lead_id", data.lead_id);
+    const { data: rows, error } = await q.limit(200);
+    if (error) {
+      if (isTableMissingError(error)) return [];
+      throw new Error(error.message);
+    }
+    return rows ?? [];
+  });
+
+export const createCallLog = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      contact_id: z.string().uuid().nullable().default(null),
+      deal_id: z.string().uuid().nullable().default(null),
+      lead_id: z.string().uuid().nullable().default(null),
+      type: z.enum(["inbound", "outbound"]).default("outbound"),
+      status: z.enum(["completed", "missed", "busy", "no_answer", "voicemail"]).default("completed"),
+      duration_seconds: z.number().int().min(0).default(0),
+      phone_number: z.string().max(50).nullable().default(null),
+      summary: z.string().max(5000).nullable().default(null),
+      recording_url: z.string().url().nullable().default(null),
+      started_at: z.string().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("crm_call_logs").insert({
+      ...data,
+      user_id: context.userId,
+      started_at: data.started_at ?? new Date().toISOString(),
+    });
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+export const deleteCallLog = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("crm_call_logs").delete().eq("id", data.id).eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ---------- Frappe CRM: Tasks Manager ----------
+
+export const getCrmTasks = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ status: z.string().optional(), priority: z.string().optional(), contact_id: z.string().uuid().optional(), deal_id: z.string().uuid().optional() }).parse(d))
+  .handler(async ({ data, context }) => {
+    let q = context.supabase
+      .from("crm_tasks")
+      .select("*, contacts(id, email, first_name, last_name, company), crm_deals(id, title), crm_leads(id, title)")
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false });
+    if (data.status) q = q.eq("status", data.status);
+    if (data.priority) q = q.eq("priority", data.priority);
+    if (data.contact_id) q = q.eq("contact_id", data.contact_id);
+    if (data.deal_id) q = q.eq("deal_id", data.deal_id);
+    const { data: rows, error } = await q.limit(200);
+    if (error) {
+      if (isTableMissingError(error)) return [];
+      throw new Error(error.message);
+    }
+    return rows ?? [];
+  });
+
+export const createCrmTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      title: z.string().trim().min(1).max(300),
+      description: z.string().max(5000).nullable().default(null),
+      priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+      status: z.enum(["todo", "in_progress", "completed", "cancelled"]).default("todo"),
+      due_date: z.string().nullable().default(null),
+      contact_id: z.string().uuid().nullable().default(null),
+      deal_id: z.string().uuid().nullable().default(null),
+      lead_id: z.string().uuid().nullable().default(null),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("crm_tasks").insert({
+      ...data,
+      user_id: context.userId,
+    });
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+export const updateCrmTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      id: z.string().uuid(),
+      title: z.string().trim().min(1).max(300).optional(),
+      description: z.string().max(5000).nullable().optional(),
+      priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
+      status: z.enum(["todo", "in_progress", "completed", "cancelled"]).optional(),
+      due_date: z.string().nullable().optional(),
+      completed_at: z.string().nullable().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { id, ...rest } = data;
+    const patch = { ...Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)), updated_at: new Date().toISOString() };
+    if (rest.status === "completed" && !rest.completed_at) patch.completed_at = new Date().toISOString();
+    const { error } = await context.supabase.from("crm_tasks").update(patch).eq("id", id).eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteCrmTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("crm_tasks").delete().eq("id", data.id).eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ---------- Frappe CRM: Settings & Master Data ----------
+
+export const getCrmSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("crm_settings")
+      .select("*")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (error && !isTableMissingError(error)) throw new Error(error.message);
+    if (data) return data;
+    // Default master taxonomy from Frappe CRM
+    return {
+      id: "default",
+      user_id: context.userId,
+      lead_sources: ["Website", "Referral", "Cold Email", "LinkedIn", "Conference", "Inbound", "Partner"],
+      lost_reasons: ["Price too high", "Competitor won", "Feature gap", "Budget freeze", "Bad timing", "Unresponsive", "Disqualified"],
+      territories: ["North America", "Europe", "Asia Pacific", "Latin America", "Middle East", "Global"],
+      industries: ["SaaS / Software", "Financial Services", "Healthcare", "E-commerce", "Manufacturing", "Consulting", "Real Estate", "Media / Marketing"],
+      default_currency: "USD",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  });
+
+export const saveCrmSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      lead_sources: z.array(z.string()).optional(),
+      lost_reasons: z.array(z.string()).optional(),
+      territories: z.array(z.string()).optional(),
+      industries: z.array(z.string()).optional(),
+      default_currency: z.string().max(8).optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const patch = { ...Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)), updated_at: new Date().toISOString() };
+    const { error } = await context.supabase
+      .from("crm_settings")
+      .upsert({ ...patch, user_id: context.userId }, { onConflict: "user_id" });
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
+    return { ok: true };
   });

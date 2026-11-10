@@ -26,6 +26,8 @@ import { listCrmLeads, manageCrmLeads } from "@/lib/mcp/tools/crm-leads";
 import { listCrmActivities, manageCrmActivities } from "@/lib/mcp/tools/crm-activities";
 import { listCrmOrganizations, manageCrmOrganizations } from "@/lib/mcp/tools/crm-organizations";
 import { listCrmProducts, manageCrmProducts, listCrmQuotes, manageCrmQuotes } from "@/lib/mcp/tools/crm-products-quotes";
+import { listCrmCallLogs, manageCrmCallLogs } from "@/lib/mcp/tools/crm-call-logs";
+import { listCrmTasks, manageCrmTasks } from "@/lib/mcp/tools/crm-tasks";
 import { chat, getLlmConfig, personalizeLead, webSearch, internalSiftdogSearch, type ChatMsg, type ToolSpec, type Lead, type SearchConfig } from "@/server/llm.server";
 
 type AnyTool = { name: string; description: string; inputSchema?: Record<string, z.ZodType>; handler: (args: never, ctx: ToolContext) => unknown };
@@ -38,6 +40,8 @@ const MCP_TOOLS = [
   listCrmStages, manageCrmStages,
   listCrmDeals, manageCrmDeals,
   listCrmLeads, manageCrmLeads,
+  listCrmCallLogs, manageCrmCallLogs,
+  listCrmTasks, manageCrmTasks,
   listCrmActivities, manageCrmActivities,
   listCrmOrganizations, manageCrmOrganizations,
   listCrmProducts, manageCrmProducts,
@@ -97,6 +101,8 @@ You can act on the user's account with full tool access:
 - CRM Sales Pipeline: list stages, add new stages, rename stages, recolor stages, reorder stages, and delete stages (with deal migration).
 - CRM Deals: list deals, create deals, update values, move deals between stages, track won/lost reasons, and delete deals.
 - CRM Leads: list inbound/outbound leads, create leads, update lead status, and convert leads to active pipeline deals.
+- CRM Tasks: manage to-dos, priorities (low, medium, high, urgent), due dates, and task completion.
+- CRM Call Logs: track and log inbound/outbound phone calls, durations, outcomes, and discussion notes.
 - CRM Activities: list scheduled activities, schedule calls/meetings/lunches/tasks, mark activities done, or delete activities.
 - CRM Organizations: list, create, update, and manage company accounts.
 - CRM Products & Quotes: manage product catalog, draft and update itemized quotes, and manage quote line items.

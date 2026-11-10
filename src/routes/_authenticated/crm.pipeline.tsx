@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Settings2, Users, Search, Funnel, ArrowUpRight, GripVertical, Trophy, CircleDollarSign, Target, CalendarDays, X, ArrowLeft, ChevronUp, ChevronDown, Check } from "lucide-react";
+import { Plus, Trash2, Settings2, Users, Search, Funnel, ArrowUpRight, GripVertical, Trophy, CircleDollarSign, Target, CalendarDays, X, ArrowLeft, ChevronUp, ChevronDown, Check, KanbanSquare, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 
 const pipelineQuery = () => queryOptions({ queryKey: ["crm-pipeline"], queryFn: () => getPipeline() });
@@ -45,6 +45,7 @@ function CrmPipelinePage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("pipeline");
   const [moving, setMoving] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"kanban" | "funnel">("kanban");
   const allDeals = deals as Deal[];
   const openDeals = allDeals.filter((d) => {
     const s = stages.find((st) => st.id === d.stage_id);
@@ -91,7 +92,25 @@ function CrmPipelinePage() {
           </Link>
           <h1 className="mt-1 text-3xl font-bold">Sales pipeline</h1>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 border rounded-lg p-1 bg-muted/40">
+            <Button
+              variant={viewMode === "kanban" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => setViewMode("kanban")}
+            >
+              <KanbanSquare className="h-3.5 w-3.5" /> Kanban
+            </Button>
+            <Button
+              variant={viewMode === "funnel" ? "default" : "ghost"}
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => setViewMode("funnel")}
+            >
+              <Funnel className="h-3.5 w-3.5" /> Funnel
+            </Button>
+          </div>
           <Button variant="outline" asChild><Link to="/crm/clients"><Users className="mr-1.5 h-4 w-4" /> Client board</Link></Button>
           <StageManager stages={stages} onDone={refresh} />
           <NewDealDialog stages={stages} onDone={refresh} />
@@ -113,71 +132,167 @@ function CrmPipelinePage() {
         ))}
       </div>
 
-      <div className="grid min-w-0 gap-7 lg:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.15fr)]">
-        <section className="min-w-0" aria-label="Sales funnel">
-          <div className="mb-5 flex items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 text-base font-semibold"><Funnel className="h-4 w-4 text-primary" /> Sales funnel</h2>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={() => setSelectedStage("all")} aria-pressed={selectedStage === "all"}>All</Button>
-              <StageManager stages={stages} onDone={refresh} triggerButton={<Button variant="outline" size="sm" className="h-8 gap-1 text-xs"><Plus className="h-3.5 w-3.5" /> Stage</Button>} />
+      {viewMode === "kanban" ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="relative max-w-sm flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search deals across stages..."
+                className="pl-9 h-9 text-xs"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <StageManager stages={stages} onDone={refresh} triggerButton={<Button variant="outline" size="sm" className="h-9 gap-1 text-xs"><Plus className="h-3.5 w-3.5" /> Stage</Button>} />
             </div>
           </div>
-          <div className="space-y-1.5" role="group" aria-label="Filter deals by funnel stage">
-            {funnelStages.map((stage, index) => {
-              const items = allDeals.filter((d) => d.stage_id === stage.id);
-              const step = 25 / Math.max(funnelStages.length, 1);
+
+          <div className="flex gap-4 overflow-x-auto pb-4 pt-1 items-start min-h-[550px]">
+            {stages.map((stage) => {
+              const stageDeals = allDeals.filter((d) => {
+                const text = `${d.title} ${d.contacts?.first_name ?? ""} ${d.contacts?.last_name ?? ""} ${d.contacts?.company ?? ""}`.toLowerCase();
+                return d.stage_id === stage.id && (!search || text.includes(search.toLowerCase()));
+              });
+              const stageTotal = valueOf(stageDeals);
+              const isOver = dragOver === stage.id;
               return (
-                <Button
+                <div
                   key={stage.id}
-                  variant="ghost"
-                  data-color={stage.color}
-                  data-selected={selectedStage === stage.id || dragOver === stage.id}
-                  className="crm-funnel-segment crm-stage"
-                  style={{ "--funnel-top": `${index * step}%`, "--funnel-bottom": `${(index + 1) * step}%` } as CSSProperties}
-                  aria-label={`Filter ${stage.name}, ${items.length} deals`}
-                  aria-pressed={selectedStage === stage.id}
-                  onClick={() => setSelectedStage(selectedStage === stage.id ? "all" : stage.id)}
+                  className={`w-72 shrink-0 rounded-xl border bg-card/60 flex flex-col transition-all shadow-xs ${
+                    isOver ? "border-primary ring-2 ring-primary/20 bg-accent/40" : ""
+                  }`}
                   onDragOver={(e) => { e.preventDefault(); setDragOver(stage.id); }}
                   onDragLeave={() => setDragOver(null)}
                   onDrop={(e) => onDrop(stage.id, e)}
                 >
-                  <span className="crm-funnel-content">
-                    <span className="flex min-w-0 items-center justify-center gap-2"><span className="crm-stage-dot h-2 w-2 shrink-0 rounded-full" /><span className="min-w-0 whitespace-normal break-words text-sm font-semibold">{stage.name}</span><span className="font-mono text-sm">{items.length}</span></span>
-                    <span className="mt-1 block text-xs text-muted-foreground">{fmtMoney(valueOf(items), currency)}</span>
-                  </span>
-                </Button>
+                  <div className="p-3 border-b flex items-center justify-between bg-card/80 rounded-t-xl">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${stageColor(stage.color).dot}`} />
+                      <span className="font-semibold text-xs truncate max-w-[130px]">{stage.name}</span>
+                      <span className="text-[11px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full tabular-nums">
+                        {stageDeals.length}
+                      </span>
+                    </div>
+                    <span className="text-xs font-mono font-medium text-muted-foreground">
+                      {fmtMoney(stageTotal, currency)}
+                    </span>
+                  </div>
+
+                  <div className="p-2 space-y-2 flex-1 min-h-[150px] max-h-[calc(100vh-320px)] overflow-y-auto">
+                    {stageDeals.map((deal) => {
+                      const name = deal.contacts ? (`${deal.contacts.first_name} ${deal.contacts.last_name}`.trim() || deal.contacts.email) : "Unknown";
+                      return (
+                        <div
+                          key={deal.id}
+                          draggable
+                          onDragStart={(e) => e.dataTransfer.setData("text/deal-id", deal.id)}
+                          className="group rounded-lg border bg-background p-3 shadow-xs hover:border-primary/50 hover:shadow-sm cursor-grab active:cursor-grabbing transition-all space-y-2"
+                        >
+                          <div className="flex items-start justify-between gap-1.5">
+                            <Link
+                              to="/crm/clients/$contactId"
+                              params={{ contactId: deal.contact_id }}
+                              className="font-medium text-xs hover:text-primary leading-tight line-clamp-2"
+                            >
+                              {deal.title || name}
+                            </Link>
+                            <span className="text-xs font-semibold tabular-nums text-foreground shrink-0 font-mono">
+                              {fmtMoney(deal.value, deal.currency)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t">
+                            <span className="truncate max-w-[130px]">{name}</span>
+                            {deal.expected_close && (
+                              <span className="flex items-center gap-1">
+                                <CalendarDays className="h-3 w-3 shrink-0" />
+                                {deal.expected_close}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {stageDeals.length === 0 && (
+                      <div className="flex items-center justify-center h-24 text-[11px] text-muted-foreground border border-dashed rounded-lg">
+                        Drop deals here
+                      </div>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
-          <div className="mt-5 space-y-2 border-t pt-4">
-            {stages.filter((s) => s.is_lost).map((stage) => (
-              <Button key={stage.id} variant="ghost" data-color={stage.color} className="crm-stage w-full justify-between" aria-pressed={selectedStage === stage.id} onClick={() => setSelectedStage(selectedStage === stage.id ? "all" : stage.id)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => onDrop(stage.id, e)}>
-                <span className="flex items-center gap-2"><span className="crm-stage-dot h-2 w-2 rounded-full" />{stage.name}</span>
-                <span className="text-muted-foreground">{allDeals.filter((d) => d.stage_id === stage.id).length} · {fmtMoney(valueOf(allDeals.filter((d) => d.stage_id === stage.id)), currency)}</span>
-              </Button>
-            ))}
-          </div>
-        </section>
-
-        <section className="min-w-0 lg:border-l lg:pl-7" aria-label="Deal workspace">
-          <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2"><h2 className="truncate text-base font-semibold">{activeStage?.name ?? "All deals"}</h2><span className="rounded-md bg-muted px-2 py-0.5 text-xs tabular-nums">{visibleDeals.length}</span></div>
-            {selectedStage !== "all" && <Button variant="ghost" size="icon" aria-label="Clear stage filter" onClick={() => setSelectedStage("all")}><X className="h-4 w-4" /></Button>}
-          </div>
-          <div className="mb-4 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2">
-            <div className="relative min-w-0"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input className="h-10 pl-9" aria-label="Search deals" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search deals or clients" /></div>
-            <Select value={sort} onValueChange={setSort}><SelectTrigger className="h-10 w-28" aria-label="Sort deals"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pipeline">Stage</SelectItem><SelectItem value="value">Value</SelectItem><SelectItem value="close">Close date</SelectItem></SelectContent></Select>
-          </div>
-          {visibleDeals.length > 0 ? <div className="divide-y border-y">{visibleDeals.map((deal) => <DealCard key={deal.id} deal={deal} stages={stages} moving={moving === deal.id} onMove={(id) => void changeStage(deal.id, id)} onChanged={refresh} />)}</div> : (
-            <div className="flex min-h-64 flex-col items-center justify-center border-y px-4 py-10 text-center">
-              <div className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-accent text-primary"><Funnel className="h-5 w-5" /></div>
-              <h3 className="text-base font-semibold">{search ? "No matching deals" : activeStage ? `No deals in ${activeStage.name}` : "Your next opportunity starts here"}</h3>
-              <p className="mt-2 max-w-64 text-sm text-muted-foreground">{search ? "Try a different name or company." : "Add a deal to bring your pipeline to life."}</p>
-              <div className="mt-5">{search ? <Button variant="outline" onClick={() => setSearch("")}>Clear search</Button> : <NewDealDialog stages={stages} onDone={refresh} />}</div>
+        </div>
+      ) : (
+        <div className="grid min-w-0 gap-7 lg:grid-cols-[minmax(260px,0.85fr)_minmax(0,1.15fr)]">
+          <section className="min-w-0" aria-label="Sales funnel">
+            <div className="mb-5 flex items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-base font-semibold"><Funnel className="h-4 w-4 text-primary" /> Sales funnel</h2>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="sm" onClick={() => setSelectedStage("all")} aria-pressed={selectedStage === "all"}>All</Button>
+                <StageManager stages={stages} onDone={refresh} triggerButton={<Button variant="outline" size="sm" className="h-8 gap-1 text-xs"><Plus className="h-3.5 w-3.5" /> Stage</Button>} />
+              </div>
             </div>
-          )}
-        </section>
-      </div>
+            <div className="space-y-1.5" role="group" aria-label="Filter deals by funnel stage">
+              {funnelStages.map((stage, index) => {
+                const items = allDeals.filter((d) => d.stage_id === stage.id);
+                const step = 25 / Math.max(funnelStages.length, 1);
+                return (
+                  <Button
+                    key={stage.id}
+                    variant="ghost"
+                    data-color={stage.color}
+                    data-selected={selectedStage === stage.id || dragOver === stage.id}
+                    className="crm-funnel-segment crm-stage"
+                    style={{ "--funnel-top": `${index * step}%`, "--funnel-bottom": `${(index + 1) * step}%` } as CSSProperties}
+                    aria-label={`Filter ${stage.name}, ${items.length} deals`}
+                    aria-pressed={selectedStage === stage.id}
+                    onClick={() => setSelectedStage(selectedStage === stage.id ? "all" : stage.id)}
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(stage.id); }}
+                    onDragLeave={() => setDragOver(null)}
+                    onDrop={(e) => onDrop(stage.id, e)}
+                  >
+                    <span className="crm-funnel-content">
+                      <span className="flex min-w-0 items-center justify-center gap-2"><span className="crm-stage-dot h-2 w-2 shrink-0 rounded-full" /><span className="min-w-0 whitespace-normal break-words text-sm font-semibold">{stage.name}</span><span className="font-mono text-sm">{items.length}</span></span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{fmtMoney(valueOf(items), currency)}</span>
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
+            <div className="mt-5 space-y-2 border-t pt-4">
+              {stages.filter((s) => s.is_lost).map((stage) => (
+                <Button key={stage.id} variant="ghost" data-color={stage.color} className="crm-stage w-full justify-between" aria-pressed={selectedStage === stage.id} onClick={() => setSelectedStage(selectedStage === stage.id ? "all" : stage.id)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => onDrop(stage.id, e)}>
+                  <span className="flex items-center gap-2"><span className="crm-stage-dot h-2 w-2 rounded-full" />{stage.name}</span>
+                  <span className="text-muted-foreground">{allDeals.filter((d) => d.stage_id === stage.id).length} · {fmtMoney(valueOf(allDeals.filter((d) => d.stage_id === stage.id)), currency)}</span>
+                </Button>
+              ))}
+            </div>
+          </section>
+
+          <section className="min-w-0 lg:border-l lg:pl-7" aria-label="Deal workspace">
+            <div className="mb-4 flex min-w-0 items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2"><h2 className="truncate text-base font-semibold">{activeStage?.name ?? "All deals"}</h2><span className="rounded-md bg-muted px-2 py-0.5 text-xs tabular-nums">{visibleDeals.length}</span></div>
+              {selectedStage !== "all" && <Button variant="ghost" size="icon" aria-label="Clear stage filter" onClick={() => setSelectedStage("all")}><X className="h-4 w-4" /></Button>}
+            </div>
+            <div className="mb-4 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2">
+              <div className="relative min-w-0"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input className="h-10 pl-9" aria-label="Search deals" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search deals or clients" /></div>
+              <Select value={sort} onValueChange={setSort}><SelectTrigger className="h-10 w-28" aria-label="Sort deals"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="pipeline">Stage</SelectItem><SelectItem value="value">Value</SelectItem><SelectItem value="close">Close date</SelectItem></SelectContent></Select>
+            </div>
+            {visibleDeals.length > 0 ? <div className="divide-y border-y">{visibleDeals.map((deal) => <DealCard key={deal.id} deal={deal} stages={stages} moving={moving === deal.id} onMove={(id) => void changeStage(deal.id, id)} onChanged={refresh} />)}</div> : (
+              <div className="flex min-h-64 flex-col items-center justify-center border-y px-4 py-10 text-center">
+                <div className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-accent text-primary"><Funnel className="h-5 w-5" /></div>
+                <h3 className="text-base font-semibold">{search ? "No matching deals" : activeStage ? `No deals in ${activeStage.name}` : "Your next opportunity starts here"}</h3>
+                <p className="mt-2 max-w-64 text-sm text-muted-foreground">{search ? "Try a different name or company." : "Add a deal to bring your pipeline to life."}</p>
+                <div className="mt-5">{search ? <Button variant="outline" onClick={() => setSearch("")}>Clear search</Button> : <NewDealDialog stages={stages} onDone={refresh} />}</div>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 }

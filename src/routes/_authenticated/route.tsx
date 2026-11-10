@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot, ShieldCheck, KanbanSquare, Activity, Building2, Package, FileText, Zap } from "lucide-react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot, ShieldCheck, KanbanSquare, Activity, Building2, Package, FileText, Zap, CheckSquare, PhoneCall, Sliders } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getIsAdmin } from "@/lib/admin.functions";
 import { PetalField } from "@/components/PetalField";
@@ -53,11 +53,14 @@ const crmSubNav = [
   { to: "/crm", label: "Overview", icon: LayoutDashboard },
   { to: "/crm/pipeline", label: "Pipeline", icon: KanbanSquare },
   { to: "/crm/leads", label: "Leads", icon: Zap },
+  { to: "/crm/tasks", label: "Tasks", icon: CheckSquare },
+  { to: "/crm/call-logs", label: "Call Logs", icon: PhoneCall },
   { to: "/crm/clients", label: "Clients", icon: Users },
   { to: "/crm/organizations", label: "Organizations", icon: Building2 },
   { to: "/crm/activities", label: "Activities", icon: Activity },
   { to: "/crm/products", label: "Products", icon: Package },
   { to: "/crm/quotes", label: "Quotes", icon: FileText },
+  { to: "/crm/settings", label: "CRM Settings", icon: Sliders },
 ] as const;
 
 function AuthenticatedLayout() {

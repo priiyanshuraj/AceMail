@@ -334,7 +334,10 @@ export type Database = {
           id: string
           lost_reason: string | null
           position: number
+          priority: string | null
+          source: string | null
           stage_id: string
+          territory: string | null
           title: string
           updated_at: string
           user_id: string
@@ -349,7 +352,10 @@ export type Database = {
           id?: string
           lost_reason?: string | null
           position?: number
+          priority?: string | null
+          source?: string | null
           stage_id: string
+          territory?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -364,7 +370,10 @@ export type Database = {
           id?: string
           lost_reason?: string | null
           position?: number
+          priority?: string | null
+          source?: string | null
           stage_id?: string
+          territory?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -881,6 +890,188 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crm_call_logs: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          duration_seconds: number
+          id: string
+          lead_id: string | null
+          phone_number: string | null
+          recording_url: string | null
+          started_at: string
+          status: string
+          summary: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          duration_seconds?: number
+          id?: string
+          lead_id?: string | null
+          phone_number?: string | null
+          recording_url?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          duration_seconds?: number
+          id?: string
+          lead_id?: string | null
+          phone_number?: string | null
+          recording_url?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_call_logs_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_call_logs_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_call_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_tasks: {
+        Row: {
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          lead_id: string | null
+          priority: string
+          reminder_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          reminder_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          lead_id?: string | null
+          priority?: string
+          reminder_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tasks_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_settings: {
+        Row: {
+          created_at: string
+          default_currency: string
+          id: string
+          industries: Json
+          lead_sources: Json
+          lost_reasons: Json
+          territories: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_currency?: string
+          id?: string
+          industries?: Json
+          lead_sources?: Json
+          lost_reasons?: Json
+          territories?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_currency?: string
+          id?: string
+          industries?: Json
+          lead_sources?: Json
+          lost_reasons?: Json
+          territories?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       email_click_events: {
         Row: {

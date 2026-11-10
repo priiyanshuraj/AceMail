@@ -22,15 +22,17 @@ import { listCrmLeads, manageCrmLeads } from "./tools/crm-leads";
 import { listCrmActivities, manageCrmActivities } from "./tools/crm-activities";
 import { listCrmOrganizations, manageCrmOrganizations } from "./tools/crm-organizations";
 import { listCrmProducts, manageCrmProducts, listCrmQuotes, manageCrmQuotes } from "./tools/crm-products-quotes";
+import { listCrmCallLogs, manageCrmCallLogs } from "./tools/crm-call-logs";
+import { listCrmTasks, manageCrmTasks } from "./tools/crm-tasks";
 
 const projectRef = import.meta.env["VITE_SUPABASE_PROJECT_ID"] ?? "project-ref-unset";
 
 export default defineMcp({
   name: "acemail",
   title: "Acemail",
-  version: "0.4.0",
+  version: "0.5.0",
   instructions:
-    "Comprehensive tools for AceMail cold email, LinkedIn outreach, and full CRM suite. Manage contact lists, contacts, email templates, outreach campaigns, stats, inbox replies, outbox logs, suppressions, LinkedIn sequences/tasks, CRM pipeline stages (add, rename, reorder, delete, migrate), CRM deals (create, update, move stages, value, won/lost reasons), inbound/outbound leads (create, track, convert to deals), scheduled client activities (calls, meetings, lunches, tasks), company organizations, product catalogs, and itemized quotes/proposals.",
+    "Comprehensive tools for AceMail cold email, LinkedIn outreach, and full CRM suite with Frappe CRM parity. Manage contact lists, contacts, email templates, outreach campaigns, stats, inbox replies, outbox logs, suppressions, LinkedIn sequences/tasks, CRM pipeline stages (add, rename, reorder, delete, migrate), CRM deals (create, update, move stages, value, won/lost reasons), inbound/outbound leads (create, track, convert to deals), phone call logs (inbound/outbound durations and summaries), CRM tasks and priorities, scheduled client activities (calls, meetings, lunches), company organizations, product catalogs, and itemized quotes/proposals.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
@@ -43,6 +45,8 @@ export default defineMcp({
     listCrmStages, manageCrmStages,
     listCrmDeals, manageCrmDeals,
     listCrmLeads, manageCrmLeads,
+    listCrmCallLogs, manageCrmCallLogs,
+    listCrmTasks, manageCrmTasks,
     listCrmActivities, manageCrmActivities,
     listCrmOrganizations, manageCrmOrganizations,
     listCrmProducts, manageCrmProducts,

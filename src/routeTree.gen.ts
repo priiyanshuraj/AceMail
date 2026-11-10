@@ -37,8 +37,11 @@ import { Route as AuthenticatedCampaignsNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedContactsContactIdRouteImport } from './routes/_authenticated/contacts_.$contactId'
 import { Route as AuthenticatedCrmIndexRouteImport } from './routes/_authenticated/crm.index'
 import { Route as AuthenticatedCrmActivitiesRouteImport } from './routes/_authenticated/crm.activities'
+import { Route as AuthenticatedCrmCallLogsRouteImport } from './routes/_authenticated/crm.call-logs'
 import { Route as AuthenticatedCrmPipelineRouteImport } from './routes/_authenticated/crm.pipeline'
 import { Route as AuthenticatedCrmProductsRouteImport } from './routes/_authenticated/crm.products'
+import { Route as AuthenticatedCrmSettingsRouteImport } from './routes/_authenticated/crm.settings'
+import { Route as AuthenticatedCrmTasksRouteImport } from './routes/_authenticated/crm.tasks'
 import { Route as AuthenticatedCampaignsEditCampaignIdRouteImport } from './routes/_authenticated/campaigns/edit.$campaignId'
 import { Route as AuthenticatedCrmClientsIndexRouteImport } from './routes/_authenticated/crm.clients.index'
 import { Route as AuthenticatedCrmClientsContactIdRouteImport } from './routes/_authenticated/crm.clients.$contactId'
@@ -201,6 +204,12 @@ const AuthenticatedCrmActivitiesRoute =
     path: '/crm/activities',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCrmCallLogsRoute =
+  AuthenticatedCrmCallLogsRouteImport.update({
+    id: '/crm/call-logs',
+    path: '/crm/call-logs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCrmPipelineRoute =
   AuthenticatedCrmPipelineRouteImport.update({
     id: '/crm/pipeline',
@@ -213,6 +222,17 @@ const AuthenticatedCrmProductsRoute =
     path: '/crm/products',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCrmSettingsRoute =
+  AuthenticatedCrmSettingsRouteImport.update({
+    id: '/crm/settings',
+    path: '/crm/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCrmTasksRoute = AuthenticatedCrmTasksRouteImport.update({
+  id: '/crm/tasks',
+  path: '/crm/tasks',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCampaignsEditCampaignIdRoute =
   AuthenticatedCampaignsEditCampaignIdRouteImport.update({
     id: '/campaigns/edit/$campaignId',
@@ -333,8 +353,11 @@ export interface FileRoutesByFullPath {
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/contacts/$contactId': typeof AuthenticatedContactsContactIdRoute
   '/crm/activities': typeof AuthenticatedCrmActivitiesRoute
+  '/crm/call-logs': typeof AuthenticatedCrmCallLogsRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/crm/products': typeof AuthenticatedCrmProductsRoute
+  '/crm/settings': typeof AuthenticatedCrmSettingsRoute
+  '/crm/tasks': typeof AuthenticatedCrmTasksRoute
   '/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/crm/': typeof AuthenticatedCrmIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
@@ -380,8 +403,11 @@ export interface FileRoutesByTo {
   '/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/contacts/$contactId': typeof AuthenticatedContactsContactIdRoute
   '/crm/activities': typeof AuthenticatedCrmActivitiesRoute
+  '/crm/call-logs': typeof AuthenticatedCrmCallLogsRoute
   '/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/crm/products': typeof AuthenticatedCrmProductsRoute
+  '/crm/settings': typeof AuthenticatedCrmSettingsRoute
+  '/crm/tasks': typeof AuthenticatedCrmTasksRoute
   '/campaigns': typeof AuthenticatedCampaignsIndexRoute
   '/crm': typeof AuthenticatedCrmIndexRoute
   '/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
@@ -429,8 +455,11 @@ export interface FileRoutesById {
   '/_authenticated/campaigns/new': typeof AuthenticatedCampaignsNewRoute
   '/_authenticated/contacts_/$contactId': typeof AuthenticatedContactsContactIdRoute
   '/_authenticated/crm/activities': typeof AuthenticatedCrmActivitiesRoute
+  '/_authenticated/crm/call-logs': typeof AuthenticatedCrmCallLogsRoute
   '/_authenticated/crm/pipeline': typeof AuthenticatedCrmPipelineRoute
   '/_authenticated/crm/products': typeof AuthenticatedCrmProductsRoute
+  '/_authenticated/crm/settings': typeof AuthenticatedCrmSettingsRoute
+  '/_authenticated/crm/tasks': typeof AuthenticatedCrmTasksRoute
   '/_authenticated/campaigns/': typeof AuthenticatedCampaignsIndexRoute
   '/_authenticated/crm/': typeof AuthenticatedCrmIndexRoute
   '/_authenticated/campaigns/edit/$campaignId': typeof AuthenticatedCampaignsEditCampaignIdRoute
@@ -478,8 +507,11 @@ export interface FileRouteTypes {
     | '/campaigns/new'
     | '/contacts/$contactId'
     | '/crm/activities'
+    | '/crm/call-logs'
     | '/crm/pipeline'
     | '/crm/products'
+    | '/crm/settings'
+    | '/crm/tasks'
     | '/campaigns/'
     | '/crm/'
     | '/campaigns/edit/$campaignId'
@@ -525,8 +557,11 @@ export interface FileRouteTypes {
     | '/campaigns/new'
     | '/contacts/$contactId'
     | '/crm/activities'
+    | '/crm/call-logs'
     | '/crm/pipeline'
     | '/crm/products'
+    | '/crm/settings'
+    | '/crm/tasks'
     | '/campaigns'
     | '/crm'
     | '/campaigns/edit/$campaignId'
@@ -573,8 +608,11 @@ export interface FileRouteTypes {
     | '/_authenticated/campaigns/new'
     | '/_authenticated/contacts_/$contactId'
     | '/_authenticated/crm/activities'
+    | '/_authenticated/crm/call-logs'
     | '/_authenticated/crm/pipeline'
     | '/_authenticated/crm/products'
+    | '/_authenticated/crm/settings'
+    | '/_authenticated/crm/tasks'
     | '/_authenticated/campaigns/'
     | '/_authenticated/crm/'
     | '/_authenticated/campaigns/edit/$campaignId'
@@ -815,6 +853,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCrmActivitiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/crm/call-logs': {
+      id: '/_authenticated/crm/call-logs'
+      path: '/crm/call-logs'
+      fullPath: '/crm/call-logs'
+      preLoaderRoute: typeof AuthenticatedCrmCallLogsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crm/pipeline': {
       id: '/_authenticated/crm/pipeline'
       path: '/crm/pipeline'
@@ -827,6 +872,20 @@ declare module '@tanstack/react-router' {
       path: '/crm/products'
       fullPath: '/crm/products'
       preLoaderRoute: typeof AuthenticatedCrmProductsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/crm/settings': {
+      id: '/_authenticated/crm/settings'
+      path: '/crm/settings'
+      fullPath: '/crm/settings'
+      preLoaderRoute: typeof AuthenticatedCrmSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/crm/tasks': {
+      id: '/_authenticated/crm/tasks'
+      path: '/crm/tasks'
+      fullPath: '/crm/tasks'
+      preLoaderRoute: typeof AuthenticatedCrmTasksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/campaigns/edit/$campaignId': {
@@ -960,8 +1019,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCampaignsNewRoute: typeof AuthenticatedCampaignsNewRoute
   AuthenticatedContactsContactIdRoute: typeof AuthenticatedContactsContactIdRoute
   AuthenticatedCrmActivitiesRoute: typeof AuthenticatedCrmActivitiesRoute
+  AuthenticatedCrmCallLogsRoute: typeof AuthenticatedCrmCallLogsRoute
   AuthenticatedCrmPipelineRoute: typeof AuthenticatedCrmPipelineRoute
   AuthenticatedCrmProductsRoute: typeof AuthenticatedCrmProductsRoute
+  AuthenticatedCrmSettingsRoute: typeof AuthenticatedCrmSettingsRoute
+  AuthenticatedCrmTasksRoute: typeof AuthenticatedCrmTasksRoute
   AuthenticatedCampaignsIndexRoute: typeof AuthenticatedCampaignsIndexRoute
   AuthenticatedCrmIndexRoute: typeof AuthenticatedCrmIndexRoute
   AuthenticatedCampaignsEditCampaignIdRoute: typeof AuthenticatedCampaignsEditCampaignIdRoute
@@ -990,8 +1052,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCampaignsNewRoute: AuthenticatedCampaignsNewRoute,
   AuthenticatedContactsContactIdRoute: AuthenticatedContactsContactIdRoute,
   AuthenticatedCrmActivitiesRoute: AuthenticatedCrmActivitiesRoute,
+  AuthenticatedCrmCallLogsRoute: AuthenticatedCrmCallLogsRoute,
   AuthenticatedCrmPipelineRoute: AuthenticatedCrmPipelineRoute,
   AuthenticatedCrmProductsRoute: AuthenticatedCrmProductsRoute,
+  AuthenticatedCrmSettingsRoute: AuthenticatedCrmSettingsRoute,
+  AuthenticatedCrmTasksRoute: AuthenticatedCrmTasksRoute,
   AuthenticatedCampaignsIndexRoute: AuthenticatedCampaignsIndexRoute,
   AuthenticatedCrmIndexRoute: AuthenticatedCrmIndexRoute,
   AuthenticatedCampaignsEditCampaignIdRoute:
