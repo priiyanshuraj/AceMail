@@ -183,6 +183,34 @@
       "when": 1794181275802,
       "tag": "0025_crm_advance_on_reply",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794200000000,
+      "tag": "0026_crm_activities",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1794200100000,
+      "tag": "0027_crm_organizations",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794200200000,
+      "tag": "0028_crm_products_quotes",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794200300000,
+      "tag": "0029_crm_leads",
+      "breakpoints": true
     }
   ]
 }

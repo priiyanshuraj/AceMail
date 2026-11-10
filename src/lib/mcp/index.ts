@@ -16,15 +16,21 @@ import {
   listLinkedinSequences, setLinkedinSequenceStatus, listLinkedinTasks, completeLinkedinTask,
   markLinkedinReplied, getLinkedinActivity, getContactDetail, updateContactProfile,
 } from "./tools/linkedin";
+import { listCrmStages, manageCrmStages } from "./tools/crm-stages";
+import { listCrmDeals, manageCrmDeals } from "./tools/crm-deals";
+import { listCrmLeads, manageCrmLeads } from "./tools/crm-leads";
+import { listCrmActivities, manageCrmActivities } from "./tools/crm-activities";
+import { listCrmOrganizations, manageCrmOrganizations } from "./tools/crm-organizations";
+import { listCrmProducts, manageCrmProducts, listCrmQuotes, manageCrmQuotes } from "./tools/crm-products-quotes";
 
 const projectRef = import.meta.env["VITE_SUPABASE_PROJECT_ID"] ?? "project-ref-unset";
 
 export default defineMcp({
   name: "acemail",
   title: "Acemail",
-  version: "0.3.0",
+  version: "0.4.0",
   instructions:
-    "Tools for AceMail cold email and LinkedIn outreach. Manage contact lists and contacts (including custom CSV columns that become {{field}} template variables, job title, phone and LinkedIn link), write and spam-check templates, review campaigns and their stats, read inbox replies and the send log, manage the do-not-contact list, and run LinkedIn sequences: list, start or pause them, read and complete daily LinkedIn tasks, mark LinkedIn replies and see activity. Sending email and connecting mailboxes or LinkedIn are done in the AceMail app. Ask the user before deleting contacts.",
+    "Comprehensive tools for AceMail cold email, LinkedIn outreach, and full CRM suite. Manage contact lists, contacts, email templates, outreach campaigns, stats, inbox replies, outbox logs, suppressions, LinkedIn sequences/tasks, CRM pipeline stages (add, rename, reorder, delete, migrate), CRM deals (create, update, move stages, value, won/lost reasons), inbound/outbound leads (create, track, convert to deals), scheduled client activities (calls, meetings, lunches, tasks), company organizations, product catalogs, and itemized quotes/proposals.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
@@ -34,5 +40,12 @@ export default defineMcp({
     listTemplates, saveTemplate, listCampaigns, getCampaignStats, listInbox, listOutbox, manageSuppressions,
     getContactDetail, updateContactProfile,
     listLinkedinSequences, setLinkedinSequenceStatus, listLinkedinTasks, completeLinkedinTask, markLinkedinReplied, getLinkedinActivity,
+    listCrmStages, manageCrmStages,
+    listCrmDeals, manageCrmDeals,
+    listCrmLeads, manageCrmLeads,
+    listCrmActivities, manageCrmActivities,
+    listCrmOrganizations, manageCrmOrganizations,
+    listCrmProducts, manageCrmProducts,
+    listCrmQuotes, manageCrmQuotes,
   ],
 });

@@ -20,6 +20,12 @@ import {
   listLinkedinSequences, setLinkedinSequenceStatus, listLinkedinTasks, completeLinkedinTask,
   markLinkedinReplied, getLinkedinActivity, getContactDetail, updateContactProfile,
 } from "@/lib/mcp/tools/linkedin";
+import { listCrmStages, manageCrmStages } from "@/lib/mcp/tools/crm-stages";
+import { listCrmDeals, manageCrmDeals } from "@/lib/mcp/tools/crm-deals";
+import { listCrmLeads, manageCrmLeads } from "@/lib/mcp/tools/crm-leads";
+import { listCrmActivities, manageCrmActivities } from "@/lib/mcp/tools/crm-activities";
+import { listCrmOrganizations, manageCrmOrganizations } from "@/lib/mcp/tools/crm-organizations";
+import { listCrmProducts, manageCrmProducts, listCrmQuotes, manageCrmQuotes } from "@/lib/mcp/tools/crm-products-quotes";
 import { chat, getLlmConfig, personalizeLead, webSearch, internalSiftdogSearch, type ChatMsg, type ToolSpec, type Lead, type SearchConfig } from "@/server/llm.server";
 
 type AnyTool = { name: string; description: string; inputSchema?: Record<string, z.ZodType>; handler: (args: never, ctx: ToolContext) => unknown };
@@ -29,6 +35,13 @@ const MCP_TOOLS = [
   listTemplates, saveTemplate, listCampaigns, getCampaignStats, listInbox, listOutbox, manageSuppressions,
   getContactDetail, updateContactProfile,
   listLinkedinSequences, setLinkedinSequenceStatus, listLinkedinTasks, completeLinkedinTask, markLinkedinReplied, getLinkedinActivity,
+  listCrmStages, manageCrmStages,
+  listCrmDeals, manageCrmDeals,
+  listCrmLeads, manageCrmLeads,
+  listCrmActivities, manageCrmActivities,
+  listCrmOrganizations, manageCrmOrganizations,
+  listCrmProducts, manageCrmProducts,
+  listCrmQuotes, manageCrmQuotes,
 ] as unknown as AnyTool[];
 
 function toSpec(t: AnyTool): ToolSpec {
@@ -79,15 +92,23 @@ export async function personalizeWithDb(db: Db, userId: string, ids: string[], i
   return { results };
 }
 
-const SYSTEM = `You are the AceMail assistant inside the user's AceMail app (cold email + LinkedIn outreach).
-You can act on the user's account with tools: contact lists, contacts and custom fields, templates, campaigns and stats, inbox, outbox, do-not-contact list, LinkedIn sequences and tasks.
-Use personalize_contacts to research leads (company website and web search) and write a personalised opener, subject and body per lead; they are saved as {{ai_opener}}, {{ai_subject}} and {{ai_body}} fields usable in templates.
-Use web_search for any general research. Do the work instead of describing it. Look up IDs with list tools before acting. Be concise, use plain language, no em dashes.
-Connecting mailboxes, connecting LinkedIn and pressing Start on an email campaign happen on their pages in the app; tell the user where to click when needed.`;
+const SYSTEM = `You are the AceMail AI assistant inside the user's AceMail app (cold email outreach + full CRM suite).
+You can act on the user's account with full tool access:
+- CRM Sales Pipeline: list stages, add new stages, rename stages, recolor stages, reorder stages, and delete stages (with deal migration).
+- CRM Deals: list deals, create deals, update values, move deals between stages, track won/lost reasons, and delete deals.
+- CRM Leads: list inbound/outbound leads, create leads, update lead status, and convert leads to active pipeline deals.
+- CRM Activities: list scheduled activities, schedule calls/meetings/lunches/tasks, mark activities done, or delete activities.
+- CRM Organizations: list, create, update, and manage company accounts.
+- CRM Products & Quotes: manage product catalog, draft and update itemized quotes, and manage quote line items.
+- Outreach: contact lists, contacts, custom template variables, email templates, campaigns and stats, inbox replies, outbox logs, suppressions, LinkedIn sequences and tasks.
+- Personalization: use personalize_contacts to research leads (company website and web search) and write a personalised opener, subject and body per lead; they are saved as {{ai_opener}}, {{ai_subject}} and {{ai_body}} fields usable in templates.
+- Web search: use web_search for any general research.
+
+Do the work directly instead of just describing it. Look up IDs with list tools before modifying them. Be concise, use plain language, no em dashes.`;
 
 export async function runAgent(db: Db, userId: string, token: string, history: { role: "user" | "assistant"; content: string }[]) {
   const cfg = await getLlmConfig(userId);
-  const ctx = { getToken: () => token } as unknown as ToolContext;
+  const ctx = { getToken: () => token, getUserId: () => userId } as unknown as ToolContext;
   const byName = new Map(MCP_TOOLS.map((t) => [t.name, t]));
   const tools: ToolSpec[] = [
     ...MCP_TOOLS.map(toSpec),

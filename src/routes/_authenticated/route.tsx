@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot, ShieldCheck, KanbanSquare } from "lucide-react";
+import { LayoutDashboard, Users, Mail, Megaphone, Settings, LogOut, Inbox, Send, AtSign, Sun, Moon, Linkedin, Bot, ShieldCheck, KanbanSquare, Activity, Building2, Package, FileText, Zap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getIsAdmin } from "@/lib/admin.functions";
 import { PetalField } from "@/components/PetalField";
@@ -47,6 +47,17 @@ const navItems = [
   { to: "/linkedin", label: "LinkedIn", icon: Linkedin },
   { to: "/assistant", label: "AI Assistant", icon: Bot },
   { to: "/settings", label: "Settings", icon: Settings },
+] as const;
+
+const crmSubNav = [
+  { to: "/crm", label: "Overview", icon: LayoutDashboard },
+  { to: "/crm/pipeline", label: "Pipeline", icon: KanbanSquare },
+  { to: "/crm/leads", label: "Leads", icon: Zap },
+  { to: "/crm/clients", label: "Clients", icon: Users },
+  { to: "/crm/organizations", label: "Organizations", icon: Building2 },
+  { to: "/crm/activities", label: "Activities", icon: Activity },
+  { to: "/crm/products", label: "Products", icon: Package },
+  { to: "/crm/quotes", label: "Quotes", icon: FileText },
 ] as const;
 
 function AuthenticatedLayout() {
@@ -109,6 +120,28 @@ function AuthenticatedLayout() {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+            {pathname.startsWith("/crm") && (
+              <SidebarGroup>
+                <p className="eyebrow px-2 pb-2">CRM Modules</p>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {crmSubNav.map((sub) => {
+                      const isActive = sub.to === "/crm" ? pathname === "/crm" : pathname.startsWith(sub.to);
+                      return (
+                        <SidebarMenuItem key={sub.to}>
+                          <SidebarMenuButton asChild isActive={isActive} className="h-8 text-xs font-medium">
+                            <Link to={sub.to}>
+                              <sub.icon className="h-3.5 w-3.5" />
+                              <span>{sub.label}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
           </SidebarContent>
           <SidebarFooter className="border-t border-sidebar-border p-3">
             <Button
