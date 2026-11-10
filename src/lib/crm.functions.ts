@@ -296,6 +296,15 @@ export const searchContacts = createServerFn({ method: "GET" })
     return rows ?? [];
   });
 
+function isTableMissingError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  return error.code === "PGRST205" || error.code === "42P01" || (typeof error.message === "string" && error.message.includes("schema cache"));
+}
+
+function migrationRequiredError(): Error {
+  return new Error("CRM tables have not been created in Supabase yet. Please run the SQL migration in supabase/migrations/20261111000000_crm_krayin_schema.sql in your Supabase dashboard SQL editor.");
+}
+
 // ---------- Activities ----------
 
 export const getActivities = createServerFn({ method: "GET" })
@@ -312,7 +321,10 @@ export const getActivities = createServerFn({ method: "GET" })
     if (data.contact_id) q = q.eq("contact_id", data.contact_id);
     if (data.deal_id) q = q.eq("deal_id", data.deal_id);
     const { data: rows, error } = await q.limit(200);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) return [];
+      throw new Error(error.message);
+    }
     return rows ?? [];
   });
 
@@ -333,7 +345,10 @@ export const createActivity = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("crm_activities").insert({ ...data, user_id: context.userId });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -380,7 +395,10 @@ export const getOrganizations = createServerFn({ method: "GET" })
     let q = db.from("crm_organizations").select("*").eq("user_id", context.userId).order("name");
     if (data.q) q = q.ilike("name", `%${data.q}%`);
     const { data: rows, error } = await q.limit(100);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) return [];
+      throw new Error(error.message);
+    }
     return rows ?? [];
   });
 
@@ -412,7 +430,10 @@ export const createOrganization = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("crm_organizations").insert({ ...data, user_id: context.userId }).select("id").single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { id: row!.id };
   });
 
@@ -459,7 +480,10 @@ export const getProducts = createServerFn({ method: "GET" })
     let q = db.from("crm_products").select("*").eq("user_id", context.userId).order("name");
     if (data.q) q = q.or(`name.ilike.%${data.q}%,sku.ilike.%${data.q}%`);
     const { data: rows, error } = await q.limit(200);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) return [];
+      throw new Error(error.message);
+    }
     return rows ?? [];
   });
 
@@ -477,7 +501,10 @@ export const createProduct = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("crm_products").insert({ ...data, user_id: context.userId }).select("id").single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { id: row!.id };
   });
 
@@ -569,7 +596,10 @@ export const getQuotes = createServerFn({ method: "GET" })
     if (data.status) q = q.eq("status", data.status);
     if (data.contact_id) q = q.eq("contact_id", data.contact_id);
     const { data: rows, error } = await q.limit(100);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) return [];
+      throw new Error(error.message);
+    }
     return rows ?? [];
   });
 
@@ -608,7 +638,10 @@ export const createQuote = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase.from("crm_quotes").insert({ ...data, user_id: context.userId }).select("id").single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { id: row!.id };
   });
 
@@ -714,7 +747,10 @@ export const getLeads = createServerFn({ method: "GET" })
       q = q.or(`title.ilike.%${data.q}%,email.ilike.%${data.q}%,first_name.ilike.%${data.q}%,last_name.ilike.%${data.q}%,company.ilike.%${data.q}%`);
     }
     const { data: rows, error } = await q.limit(200);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) return { leads: [], stages };
+      throw new Error(error.message);
+    }
     return { leads: rows ?? [], stages };
   });
 
@@ -762,7 +798,10 @@ export const createLead = createServerFn({ method: "POST" })
       stageId = stages.find((s) => !s.is_won && !s.is_lost)?.id ?? stages[0]!.id;
     }
     const { data: row, error } = await db.from("crm_leads").insert({ ...data, stage_id: stageId, user_id: context.userId }).select("id").single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { id: row!.id };
   });
 
