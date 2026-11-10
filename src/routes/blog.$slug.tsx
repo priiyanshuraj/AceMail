@@ -72,7 +72,15 @@ function BlogPostPage() {
             </section>
           ))}
         </div>
-        <div className="mt-12 rounded-xl border bg-card p-6 text-center">
+        <aside className="mt-12 border-t pt-6" aria-label="Related guides">
+          <h2 className="text-xl font-semibold">Keep exploring</h2>
+          <ul className="mt-4 space-y-3">
+            {blogPosts.filter((related) => related.slug !== post.slug).slice(0, 3).map((related) => (
+              <li key={related.slug}><Link to="/blog/$slug" params={{ slug: related.slug }} className="text-sm text-primary hover:underline">{related.title}</Link></li>
+            ))}
+          </ul>
+        </aside>
+        <div className="mt-12 border-t p-6 text-center">
           <p className="font-semibold">Try it in AceMail</p>
           <Link to="/" hash="early-access" className="mt-2 inline-block text-sm underline">Request your invite</Link>
         </div>

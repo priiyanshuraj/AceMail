@@ -20,6 +20,9 @@ import {
   Linkedin,
   Cloud,
   UserSearch,
+  Funnel,
+  KeyRound,
+  CalendarCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import logoUrl from "@/assets/acemail-logo.png";
@@ -29,9 +32,9 @@ import { blogPosts, SITE_URL } from "@/lib/blog-posts";
 import { SakuraScene } from "@/components/SakuraScene";
 import { PetalField } from "@/components/PetalField";
 
-const TITLE = "AceMail: Cold outreach from your own Gmail, now with MCP for ChatGPT and Claude";
+const TITLE = "AceMail: Open-source outreach CRM, AI personalization and Gmail campaigns";
 const DESC =
-  "AceMail runs personalized multi-step cold email campaigns from your own Gmail, stops follow-ups on reply, and connects to ChatGPT and Claude through MCP.";
+  "Connect Gmail and LinkedIn outreach to a visual CRM funnel. Research leads with AI, bring your own model, use ChatGPT or Claude through MCP, and self-host AceMail.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -74,6 +77,11 @@ export const Route = createFileRoute("/")({
                 "CSV and Google Sheets import with custom fields",
                 "Spintax, spam check, email verification and one-click unsubscribe",
                 "Mailbox rotation with per-mailbox limits",
+                "Interactive CRM funnel with client history, deals, notes and reminders",
+                "AI lead research and personalized email and LinkedIn drafts",
+                "Bring your own DeepSeek, OpenAI, Anthropic or compatible AI provider",
+                "Admin-controlled shared free AI generation allowance",
+                "Docker self-hosting with separately configured services",
               ],
             },
           ],
@@ -94,6 +102,10 @@ const features = [
   { icon: Linkedin, title: "LinkedIn sequences", text: "Visits, connection requests, messages and follows. Manual task list or fully automated, with a live tracker." },
   { icon: Cloud, title: "Runs your way", text: "Chrome extension in your browser, a 24/7 cloud worker, or your own computer. Daily limits and human pacing built in." },
   { icon: UserSearch, title: "Full contact profiles", text: "Every email, reply and LinkedIn step per person. Fill missing titles and emails with your own Apollo key." },
+  { icon: Funnel, title: "A CRM that follows the conversation", text: "A clickable sales funnel, searchable deals, stage controls, values and close dates. See the opportunity behind every reply." },
+  { icon: Sparkles, title: "Research before you write", text: "Generate personalized email and LinkedIn drafts from lead research, then save the fields and review the facts before sending." },
+  { icon: KeyRound, title: "Your choice of AI", text: "Connect DeepSeek, OpenAI, Anthropic or a compatible API. Your own key bypasses AceMail’s shared generation cap; provider charges and limits still apply." },
+  { icon: CalendarCheck, title: "Never lose the next step", text: "Client boards, conversation history, notes and reminders keep follow-through connected to your outreach." },
 ];
 
 const mcpPrompts = [
@@ -214,15 +226,15 @@ function Landing() {
         <section className="mx-auto max-w-6xl px-6 pb-24 pt-20 text-center md:pt-28">
           <span className="glass inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-1.5 text-xs text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            New: MCP server for ChatGPT and Claude
+            New: visual CRM funnel + AI lead research
           </span>
           <h1 className="mx-auto mt-8 max-w-4xl font-serif text-5xl leading-[1.05] tracking-tight md:text-7xl">
-            Cold outreach that feels <em className="text-primary">hand-written</em>, sent while you sleep.
+            AceMail<br />
+            <span className="text-3xl md:text-5xl">Outreach. Conversations. <em className="text-primary">Clients.</em></span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            AceMail sends unlimited personalized sequences from your own Gmail, stops the moment
-            someone replies, and lets your AI assistant run the busywork for you. Every template,
-            step and schedule is fully customizable.
+            Personalized Gmail and LinkedIn outreach, a visual CRM funnel, and AI that works with your leads.
+            Follow up, track the conversation and manage the next opportunity in one customizable, open-source workspace.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <Button size="lg" asChild className="h-12 rounded-full px-7">
@@ -235,7 +247,7 @@ function Landing() {
             </Button>
           </div>
           <div className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            {["One-click Gmail connect", "No SMTP setup", "LinkedIn sequences", "Free deliverability tools", "Unlimited sends", "Open source"].map((t) => (
+            {["One-click Gmail connect", "No SMTP setup", "Interactive CRM", "AI personalization", "MCP supported", "Docker self-hosting"].map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5">
                 <Check className="h-4 w-4 text-primary" /> {t}
               </span>
@@ -258,8 +270,8 @@ function Landing() {
               <ul className="mt-6 space-y-2 text-sm">
                 {[
                   "Secure sign-in: the assistant only sees your own data",
-                  "21 tools across contacts, templates, campaigns, inbox and LinkedIn",
-                  "Uses your existing AI plan, zero extra credits",
+                  "Account tools across contacts, templates, campaigns, inbox and LinkedIn",
+                  "Separate from shared free AI generation; your AI plan’s limits still apply",
                 ].map((t) => (
                   <li key={t} className="flex items-start gap-2">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t}
@@ -296,6 +308,24 @@ function Landing() {
                 </div>
                 <h3 className="text-lg font-semibold">{f.title}</h3>
                 <p className="mt-1.5 text-sm text-muted-foreground">{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-6 pb-24" aria-labelledby="workflow-heading">
+          <p className="eyebrow text-primary">From first touch to next opportunity</p>
+          <h2 id="workflow-heading" className="mt-3 max-w-3xl font-serif text-4xl md:text-5xl">The reply is only the beginning.</h2>
+          <div className="mt-8 grid gap-8 border-y border-border/60 py-8 md:grid-cols-3">
+            {[
+              { title: "See your sales funnel", text: "Explore each stage without a sideways board. Filter and move deals, track their value and close date, and open the client’s full history.", slug: "open-source-outreach-crm-sales-funnel", link: "Explore the CRM workflow" },
+              { title: "Personalize with context", text: "Research leads and save tailored drafts. Shared free AI defaults to 20 cold emails and 20 LinkedIn messages per day, adjustable by admin. Use your own key or MCP when you need another option.", slug: "ai-personalized-cold-email-own-api-key", link: "Understand AI options" },
+              { title: "Run it your way", text: "Apache 2.0 source and Docker deployment give you control of the app. Configure your database, Google connections and queue scheduler separately. No app-level send cap, but mailbox and provider limits still apply.", slug: "self-host-gmail-outreach-crm-docker", link: "Read the self-hosting guide" },
+            ].map((item) => (
+              <div key={item.slug} className="min-w-0">
+                <h3 className="text-lg font-semibold">{item.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+                <Link to="/blog/$slug" params={{ slug: item.slug }} className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">{item.link}<ArrowRight className="h-4 w-4 shrink-0" /></Link>
               </div>
             ))}
           </div>

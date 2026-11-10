@@ -45,5 +45,5 @@
 - [x] Replace horizontal pipeline with a clickable visual funnel, searchable/sortable deal workspace and stage controls; signed-in deal creation, movement, reload and cleanup verified, with no desktop/mobile horizontal overflow or page errors.
 
 # Feature discovery
-- [ ] Highlight CRM, AI personalization, free generation limits and self-hosting on the homepage.
-- [ ] Add practical CRM, AI outreach and self-hosting guides with metadata and discovery links; verify public pages.
+- [x] Highlight CRM, AI personalization, free generation limits and self-hosting on the homepage.
+- [x] Add practical CRM, AI outreach and self-hosting guides with metadata and discovery links; verified links, article metadata, phone layout and no page errors.
