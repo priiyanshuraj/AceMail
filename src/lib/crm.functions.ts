@@ -13,14 +13,59 @@ const DEFAULT_STAGES = [
   { name: "Lost", color: "red", position: 6, is_lost: true },
 ];
 
+export function isTableMissingError(error: { code?: string; message?: string } | null | undefined): boolean {
+  if (!error) return false;
+  return (
+    error.code === "PGRST205" ||
+    error.code === "42P01" ||
+    (typeof error.message === "string" && (
+      error.message.includes("schema cache") ||
+      error.message.includes("does not exist") ||
+      error.message.includes("Could not find the table")
+    ))
+  );
+}
+
+export function migrationRequiredError(): Error {
+  return new Error("CRM tables have not been created in Supabase yet. Please run the SQL migration in supabase/migrations/20261111000000_crm_krayin_schema.sql in your Supabase dashboard SQL editor.");
+}
+
 type Db = typeof import("@/integrations/supabase/client").supabase;
 
 async function ensureStages(db: Db, userId: string) {
   const { data: stages, error } = await db.from("crm_stages").select("*").eq("user_id", userId).order("position");
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (isTableMissingError(error)) {
+      return DEFAULT_STAGES.map((s, idx) => ({
+        id: `default-stage-${idx}`,
+        user_id: userId,
+        name: s.name,
+        color: s.color,
+        position: s.position,
+        is_won: Boolean(s.is_won),
+        is_lost: Boolean(s.is_lost),
+        created_at: new Date().toISOString(),
+      }));
+    }
+    throw new Error(error.message);
+  }
   if (stages && stages.length > 0) return stages;
   const { data: created, error: insErr } = await db.from("crm_stages").insert(DEFAULT_STAGES.map((s) => ({ is_won: false, is_lost: false, ...s, user_id: userId }))).select();
-  if (insErr) throw new Error(insErr.message);
+  if (insErr) {
+    if (isTableMissingError(insErr)) {
+      return DEFAULT_STAGES.map((s, idx) => ({
+        id: `default-stage-${idx}`,
+        user_id: userId,
+        name: s.name,
+        color: s.color,
+        position: s.position,
+        is_won: Boolean(s.is_won),
+        is_lost: Boolean(s.is_lost),
+        created_at: new Date().toISOString(),
+      }));
+    }
+    throw new Error(insErr.message);
+  }
   return (created ?? []).sort((a, b) => a.position - b.position);
 }
 
@@ -36,7 +81,10 @@ export const getPipeline = createServerFn({ method: "GET" })
       .select("*, contacts(email, first_name, last_name, company)")
       .eq("user_id", context.userId)
       .order("position");
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) return { stages, deals: [] };
+      throw new Error(error.message);
+    }
     return { stages, deals: deals ?? [] };
   });
 
@@ -71,7 +119,10 @@ export const createDeal = createServerFn({ method: "POST" })
       territory: data.territory,
       source: data.source,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -96,7 +147,10 @@ export const updateDeal = createServerFn({ method: "POST" })
     const { id, ...rest } = data;
     const patch = { ...Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)), updated_at: new Date().toISOString() } as Database["public"]["Tables"]["crm_deals"]["Update"];
     const { error } = await context.supabase.from("crm_deals").update(patch).eq("id", id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -108,7 +162,10 @@ export const moveDeal = createServerFn({ method: "POST" })
       .from("crm_deals")
       .update({ stage_id: data.stage_id, position: data.position, updated_at: new Date().toISOString() })
       .eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -117,7 +174,10 @@ export const deleteDeal = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("crm_deals").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -145,7 +205,10 @@ export const addStage = createServerFn({ method: "POST" })
       is_won: data.is_won,
       is_lost: data.is_lost,
     }).select().single();
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true, stage: newStage };
   });
 
@@ -165,7 +228,10 @@ export const renameStage = createServerFn({ method: "POST" })
     const { id, ...rest } = data;
     const patch = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
     const { error } = await context.supabase.from("crm_stages").update(patch).eq("id", id).eq("user_id", context.userId);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -175,7 +241,8 @@ export const reorderStages = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = context.supabase;
     for (let i = 0; i < data.stage_ids.length; i++) {
-      await db.from("crm_stages").update({ position: i }).eq("id", data.stage_ids[i]!).eq("user_id", context.userId);
+      const { error } = await db.from("crm_stages").update({ position: i }).eq("id", data.stage_ids[i]!).eq("user_id", context.userId);
+      if (error && isTableMissingError(error)) throw migrationRequiredError();
     }
     return { ok: true };
   });
@@ -190,7 +257,8 @@ export const deleteStage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const db = context.supabase;
-    const { count } = await db.from("crm_deals").select("id", { count: "exact", head: true }).eq("stage_id", data.id);
+    const { count, error: countErr } = await db.from("crm_deals").select("id", { count: "exact", head: true }).eq("stage_id", data.id);
+    if (countErr && isTableMissingError(countErr)) throw migrationRequiredError();
     if ((count ?? 0) > 0) {
       if (data.migrate_to_stage_id) {
         const { error: moveErr } = await db.from("crm_deals").update({ stage_id: data.migrate_to_stage_id }).eq("stage_id", data.id).eq("user_id", context.userId);
@@ -200,7 +268,10 @@ export const deleteStage = createServerFn({ method: "POST" })
       }
     }
     const { error } = await db.from("crm_stages").delete().eq("id", data.id).eq("user_id", context.userId);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -216,8 +287,9 @@ export const getClientBoard = createServerFn({ method: "GET" })
       .select("id, stage_id, title, value, currency, expected_close, updated_at, contacts(id, email, first_name, last_name, company, title)")
       .eq("user_id", context.userId)
       .order("updated_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    const { data: notes } = await db.from("crm_notes").select("id, contact_id, body, remind_at, done").eq("user_id", context.userId).eq("done", false).not("remind_at", "is", null);
+    if (error && !isTableMissingError(error)) throw new Error(error.message);
+    const { data: notes, error: notesErr } = await db.from("crm_notes").select("id, contact_id, body, remind_at, done").eq("user_id", context.userId).eq("done", false).not("remind_at", "is", null);
+    if (notesErr && !isTableMissingError(notesErr)) throw new Error(notesErr.message);
     return { stages, deals: deals ?? [], reminders: notes ?? [] };
   });
 
@@ -267,7 +339,10 @@ export const addNote = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("crm_notes").insert({ ...data, user_id: context.userId });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -278,7 +353,10 @@ export const updateNote = createServerFn({ method: "POST" })
     const { id, ...rest } = data;
     const patch = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)) as Database["public"]["Tables"]["crm_notes"]["Update"];
     const { error } = await context.supabase.from("crm_notes").update(patch).eq("id", id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -287,7 +365,10 @@ export const deleteNote = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("crm_notes").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isTableMissingError(error)) throw migrationRequiredError();
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -304,15 +385,6 @@ export const searchContacts = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
-
-function isTableMissingError(error: { code?: string; message?: string } | null | undefined): boolean {
-  if (!error) return false;
-  return error.code === "PGRST205" || error.code === "42P01" || (typeof error.message === "string" && error.message.includes("schema cache"));
-}
-
-function migrationRequiredError(): Error {
-  return new Error("CRM tables have not been created in Supabase yet. Please run the SQL migration in supabase/migrations/20261111000000_crm_krayin_schema.sql in your Supabase dashboard SQL editor.");
-}
 
 // ---------- Activities ----------
 
@@ -930,6 +1002,12 @@ export const getCrmDashboard = createServerFn({ method: "GET" })
       monthlyRevenue.push({ month: label, value });
     }
 
+    const isMissingTables =
+      isTableMissingError(dealsRes.error) ||
+      isTableMissingError(activitiesRes.error) ||
+      isTableMissingError(leadsRes.error) ||
+      isTableMissingError(quotesRes.error);
+
     return {
       totalPipelineValue,
       wonValue,
@@ -945,6 +1023,7 @@ export const getCrmDashboard = createServerFn({ method: "GET" })
       recentLeads: leadsRes.data ?? [],
       pendingQuotes: (quotesRes.data ?? []).filter((q) => q.status === "draft" || q.status === "sent").length,
       currency: deals[0]?.currency ?? "USD",
+      migrationRequired: isMissingTables,
     };
   });
 

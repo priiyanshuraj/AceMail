@@ -5,7 +5,7 @@ import { fmtMoney, stageColor } from "@/lib/crm-colors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { KanbanSquare, Users, Activity, Package, FileText, Trophy, Target, TrendingUp, CircleDollarSign, Zap, Building2 } from "lucide-react";
+import { KanbanSquare, Users, Activity, Package, FileText, Trophy, Target, TrendingUp, CircleDollarSign, Zap, Building2, Database } from "lucide-react";
 
 const dashQuery = () => queryOptions({ queryKey: ["crm-dashboard"], queryFn: () => getCrmDashboard() });
 
@@ -27,6 +27,23 @@ function CrmDashboard() {
           <h1 className="mt-1 text-3xl font-bold">Overview</h1>
         </div>
       </div>
+
+      {data.migrationRequired && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-900 dark:text-amber-200 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-amber-500/20 p-2 text-amber-600 dark:text-amber-400 shrink-0">
+              <Database className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">CRM Database Setup Required</p>
+              <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                The CRM tables (<code>crm_stages</code>, <code>crm_deals</code>, etc.) have not been created in your Supabase project yet.
+                Run the script in <code className="font-mono font-semibold">supabase/migrations/20261111000000_crm_krayin_schema.sql</code> in your <strong>Supabase Dashboard → SQL Editor</strong> to enable database persistence.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick nav */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
