@@ -97,10 +97,10 @@ export const manageCrmStages = defineTool({
       if (!args.id) throw new ToolError("Stage ID or name is required");
       const targetId = await resolveStageId(args.id);
       const patch: Record<string, unknown> = {};
-      if (args.name !== undefined) patch.name = args.name;
-      if (args.color !== undefined) patch.color = args.color;
-      if (args.is_won !== undefined) patch.is_won = args.is_won;
-      if (args.is_lost !== undefined) patch.is_lost = args.is_lost;
+      if (args.name !== undefined) patch["name"] = args.name;
+      if (args.color !== undefined) patch["color"] = args.color;
+      if (args.is_won !== undefined) patch["is_won"] = args.is_won;
+      if (args.is_lost !== undefined) patch["is_lost"] = args.is_lost;
       const { data, error } = await sb.from("crm_stages").update(patch).eq("id", targetId).eq("user_id", userId).select().single();
       if (error) throw new ToolError(error.message);
       return { content: [{ type: "text", text: `Updated stage "${data.name}" (${targetId})` }], structuredContent: { stage: data } };

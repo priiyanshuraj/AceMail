@@ -106,14 +106,14 @@ export const manageCrmDeals = defineTool({
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (args.stage_id) {
         const sid = await resolveStageId(args.stage_id);
-        if (sid) patch.stage_id = sid;
+        if (sid) patch["stage_id"] = sid;
       }
-      if (args.title !== undefined) patch.title = args.title;
-      if (args.value !== undefined) patch.value = args.value;
-      if (args.currency !== undefined) patch.currency = args.currency;
-      if (args.expected_close !== undefined) patch.expected_close = args.expected_close;
-      if (args.lost_reason !== undefined) patch.lost_reason = args.lost_reason;
-      if (args.won_reason !== undefined) patch.won_reason = args.won_reason;
+      if (args.title !== undefined) patch["title"] = args.title;
+      if (args.value !== undefined) patch["value"] = args.value;
+      if (args.currency !== undefined) patch["currency"] = args.currency;
+      if (args.expected_close !== undefined) patch["expected_close"] = args.expected_close;
+      if (args.lost_reason !== undefined) patch["lost_reason"] = args.lost_reason;
+      if (args.won_reason !== undefined) patch["won_reason"] = args.won_reason;
 
       const { data, error } = await sb.from("crm_deals").update(patch).eq("id", args.id).eq("user_id", userId).select().single();
       if (error) throw new ToolError(error.message);

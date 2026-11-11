@@ -227,7 +227,7 @@ export const renameStage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
     const patch = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
-    const { error } = await context.supabase.from("crm_stages").update(patch).eq("id", id).eq("user_id", context.userId);
+    const { error } = await context.supabase.from("crm_stages").update(patch as never).eq("id", id).eq("user_id", context.userId);
     if (error) {
       if (isTableMissingError(error)) throw migrationRequiredError();
       throw new Error(error.message);
@@ -649,7 +649,7 @@ export const addDealProduct = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: deal } = await context.supabase.from("crm_deals").select("id").eq("id", data.deal_id).eq("user_id", context.userId).single();
     if (!deal) throw new Error("Deal not found");
-    const { error } = await context.supabase.from("crm_deal_products").insert(data);
+    const { error } = await context.supabase.from("crm_deal_products").insert({ deal_id: data.deal_id, product_id: data.product_id as string, qty: data.qty, quantity: data.qty, unit_price: data.unit_price, discount_pct: data.discount_pct, user_id: context.userId });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -718,7 +718,7 @@ export const createQuote = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase.from("crm_quotes").insert({ ...data, user_id: context.userId }).select("id").single();
+    const { data: row, error } = await context.supabase.from("crm_quotes").insert({ ...data, subject: data.title, user_id: context.userId }).select("id").single();
     if (error) {
       if (isTableMissingError(error)) throw migrationRequiredError();
       throw new Error(error.message);
@@ -797,7 +797,7 @@ export const updateQuoteItem = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
     const patch = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
-    const { error } = await context.supabase.from("crm_quote_items").update(patch).eq("id", id);
+    const { error } = await context.supabase.from("crm_quote_items").update(patch as never).eq("id", id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -1214,9 +1214,9 @@ export const updateCrmTask = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { id, ...rest } = data;
-    const patch = { ...Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)), updated_at: new Date().toISOString() };
-    if (rest.status === "completed" && !rest.completed_at) patch.completed_at = new Date().toISOString();
-    const { error } = await context.supabase.from("crm_tasks").update(patch).eq("id", id).eq("user_id", context.userId);
+    const patch: Record<string, unknown> = { ...Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)), updated_at: new Date().toISOString() };
+    if (rest.status === "completed" && !rest.completed_at) patch["completed_at"] = new Date().toISOString();
+    const { error } = await context.supabase.from("crm_tasks").update(patch as never).eq("id", id).eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

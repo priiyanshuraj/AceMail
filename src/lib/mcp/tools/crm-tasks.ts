@@ -87,14 +87,14 @@ export const manageCrmTasks = defineTool({
 
     if (args.action === "update") {
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-      if (args.title !== undefined) patch.title = args.title;
-      if (args.description !== undefined) patch.description = args.description;
-      if (args.priority !== undefined) patch.priority = args.priority;
+      if (args.title !== undefined) patch["title"] = args.title;
+      if (args.description !== undefined) patch["description"] = args.description;
+      if (args.priority !== undefined) patch["priority"] = args.priority;
       if (args.status !== undefined) {
-        patch.status = args.status;
-        if (args.status === "completed") patch.completed_at = new Date().toISOString();
+        patch["status"] = args.status;
+        if (args.status === "completed") patch["completed_at"] = new Date().toISOString();
       }
-      if (args.due_date !== undefined) patch.due_date = args.due_date;
+      if (args.due_date !== undefined) patch["due_date"] = args.due_date;
 
       const { data, error } = await sb.from("crm_tasks").update(patch).eq("id", args.id).eq("user_id", userId).select().single();
       if (error) throw new ToolError(error.message);

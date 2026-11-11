@@ -173,12 +173,12 @@ export const manageCrmQuotes = defineTool({
     if (args.action === "update") {
       if (!args.id) throw new ToolError("Quote ID is required");
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-      if (args.title !== undefined) patch.title = args.title;
-      if (args.status !== undefined) patch.status = args.status;
-      if (args.valid_until !== undefined) patch.valid_until = args.valid_until;
-      if (args.notes !== undefined) patch.notes = args.notes;
-      if (args.contact_id !== undefined) patch.contact_id = args.contact_id;
-      if (args.deal_id !== undefined) patch.deal_id = args.deal_id;
+      if (args.title !== undefined) patch["title"] = args.title;
+      if (args.status !== undefined) patch["status"] = args.status;
+      if (args.valid_until !== undefined) patch["valid_until"] = args.valid_until;
+      if (args.notes !== undefined) patch["notes"] = args.notes;
+      if (args.contact_id !== undefined) patch["contact_id"] = args.contact_id;
+      if (args.deal_id !== undefined) patch["deal_id"] = args.deal_id;
       const { data, error } = await sb.from("crm_quotes").update(patch).eq("id", args.id).eq("user_id", userId).select().single();
       if (error) throw new ToolError(error.message);
       return { content: [{ type: "text", text: `Updated quote ${args.id}` }], structuredContent: { quote: data } };

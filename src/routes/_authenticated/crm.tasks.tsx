@@ -146,7 +146,7 @@ function TasksPage() {
       <div className="rounded-xl border bg-card divide-y">
         {filtered.map((t) => {
           const isDone = t.status === "completed";
-          const priorityInfo = PRIORITY_BADGES[t.priority] || PRIORITY_BADGES.medium!;
+          const priorityInfo = PRIORITY_BADGES[t.priority] || PRIORITY_BADGES["medium"]!;
           const contactName = `${t.contacts?.first_name ?? ""} ${t.contacts?.last_name ?? ""}`.trim() || t.contacts?.email;
           return (
             <div key={t.id} className="p-4 flex items-start gap-3 hover:bg-muted/30 transition-colors group">
