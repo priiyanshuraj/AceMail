@@ -405,13 +405,88 @@ export type Database = {
           },
         ]
       }
+      crm_call_logs: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          duration_seconds: number
+          id: string
+          lead_id: string | null
+          phone_number: string | null
+          recording_url: string | null
+          started_at: string
+          status: string
+          summary: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          duration_seconds?: number
+          id?: string
+          lead_id?: string | null
+          phone_number?: string | null
+          recording_url?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          duration_seconds?: number
+          id?: string
+          lead_id?: string | null
+          phone_number?: string | null
+          recording_url?: string | null
+          started_at?: string
+          status?: string
+          summary?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_call_logs_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_call_logs_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_call_logs_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_deal_products: {
         Row: {
           amount: number
           created_at: string
           deal_id: string
+          discount_pct: number
           id: string
           product_id: string
+          qty: number
           quantity: number
           unit_price: number
           user_id: string
@@ -420,8 +495,10 @@ export type Database = {
           amount?: number
           created_at?: string
           deal_id: string
+          discount_pct?: number
           id?: string
           product_id: string
+          qty?: number
           quantity?: number
           unit_price?: number
           user_id: string
@@ -430,8 +507,10 @@ export type Database = {
           amount?: number
           created_at?: string
           deal_id?: string
+          discount_pct?: number
           id?: string
           product_id?: string
+          qty?: number
           quantity?: number
           unit_price?: number
           user_id?: string
@@ -541,9 +620,11 @@ export type Database = {
           lead_value: number
           lost_reason: string | null
           phone: string | null
+          priority: string | null
           source: string | null
           stage_id: string | null
           status: string
+          territory: string | null
           title: string
           type: string | null
           updated_at: string
@@ -564,9 +645,11 @@ export type Database = {
           lead_value?: number
           lost_reason?: string | null
           phone?: string | null
+          priority?: string | null
           source?: string | null
           stage_id?: string | null
           status?: string
+          territory?: string | null
           title: string
           type?: string | null
           updated_at?: string
@@ -587,9 +670,11 @@ export type Database = {
           lead_value?: number
           lost_reason?: string | null
           phone?: string | null
+          priority?: string | null
           source?: string | null
           stage_id?: string | null
           status?: string
+          territory?: string | null
           title?: string
           type?: string | null
           updated_at?: string
@@ -675,11 +760,14 @@ export type Database = {
           created_at: string
           description: string | null
           domain: string | null
+          employee_count: number | null
           id: string
+          industry: string | null
           name: string
           phone: string | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
           address?: string | null
@@ -688,11 +776,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           domain?: string | null
+          employee_count?: number | null
           id?: string
+          industry?: string | null
           name: string
           phone?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
           address?: string | null
@@ -701,11 +792,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           domain?: string | null
+          employee_count?: number | null
           id?: string
+          industry?: string | null
           name?: string
           phone?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -719,6 +813,7 @@ export type Database = {
           name: string
           price: number
           sku: string | null
+          type: string
           updated_at: string
           user_id: string
         }
@@ -731,6 +826,7 @@ export type Database = {
           name: string
           price?: number
           sku?: string | null
+          type?: string
           updated_at?: string
           user_id: string
         }
@@ -743,6 +839,7 @@ export type Database = {
           name?: string
           price?: number
           sku?: string | null
+          type?: string
           updated_at?: string
           user_id?: string
         }
@@ -750,34 +847,49 @@ export type Database = {
       }
       crm_quote_items: {
         Row: {
+          created_at: string
           description: string | null
+          discount_pct: number
           id: string
           name: string
+          position: number
           price: number
           product_id: string | null
+          qty: number
           quantity: number
           quote_id: string
           total: number
+          unit_price: number
         }
         Insert: {
+          created_at?: string
           description?: string | null
+          discount_pct?: number
           id?: string
           name: string
+          position?: number
           price?: number
           product_id?: string | null
+          qty?: number
           quantity?: number
           quote_id: string
           total?: number
+          unit_price?: number
         }
         Update: {
+          created_at?: string
           description?: string | null
+          discount_pct?: number
           id?: string
           name?: string
+          position?: number
           price?: number
           product_id?: string | null
+          qty?: number
           quantity?: number
           quote_id?: string
           total?: number
+          unit_price?: number
         }
         Relationships: [
           {
@@ -809,6 +921,7 @@ export type Database = {
           expired_at: string | null
           grand_total: number
           id: string
+          notes: string | null
           organization_id: string | null
           quote_number: string | null
           shipping_address: string | null
@@ -817,8 +930,10 @@ export type Database = {
           subtotal: number
           tax_percent: number
           terms: string | null
+          title: string
           updated_at: string
           user_id: string
+          valid_until: string | null
         }
         Insert: {
           adjustment?: number
@@ -832,6 +947,7 @@ export type Database = {
           expired_at?: string | null
           grand_total?: number
           id?: string
+          notes?: string | null
           organization_id?: string | null
           quote_number?: string | null
           shipping_address?: string | null
@@ -840,8 +956,10 @@ export type Database = {
           subtotal?: number
           tax_percent?: number
           terms?: string | null
+          title?: string
           updated_at?: string
           user_id: string
+          valid_until?: string | null
         }
         Update: {
           adjustment?: number
@@ -855,6 +973,7 @@ export type Database = {
           expired_at?: string | null
           grand_total?: number
           id?: string
+          notes?: string | null
           organization_id?: string | null
           quote_number?: string | null
           shipping_address?: string | null
@@ -863,8 +982,10 @@ export type Database = {
           subtotal?: number
           tax_percent?: number
           terms?: string | null
+          title?: string
           updated_at?: string
           user_id?: string
+          valid_until?: string | null
         }
         Relationships: [
           {
@@ -889,6 +1010,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crm_settings: {
+        Row: {
+          created_at: string
+          default_currency: string
+          id: string
+          industries: Json
+          lead_sources: Json
+          lost_reasons: Json
+          territories: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_currency?: string
+          id?: string
+          industries?: Json
+          lead_sources?: Json
+          lost_reasons?: Json
+          territories?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_currency?: string
+          id?: string
+          industries?: Json
+          lead_sources?: Json
+          lost_reasons?: Json
+          territories?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       crm_stages: {
         Row: {
@@ -922,492 +1079,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      crm_activities: {
-        Row: {
-          contact_id: string | null
-          created_at: string
-          deal_id: string | null
-          description: string | null
-          done: boolean
-          id: string
-          lead_id: string | null
-          location: string | null
-          schedule_from: string | null
-          schedule_to: string | null
-          title: string
-          type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          contact_id?: string | null
-          created_at?: string
-          deal_id?: string | null
-          description?: string | null
-          done?: boolean
-          id?: string
-          lead_id?: string | null
-          location?: string | null
-          schedule_from?: string | null
-          schedule_to?: string | null
-          title: string
-          type?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          contact_id?: string | null
-          created_at?: string
-          deal_id?: string | null
-          description?: string | null
-          done?: boolean
-          id?: string
-          lead_id?: string | null
-          location?: string | null
-          schedule_from?: string | null
-          schedule_to?: string | null
-          title?: string
-          type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_activities_contact_id_fkey"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_activities_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "crm_deals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_activities_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "crm_leads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_deal_products: {
-        Row: {
-          created_at: string
-          deal_id: string
-          discount_pct: number
-          id: string
-          name: string
-          product_id: string | null
-          qty: number
-          unit_price: number
-        }
-        Insert: {
-          created_at?: string
-          deal_id: string
-          discount_pct?: number
-          id?: string
-          name: string
-          product_id?: string | null
-          qty?: number
-          unit_price?: number
-        }
-        Update: {
-          created_at?: string
-          deal_id?: string
-          discount_pct?: number
-          id?: string
-          name?: string
-          product_id?: string | null
-          qty?: number
-          unit_price?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_deal_products_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "crm_deals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_deal_products_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "crm_products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_leads: {
-        Row: {
-          company: string | null
-          contact_id: string | null
-          created_at: string
-          currency: string
-          deal_id: string | null
-          description: string | null
-          email: string | null
-          expected_close: string | null
-          first_name: string | null
-          id: string
-          last_name: string | null
-          lead_value: number
-          lost_reason: string | null
-          phone: string | null
-          source: string | null
-          stage_id: string | null
-          status: string
-          title: string
-          type: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          company?: string | null
-          contact_id?: string | null
-          created_at?: string
-          currency?: string
-          deal_id?: string | null
-          description?: string | null
-          email?: string | null
-          expected_close?: string | null
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          lead_value?: number
-          lost_reason?: string | null
-          phone?: string | null
-          source?: string | null
-          stage_id?: string | null
-          status?: string
-          title: string
-          type?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          company?: string | null
-          contact_id?: string | null
-          created_at?: string
-          currency?: string
-          deal_id?: string | null
-          description?: string | null
-          email?: string | null
-          expected_close?: string | null
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          lead_value?: number
-          lost_reason?: string | null
-          phone?: string | null
-          source?: string | null
-          stage_id?: string | null
-          status?: string
-          title?: string
-          type?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_leads_contact_id_fkey"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_leads_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "crm_deals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_leads_stage_id_fkey"
-            columns: ["stage_id"]
-            isOneToOne: false
-            referencedRelation: "crm_stages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_organizations: {
-        Row: {
-          address: string | null
-          city: string | null
-          country: string | null
-          created_at: string
-          description: string | null
-          employee_count: number | null
-          id: string
-          industry: string | null
-          name: string
-          phone: string | null
-          updated_at: string
-          user_id: string
-          website: string | null
-        }
-        Insert: {
-          address?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          description?: string | null
-          employee_count?: number | null
-          id?: string
-          industry?: string | null
-          name: string
-          phone?: string | null
-          updated_at?: string
-          user_id: string
-          website?: string | null
-        }
-        Update: {
-          address?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          description?: string | null
-          employee_count?: number | null
-          id?: string
-          industry?: string | null
-          name?: string
-          phone?: string | null
-          updated_at?: string
-          user_id?: string
-          website?: string | null
-        }
-        Relationships: []
-      }
-      crm_products: {
-        Row: {
-          created_at: string
-          currency: string
-          description: string | null
-          id: string
-          name: string
-          price: number
-          sku: string | null
-          type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          id?: string
-          name: string
-          price?: number
-          sku?: string | null
-          type?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          id?: string
-          name?: string
-          price?: number
-          sku?: string | null
-          type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      crm_quote_items: {
-        Row: {
-          created_at: string
-          description: string | null
-          discount_pct: number
-          id: string
-          name: string
-          position: number
-          product_id: string | null
-          qty: number
-          quote_id: string
-          unit_price: number
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          discount_pct?: number
-          id?: string
-          name: string
-          position?: number
-          product_id?: string | null
-          qty?: number
-          quote_id: string
-          unit_price?: number
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          discount_pct?: number
-          id?: string
-          name?: string
-          position?: number
-          product_id?: string | null
-          qty?: number
-          quote_id?: string
-          unit_price?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_quote_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "crm_products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_quote_items_quote_id_fkey"
-            columns: ["quote_id"]
-            isOneToOne: false
-            referencedRelation: "crm_quotes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_quotes: {
-        Row: {
-          contact_id: string | null
-          created_at: string
-          currency: string
-          deal_id: string | null
-          id: string
-          notes: string | null
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-          valid_until: string | null
-        }
-        Insert: {
-          contact_id?: string | null
-          created_at?: string
-          currency?: string
-          deal_id?: string | null
-          id?: string
-          notes?: string | null
-          status?: string
-          title: string
-          updated_at?: string
-          user_id: string
-          valid_until?: string | null
-        }
-        Update: {
-          contact_id?: string | null
-          created_at?: string
-          currency?: string
-          deal_id?: string | null
-          id?: string
-          notes?: string | null
-          status?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-          valid_until?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_quotes_contact_id_fkey"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_quotes_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "crm_deals"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crm_call_logs: {
-        Row: {
-          contact_id: string | null
-          created_at: string
-          deal_id: string | null
-          duration_seconds: number
-          id: string
-          lead_id: string | null
-          phone_number: string | null
-          recording_url: string | null
-          started_at: string
-          status: string
-          summary: string | null
-          type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          contact_id?: string | null
-          created_at?: string
-          deal_id?: string | null
-          duration_seconds?: number
-          id?: string
-          lead_id?: string | null
-          phone_number?: string | null
-          recording_url?: string | null
-          started_at?: string
-          status?: string
-          summary?: string | null
-          type?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          contact_id?: string | null
-          created_at?: string
-          deal_id?: string | null
-          duration_seconds?: number
-          id?: string
-          lead_id?: string | null
-          phone_number?: string | null
-          recording_url?: string | null
-          started_at?: string
-          status?: string
-          summary?: string | null
-          type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crm_call_logs_contact_id_fkey"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_call_logs_deal_id_fkey"
-            columns: ["deal_id"]
-            isOneToOne: false
-            referencedRelation: "crm_deals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crm_call_logs_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "crm_leads"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       crm_tasks: {
         Row: {
@@ -1481,42 +1152,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      crm_settings: {
-        Row: {
-          created_at: string
-          default_currency: string
-          id: string
-          industries: Json
-          lead_sources: Json
-          lost_reasons: Json
-          territories: Json
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          default_currency?: string
-          id?: string
-          industries?: Json
-          lead_sources?: Json
-          lost_reasons?: Json
-          territories?: Json
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          default_currency?: string
-          id?: string
-          industries?: Json
-          lead_sources?: Json
-          lost_reasons?: Json
-          territories?: Json
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       email_click_events: {
         Row: {
