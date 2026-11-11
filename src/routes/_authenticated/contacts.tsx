@@ -47,6 +47,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Minus, Upload, Trash2, Users, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { GoogleSheetImport } from "@/components/GoogleSheetImport";
+import { AddContactsToLeadsButton } from "@/components/crm/ImportContactsToLeads";
 import { useMemo } from "react";
 
 function slug(s: string) {
@@ -482,6 +483,7 @@ function ContactsPage() {
                       Remove selected ({selectedIds.size})
                     </Button>
                   )}
+                  <AddContactsToLeadsButton ids={[...selectedIds]} />
                   <AiPersonalizeButton ids={[...selectedIds]} onDone={() => { if (selectedList) void loadContacts(selectedList, page, pageSize); }} />
                   <Button variant="outline" size="sm" onClick={() => void handleVerifyList()} disabled={verifying || total === 0}>
                     {verifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}

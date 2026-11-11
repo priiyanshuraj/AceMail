@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2, Search, Zap, ArrowLeft, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
+import { ImportContactsDialog, ContactPrefill } from "@/components/crm/ImportContactsToLeads";
 
 const leadsQuery = () => queryOptions({ queryKey: ["crm-leads"], queryFn: () => getLeads({ data: { q: "" } }) });
 
@@ -57,7 +58,10 @@ function LeadsPage() {
           <h1 className="mt-1 text-3xl font-bold">Leads</h1>
           <p className="text-sm text-muted-foreground">Manage incoming opportunities before converting to deals</p>
         </div>
-        <NewLeadDialog stages={stages} onDone={refresh} />
+        <div className="flex flex-wrap gap-2">
+          <ImportContactsDialog onDone={refresh} />
+          <NewLeadDialog stages={stages} onDone={refresh} />
+        </div>
       </div>
 
       {/* Filter Tabs */}
@@ -200,6 +204,7 @@ function NewLeadDialog({ stages, onDone }: { stages: { id: string; name: string 
     stage_id: stages[0]?.id ?? "",
     description: "",
   });
+  const [contactId, setContactId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
@@ -224,10 +229,12 @@ function NewLeadDialog({ stages, onDone }: { stages: { id: string; name: string 
           expected_close: f.expected_close || null,
           stage_id: f.stage_id || null,
           description: f.description.trim() || null,
+          contact_id: contactId,
         },
       });
       toast.success("Lead created");
       setOpen(false);
+      setContactId(null);
       setF({
         title: "",
         first_name: "",
@@ -258,6 +265,21 @@ function NewLeadDialog({ stages, onDone }: { stages: { id: string; name: string 
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>Create new lead</DialogTitle></DialogHeader>
         <div className="space-y-3 pt-2">
+          <ContactPrefill
+            onPick={(c) => {
+              setContactId(c.id);
+              const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim();
+              setF((prev) => ({
+                ...prev,
+                title: prev.title || [name || c.email, c.company].filter(Boolean).join(" · "),
+                first_name: c.first_name ?? "",
+                last_name: c.last_name ?? "",
+                email: c.email ?? "",
+                phone: c.phone ?? "",
+                company: c.company ?? "",
+              }));
+            }}
+          />
           <div className="space-y-1">
             <Label>Lead Title *</Label>
             <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Enterprise pilot evaluation" />

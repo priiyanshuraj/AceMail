@@ -379,7 +379,7 @@ export const searchContacts = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ q: z.string().max(200).default("") }).parse(d))
   .handler(async ({ data, context }) => {
     const db = context.supabase;
-    let q = db.from("contacts").select("id, email, first_name, last_name, company").eq("user_id", context.userId).order("created_at", { ascending: false }).limit(20);
+    let q = db.from("contacts").select("id, email, first_name, last_name, company, phone").eq("user_id", context.userId).order("created_at", { ascending: false }).limit(50);
     if (data.q) q = q.or(`email.ilike.%${data.q}%,first_name.ilike.%${data.q}%,last_name.ilike.%${data.q}%,company.ilike.%${data.q}%`);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
@@ -869,6 +869,7 @@ export const createLead = createServerFn({ method: "POST" })
       phone: z.string().max(50).nullable().default(null),
       company: z.string().max(300).nullable().default(null),
       stage_id: z.string().uuid().nullable().default(null),
+      contact_id: z.string().uuid().nullable().default(null),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -884,6 +885,68 @@ export const createLead = createServerFn({ method: "POST" })
       throw new Error(error.message);
     }
     return { id: row!.id };
+  });
+
+// Create leads from existing contacts so details are never typed twice.
+// Contacts that already have a lead are skipped.
+export const importLeadsFromContacts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z.object({
+      contact_ids: z.array(z.string().uuid()).min(1).max(1000),
+      source: z.string().max(100).nullable().default("contacts"),
+      stage_id: z.string().uuid().nullable().default(null),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.supabase;
+    let stageId = data.stage_id;
+    if (!stageId) {
+      const stages = await ensureStages(db, context.userId);
+      stageId = stages.find((s) => !s.is_won && !s.is_lost)?.id ?? stages[0]!.id;
+    }
+    const ids = [...new Set(data.contact_ids)];
+    const { data: contacts, error: cErr } = await db
+      .from("contacts")
+      .select("id, email, first_name, last_name, company, phone, title")
+      .eq("user_id", context.userId)
+      .in("id", ids);
+    if (cErr) throw new Error(cErr.message);
+    const { data: existing, error: eErr } = await db
+      .from("crm_leads")
+      .select("contact_id")
+      .eq("user_id", context.userId)
+      .in("contact_id", ids);
+    if (eErr) {
+      if (isTableMissingError(eErr)) throw migrationRequiredError();
+      throw new Error(eErr.message);
+    }
+    const have = new Set((existing ?? []).map((r) => r.contact_id));
+    const rows = (contacts ?? [])
+      .filter((c) => !have.has(c.id))
+      .map((c) => {
+        const name = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim();
+        const title = [name || c.email, c.company].filter(Boolean).join(" · ").slice(0, 300) || c.email;
+        const email = z.string().email().safeParse(c.email).success ? c.email : null;
+        return {
+          user_id: context.userId,
+          contact_id: c.id,
+          title,
+          first_name: c.first_name || null,
+          last_name: c.last_name || null,
+          email,
+          phone: c.phone || null,
+          company: c.company || null,
+          source: data.source,
+          type: "outbound",
+          stage_id: stageId,
+        };
+      });
+    if (rows.length) {
+      const { error } = await db.from("crm_leads").insert(rows);
+      if (error) throw new Error(error.message);
+    }
+    return { created: rows.length, skipped: ids.length - rows.length };
   });
 
 export const updateLead = createServerFn({ method: "POST" })
