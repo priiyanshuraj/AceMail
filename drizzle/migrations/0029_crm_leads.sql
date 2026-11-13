@@ -1,36 +1,37 @@
-CREATE TABLE public.crm_leads (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  title text NOT NULL,
-  description text,
-  source text,
-  type text,
-  status text NOT NULL DEFAULT 'new',
-  lead_value numeric NOT NULL DEFAULT 0,
-  currency text NOT NULL DEFAULT 'USD',
-  expected_close date,
-  first_name text,
-  last_name text,
-  email text,
-  phone text,
-  company text,
-  contact_id uuid REFERENCES public.contacts(id) ON DELETE SET NULL,
-  deal_id uuid REFERENCES public.crm_deals(id) ON DELETE SET NULL,
-  stage_id uuid REFERENCES public.crm_stages(id) ON DELETE SET NULL,
-  lost_reason text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.crm_leads TO authenticated;
-GRANT ALL ON public.crm_leads TO service_role;
-ALTER TABLE public.crm_leads ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users manage their own crm leads" ON public.crm_leads
-  FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE INDEX idx_crm_leads_user ON public.crm_leads(user_id, status);
-CREATE INDEX idx_crm_leads_contact ON public.crm_leads(contact_id);
-
-ALTER TABLE public.crm_activities ADD CONSTRAINT crm_activities_lead_id_fkey
-  FOREIGN KEY (lead_id) REFERENCES public.crm_leads(id) ON DELETE SET NULL;
-
-ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS lost_reason text;
-ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS won_reason text;
+-- The content of this migration cannot be applied: these CRM tables already exist in the database.
+-- CREATE TABLE public.crm_leads (
+--   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+--   user_id uuid NOT NULL,
+--   title text NOT NULL,
+--   description text,
+--   source text,
+--   type text,
+--   status text NOT NULL DEFAULT 'new',
+--   lead_value numeric NOT NULL DEFAULT 0,
+--   currency text NOT NULL DEFAULT 'USD',
+--   expected_close date,
+--   first_name text,
+--   last_name text,
+--   email text,
+--   phone text,
+--   company text,
+--   contact_id uuid REFERENCES public.contacts(id) ON DELETE SET NULL,
+--   deal_id uuid REFERENCES public.crm_deals(id) ON DELETE SET NULL,
+--   stage_id uuid REFERENCES public.crm_stages(id) ON DELETE SET NULL,
+--   lost_reason text,
+--   created_at timestamptz NOT NULL DEFAULT now(),
+--   updated_at timestamptz NOT NULL DEFAULT now()
+-- );
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.crm_leads TO authenticated;
+-- GRANT ALL ON public.crm_leads TO service_role;
+-- ALTER TABLE public.crm_leads ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Users manage their own crm leads" ON public.crm_leads
+--   FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+-- CREATE INDEX idx_crm_leads_user ON public.crm_leads(user_id, status);
+-- CREATE INDEX idx_crm_leads_contact ON public.crm_leads(contact_id);
+-- 
+-- ALTER TABLE public.crm_activities ADD CONSTRAINT crm_activities_lead_id_fkey
+--   FOREIGN KEY (lead_id) REFERENCES public.crm_leads(id) ON DELETE SET NULL;
+-- 
+-- ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS lost_reason text;
+-- ALTER TABLE public.crm_deals ADD COLUMN IF NOT EXISTS won_reason text;

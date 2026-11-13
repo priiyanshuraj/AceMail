@@ -211,6 +211,13 @@
       "when": 1794200300000,
       "tag": "0029_crm_leads",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1794598728405,
+      "tag": "0030_campaign_bounce_limit",
+      "breakpoints": true
     }
   ]
 }

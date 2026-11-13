@@ -1,1 +1,18 @@
-{"version":"7","dialect":"postgresql","tables":{},"enums":{},"schemas":{},"sequences":{},"_meta":{"columns":{},"schemas":{},"tables":{}}}
+{
+  "id": "d160485d-d0aa-4122-90c3-749b23e58f7e",
+  "prevId": "de0d4bce-9817-4e66-a782-d0b0256f7cc7",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {},
+  "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

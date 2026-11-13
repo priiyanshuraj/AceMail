@@ -154,6 +154,7 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          bounce_limit: number
           breakup_day_exclusive: boolean
           completed_at: string | null
           config_id: string | null
@@ -174,6 +175,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bounce_limit?: number
           breakup_day_exclusive?: boolean
           completed_at?: string | null
           config_id?: string | null
@@ -194,6 +196,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bounce_limit?: number
           breakup_day_exclusive?: boolean
           completed_at?: string | null
           config_id?: string | null

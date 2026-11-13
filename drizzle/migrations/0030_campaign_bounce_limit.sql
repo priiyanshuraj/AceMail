@@ -1,0 +1,2 @@
+ALTER TABLE public.campaigns ADD COLUMN IF NOT EXISTS bounce_limit integer NOT NULL DEFAULT 5;
+COMMENT ON COLUMN public.campaigns.bounce_limit IS 'Auto-pause the campaign once this many emails have bounced; 0 disables.';
